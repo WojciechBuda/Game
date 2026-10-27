@@ -190,6 +190,9 @@ namespace JellyDrop.Core
         public static string PowerUpShortName(PowerUpType type) => T("powerup." + type + ".short");
         public static string PowerUpDescription(PowerUpType type) => T("powerup." + type + ".desc");
 
+        public static string BuildingName(string id) => T("building." + id);
+        public static string SupplyName(City.Supply s) => T("supply." + s);
+
         public static string MissionTitle(MissionDef mission) =>
             mission == null ? string.Empty : T("mission." + mission.Type, Number(mission.Target));
 

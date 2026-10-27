@@ -30,14 +30,14 @@ namespace JellyDrop.Core.Economy
 
         public static LuckyWheel CreateDefault() => new LuckyWheel(new List<WheelSegment>
         {
-            new WheelSegment { Kind = WheelRewardKind.Coins,   Amount = 10,  Weight = 28, Label = "10",     Color = "#FF2E88" },
-            new WheelSegment { Kind = WheelRewardKind.Coins,   Amount = 25,  Weight = 24, Label = "25",     Color = "#FFE600" },
-            new WheelSegment { Kind = WheelRewardKind.PowerUp, Amount = 1,   Weight = 12, Label = "POWER",  Color = "#00E5FF" },
-            new WheelSegment { Kind = WheelRewardKind.Coins,   Amount = 50,  Weight = 16, Label = "50",     Color = "#B04DFF" },
-            new WheelSegment { Kind = WheelRewardKind.Shard,   Amount = 1,   Weight = 6,  Label = "SHARD",  Color = "#39FF88" },
-            new WheelSegment { Kind = WheelRewardKind.Coins,   Amount = 100, Weight = 10, Label = "100",    Color = "#FF8A00" },
-            new WheelSegment { Kind = WheelRewardKind.Coins,   Amount = 15,  Weight = 2,  Label = "15",     Color = "#C6FF00" },
-            new WheelSegment { Kind = WheelRewardKind.Coins,   Amount = 500, Weight = 2,  Label = "500!",   Color = "#FF3B5C" },
+            new WheelSegment { Kind = WheelRewardKind.Coins,   Amount = 10,  Weight = 28, Label = "10",     Color = "#FF6F91" },
+            new WheelSegment { Kind = WheelRewardKind.Coins,   Amount = 25,  Weight = 24, Label = "25",     Color = "#FFC93C" },
+            new WheelSegment { Kind = WheelRewardKind.PowerUp, Amount = 1,   Weight = 12, Label = "POWER",  Color = "#3FB6FF" },
+            new WheelSegment { Kind = WheelRewardKind.Coins,   Amount = 50,  Weight = 16, Label = "50",     Color = "#8E7CFF" },
+            new WheelSegment { Kind = WheelRewardKind.Shard,   Amount = 1,   Weight = 6,  Label = "SHARD",  Color = "#2ED3A0" },
+            new WheelSegment { Kind = WheelRewardKind.Coins,   Amount = 100, Weight = 10, Label = "100",    Color = "#FF9F43" },
+            new WheelSegment { Kind = WheelRewardKind.Coins,   Amount = 15,  Weight = 2,  Label = "15",     Color = "#9BDB4D" },
+            new WheelSegment { Kind = WheelRewardKind.Coins,   Amount = 500, Weight = 2,  Label = "500!",   Color = "#FF5A6E" },
         });
 
         public WheelResult Spin(IRandom rng)

@@ -22,6 +22,10 @@ namespace JellyDrop.Interface
         private readonly Dictionary<PowerUpType, CandyButton> _powerButtons = new Dictionary<PowerUpType, CandyButton>();
         private readonly Dictionary<PowerUpType, Text> _powerCounts = new Dictionary<PowerUpType, Text>();
         private int _shownScore;
+        private RectTransform _goal;
+        private Image _goalFill;
+        private Text _goalText;
+        private bool _goalPopped;
 
         protected override void Build()
         {
@@ -29,17 +33,26 @@ namespace JellyDrop.Interface
             var pause = UIKit.IconButton(Root, SpriteFactory.PauseIcon(), ColorUtil.Purple, App.PauseGame, 110);
             pause.GetComponent<RectTransform>().At(UIKit.TopLeft, new Vector2(80, -70), new Vector2(110, 110));
 
-            _score = UIKit.Text(Root, "0", 88, Color.white);
+            _score = UIKit.Text(Root, "0", 88, ColorUtil.Ink);
             _score.rectTransform.At(UIKit.Top, new Vector2(0, -60), new Vector2(600, 110));
-            _sub = UIKit.Text(Root, "", 36, Color.white).Fit(20);
+            _sub = UIKit.Text(Root, "", 36, ColorUtil.Ink).Fit(20);
             _sub.rectTransform.At(UIKit.Top, new Vector2(0, -132), new Vector2(700, 50));
+
+            // Level goal: progress towards the target score (or the boost multiplier on boost levels).
+            var goalBar = UIKit.ProgressBar(Root, ColorUtil.Mint, new Vector2(560, 44));
+            _goal = (RectTransform)goalBar.transform.parent;
+            _goal.At(UIKit.Top, new Vector2(0, -192), new Vector2(560, 44));
+            _goalFill = goalBar;
+            _goalText = UIKit.Text(_goal, "", 28, ColorUtil.Ink, TextAnchor.MiddleCenter, false).Fit(16);
+            _goalText.rectTransform.Fill();
+            _goal.gameObject.SetActive(false);
 
             _coins = UIKit.CurrencyPill(Root, SpriteFactory.Coin(), ColorUtil.Ink, out var pill, 230);
             pill.At(UIKit.TopRight, new Vector2(-135, -70), pill.sizeDelta);
 
-            _holdLabel = UIKit.Text(Root, Loc.T("hud.hold"), 34, Color.white).Fit(20);
+            _holdLabel = UIKit.Text(Root, Loc.T("hud.hold"), 34, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(20);
             _holdLabel.rectTransform.sizeDelta = new Vector2(200, 50);
-            _nextLabel = UIKit.Text(Root, Loc.T("hud.next"), 34, Color.white).Fit(20);
+            _nextLabel = UIKit.Text(Root, Loc.T("hud.next"), 34, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(20);
             _nextLabel.rectTransform.sizeDelta = new Vector2(200, 50);
 
             _slowMo = UIKit.Text(Root, "", 46, ColorUtil.Blue);
@@ -58,12 +71,12 @@ namespace JellyDrop.Interface
                 b.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(-300 + i * 200, 0), new Vector2(170, 170));
                 var countBg = UIKit.Image(b.transform, SpriteFactory.Circle(), ColorUtil.Night, false, "Count");
                 countBg.rectTransform.At(new Vector2(1f, 0f), new Vector2(-14, 24), new Vector2(66, 66));
-                var count = UIKit.Text(countBg.transform, "0", 38, ColorUtil.Ink, TextAnchor.MiddleCenter, false);
+                var count = UIKit.Text(countBg.transform, "0", 38, Color.white, TextAnchor.MiddleCenter, false);
                 count.rectTransform.Fill();
                 _powerButtons[type] = b;
                 _powerCounts[type] = count;
             }
-            _powerUpsLeft = UIKit.Text(Root, "", 30, Color.white).Fit(18);
+            _powerUpsLeft = UIKit.Text(Root, "", 30, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(18);
             _powerUpsLeft.rectTransform.At(UIKit.Bottom, new Vector2(0, 222), new Vector2(700, 44));
 
             _floatingLayer = UIKit.Node("Floating", Root).Fill();
@@ -73,6 +86,7 @@ namespace JellyDrop.Interface
         {
             _shownScore = 0;
             _score.text = "0";
+            _goalPopped = false;
             UIKit.ClearChildren(_floatingLayer);
             Refresh();
         }
@@ -107,7 +121,16 @@ namespace JellyDrop.Interface
 
             var difficulty = DifficultySettings.For(s.Difficulty);
             string tag = $"<color={difficulty.Color}>{Loc.DifficultyName(s.Difficulty)}</color>   ";
-            if (s.Mode == GameMode.Sprint)
+            bool level = s.Mode == GameMode.Level || s.Mode == GameMode.Boost;
+            _goal.gameObject.SetActive(level);
+            if (level)
+            {
+                string title = s.Mode == GameMode.Boost ? Loc.T("level.boost_title", s.Config.LevelNumber) : Loc.T("level.title", s.Config.LevelNumber);
+                string limit = s.PiecesLeft >= 0 ? Loc.T("hud.pieces_left", s.PiecesLeft)
+                    : s.TimeLeft >= 0 ? Loc.T("hud.time_left", UIKit.FormatTime(s.TimeLeft)) : "";
+                _sub.text = title + "   " + limit;
+            }
+            else if (s.Mode == GameMode.Sprint)
             {
                 int left = Mathf.Max(0, s.Config.SprintLines - s.Lines);
                 _sub.text = tag + Loc.T("hud.lines_left", left);
@@ -147,6 +170,8 @@ namespace JellyDrop.Interface
                 _score.text = Loc.Number(_shownScore);
             }
 
+            if (s.Mode == GameMode.Level || s.Mode == GameMode.Boost) UpdateGoal(s);
+
             _slowMo.text = s.SlowMoRemaining > 0f ? Loc.T("hud.slowmo", Mathf.CeilToInt(s.SlowMoRemaining)) : "";
             float junk = s.GarbageCountdown;
             _junk.text = junk >= 0f && junk <= 3f && !s.IsOver ? Loc.T("hud.junk_in", Mathf.CeilToInt(junk)) : "";
@@ -154,6 +179,28 @@ namespace JellyDrop.Interface
             // Keep labels glued above the world-space preview boxes.
             PlaceAtWorld(_holdLabel.rectTransform, game.HoldSlot.transform.position + new Vector3(0, 1.55f, 0));
             PlaceAtWorld(_nextLabel.rectTransform, game.NextSlots[0].transform.position + new Vector3(0.9f, 1.55f, 0));
+        }
+
+        private void UpdateGoal(GameSession s)
+        {
+            if (s.TimeLeft >= 0)
+            {
+                // Boost: the bar is the clock; the text shows the multiplier.
+                _goalFill.fillAmount = s.Config.TimeLimitSeconds > 0 ? s.TimeLeft / s.Config.TimeLimitSeconds : 0f;
+                _goalFill.color = s.TimeLeft <= 10f ? ColorUtil.Red : ColorUtil.Gold;
+                _goalText.text = Loc.T("level.boost") + "  x" + s.Config.ScoreMultiplier.ToString("0.#") + "   " + Loc.T("hud.time_left", UIKit.FormatTime(s.TimeLeft));
+                if (s.PiecesLeft < 0) _sub.text = Loc.T("level.boost_title", s.Config.LevelNumber);
+                return;
+            }
+            int target = Mathf.Max(1, s.Config.TargetScore);
+            _goalFill.fillAmount = Mathf.Clamp01(_shownScore / (float)target);
+            _goalFill.color = s.TargetHit ? ColorUtil.Gold : ColorUtil.Mint;
+            _goalText.text = Loc.Number(Mathf.Min(_shownScore, s.Score)) + " / " + Loc.Number(target);
+            if (s.TargetHit && !_goalPopped)
+            {
+                _goalPopped = true;
+                UIKit.Punch(_goal, 0.2f);
+            }
         }
 
         private void PlaceAtWorld(RectTransform rt, Vector3 world)

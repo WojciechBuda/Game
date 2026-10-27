@@ -40,8 +40,10 @@ namespace JellyDrop.Core.Economy
         public int PersonalBestBonus;
         public int SprintBonus;
         public int PremiumBonus;
+        /// <summary>Extra coins from city buildings (parks, tower, castle).</summary>
+        public int CityBonus;
         public bool IsPersonalBest;
-        public int Total => ScoreCoins + CollectedCoins + PersonalBestBonus + SprintBonus + PremiumBonus;
+        public int Total => ScoreCoins + CollectedCoins + PersonalBestBonus + SprintBonus + PremiumBonus + CityBonus;
         public List<MissionDef> MissionsCompleted = new List<MissionDef>();
     }
 
@@ -71,6 +73,10 @@ namespace JellyDrop.Core.Economy
         }
 
         public int Today => _clock.TodayIndex;
+        public IClock Clock => _clock;
+
+        /// <summary>Extra % on game coins, supplied by the city (parks, tower, castle). Null = none.</summary>
+        public Func<int> CoinBonusPercent;
 
         // ------------------------------------------------------------ setup
 
@@ -85,6 +91,12 @@ namespace JellyDrop.Core.Economy
                 // (they keep the old items, which are now shop items they own).
                 if (Data.equippedSkin == "skin_jelly") Data.equippedSkin = null;
                 if (Data.equippedTheme == "theme_candy") Data.equippedTheme = null;
+            }
+            if (Data.version < 3)
+            {
+                // The default look changed again, to the soft arcade style.
+                if (Data.equippedSkin == "skin_neon") Data.equippedSkin = null;
+                if (Data.equippedTheme == "theme_arcade") Data.equippedTheme = null;
             }
             Data.version = PlayerData.CurrentVersion;
 
@@ -105,6 +117,9 @@ namespace JellyDrop.Core.Economy
         }
 
         private void Notify() => Changed?.Invoke();
+
+        /// <summary>For other services that change <see cref="Data"/> (city, level progress) so the game saves.</summary>
+        public void NotifyChanged() => Notify();
 
         // ------------------------------------------------------------ coins
 
@@ -411,8 +426,13 @@ namespace JellyDrop.Core.Economy
                 CollectedCoins = result.CoinsCollected
             };
 
-            var best = BestFor(result.Mode, result.Difficulty);
-            if (result.Mode == GameMode.Sprint)
+            bool pathLevel = result.Mode == GameMode.Level || result.Mode == GameMode.Boost;
+            var best = pathLevel ? null : BestFor(result.Mode, result.Difficulty);
+            if (pathLevel)
+            {
+                // Levels track stars instead of personal bests (see ProgressService).
+            }
+            else if (result.Mode == GameMode.Sprint)
             {
                 if (result.Completed && (best.bestTime <= 0f || result.TimeSeconds < best.bestTime))
                 {
@@ -440,6 +460,13 @@ namespace JellyDrop.Core.Economy
             {
                 int baseTotal = rewards.ScoreCoins + rewards.CollectedCoins + rewards.PersonalBestBonus + rewards.SprintBonus;
                 rewards.PremiumBonus = (int)Math.Round(baseTotal * (Config.PremiumCoinMultiplier - 1f));
+            }
+
+            int cityPercent = CoinBonusPercent?.Invoke() ?? 0;
+            if (cityPercent > 0)
+            {
+                int baseTotal = rewards.ScoreCoins + rewards.CollectedCoins + rewards.PersonalBestBonus + rewards.SprintBonus;
+                rewards.CityBonus = (int)Math.Round(baseTotal * cityPercent / 100.0);
             }
 
             rewards.MissionsCompleted = UpdateMissions(result);

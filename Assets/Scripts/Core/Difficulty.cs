@@ -53,7 +53,7 @@ namespace JellyDrop.Core
                 case Difficulty.Easy:
                     return new DifficultySettings
                     {
-                        Level = d, Name = "EASY", Description = "Slow and relaxed. Extra previews, more power-ups.", Color = "#39FF88",
+                        Level = d, Name = "EASY", Description = "Slow and relaxed. Extra previews, more power-ups.", Color = "#2ED3A0",
                         StartLevel = 1, FirstLevelFallSeconds = 1.1f, FallSpeedupPerLevel = 0.9f,
                         LockDelaySeconds = 0.8f, MaxLockResets = 25, PreviewCount = 3, ShowGhost = true, HoldEnabled = true,
                         StartingGarbageRows = 0, GarbageRiseSeconds = 0f, MaxPowerUpsPerGame = 4,
@@ -62,7 +62,7 @@ namespace JellyDrop.Core
                 case Difficulty.Hard:
                     return new DifficultySettings
                     {
-                        Level = d, Name = "HARD", Description = "Fast start, junk rows, less time to slide. x1.5 coins.", Color = "#FF8A00",
+                        Level = d, Name = "HARD", Description = "Fast start, junk rows, less time to slide. x1.5 coins.", Color = "#FF9F43",
                         StartLevel = 5, FirstLevelFallSeconds = 0.9f, FallSpeedupPerLevel = 0.82f,
                         LockDelaySeconds = 0.4f, MaxLockResets = 10, PreviewCount = 2, ShowGhost = true, HoldEnabled = true,
                         StartingGarbageRows = 4, GarbageRiseSeconds = 0f, MaxPowerUpsPerGame = 1,
@@ -71,7 +71,7 @@ namespace JellyDrop.Core
                 case Difficulty.Insane:
                     return new DifficultySettings
                     {
-                        Level = d, Name = "INSANE", Description = "No ghost, one preview, rising junk, no power-ups. x2.5 coins!", Color = "#FF2E88",
+                        Level = d, Name = "INSANE", Description = "No ghost, one preview, rising junk, no power-ups. x2.5 coins!", Color = "#FF5A6E",
                         StartLevel = 10, FirstLevelFallSeconds = 0.9f, FallSpeedupPerLevel = 0.8f,
                         LockDelaySeconds = 0.3f, MaxLockResets = 6, PreviewCount = 1, ShowGhost = false, HoldEnabled = true,
                         StartingGarbageRows = 6, GarbageRiseSeconds = 12f, MaxPowerUpsPerGame = 0,
@@ -80,7 +80,7 @@ namespace JellyDrop.Core
                 default:
                     return new DifficultySettings
                     {
-                        Level = Difficulty.Normal, Name = "NORMAL", Description = "The classic experience.", Color = "#00E5FF",
+                        Level = Difficulty.Normal, Name = "NORMAL", Description = "The classic experience.", Color = "#3FB6FF",
                         StartLevel = 1, FirstLevelFallSeconds = 0.9f, FallSpeedupPerLevel = 0.85f,
                         LockDelaySeconds = 0.5f, MaxLockResets = 15, PreviewCount = 3, ShowGhost = true, HoldEnabled = true,
                         StartingGarbageRows = 0, GarbageRiseSeconds = 0f, MaxPowerUpsPerGame = 2,

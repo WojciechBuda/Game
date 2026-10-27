@@ -28,8 +28,8 @@ namespace JellyDrop.Tests
         {
             var e = NewEconomy();
             Assert.AreEqual(100, e.Coins);
-            Assert.AreEqual("skin_neon", e.Data.equippedSkin);
-            Assert.AreEqual("theme_arcade", e.Data.equippedTheme);
+            Assert.AreEqual("skin_soft", e.Data.equippedSkin);
+            Assert.AreEqual("theme_daydream", e.Data.equippedTheme);
             Assert.AreEqual("avatar_bloop", e.Data.equippedAvatar);
             Assert.AreEqual(1, e.PowerUpCount(PowerUpType.Bomb));
             Assert.AreEqual(3, e.Data.missions.Count);

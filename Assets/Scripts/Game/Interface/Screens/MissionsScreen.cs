@@ -16,7 +16,7 @@ namespace JellyDrop.Interface
         {
             var back = UIKit.IconButton(Root, SpriteFactory.HomeIcon(), ColorUtil.Purple, App.GoHome, 120);
             back.GetComponent<RectTransform>().At(UIKit.TopLeft, new Vector2(84, -84), new Vector2(120, 120));
-            var title = UIKit.Text(Root, Loc.T("home.missions"), 86, Color.white).Fit(40);
+            var title = UIKit.Text(Root, Loc.T("home.missions"), 86, ColorUtil.Purple).Fit(40);
             title.rectTransform.At(UIKit.Top, new Vector2(0, -84), new Vector2(600, 120));
             _coins = UIKit.CurrencyPill(Root, SpriteFactory.Coin(), ColorUtil.Ink, out var pill, 240);
             pill.At(UIKit.TopRight, new Vector2(-140, -84), pill.sizeDelta);
@@ -41,7 +41,7 @@ namespace JellyDrop.Interface
             {
                 bool claimed = d < today || (d == today && !e.CanClaimStreak);
                 bool isToday = d == today && e.CanClaimStreak;
-                var dot = UIKit.Image(gift, SpriteFactory.Circle(), isToday ? ColorUtil.Yellow : claimed ? ColorUtil.Mint : new Color(1f, 1f, 1f, 0.08f));
+                var dot = UIKit.Image(gift, SpriteFactory.Circle(), isToday ? ColorUtil.Yellow : claimed ? ColorUtil.Mint : ColorUtil.PanelLight);
                 dot.rectTransform.At(new Vector2(0f, 0f), new Vector2(80 + (d - 1) * 92, 80), new Vector2(80, 80));
                 UIKit.Text(dot.transform, d.ToString(), 36, claimed || isToday ? ColorUtil.Night : ColorUtil.Ink, TextAnchor.MiddleCenter, false).rectTransform.Fill();
             }
@@ -51,7 +51,7 @@ namespace JellyDrop.Interface
             claim.Interactable = e.CanClaimStreak;
 
             // --- Missions
-            var header = UIKit.Text(_list, Loc.T("missions.today"), 50, Color.white).Fit(28);
+            var header = UIKit.Text(_list, Loc.T("missions.today"), 50, ColorUtil.Ink).Fit(28);
             header.rectTransform.At(UIKit.Top, new Vector2(0, y - 50), new Vector2(900, 80));
             y -= 110;
 

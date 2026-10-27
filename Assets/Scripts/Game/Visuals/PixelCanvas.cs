@@ -179,40 +179,40 @@ namespace JellyDrop.Visuals
             return new Color(r / 255f, g / 255f, b / 255f, alpha);
         }
 
-        // ---- Neon arcade palette: glowing colours on deep navy.
-        public static readonly Color Pink = Hex("#FF2E88");
-        public static readonly Color Purple = Hex("#B04DFF");
-        /// <summary>Electric cyan.</summary>
-        public static readonly Color Blue = Hex("#00E5FF");
-        /// <summary>Neon green.</summary>
-        public static readonly Color Mint = Hex("#39FF88");
-        public static readonly Color Lime = Hex("#C6FF00");
-        public static readonly Color Yellow = Hex("#FFE600");
-        public static readonly Color Orange = Hex("#FF8A00");
-        public static readonly Color Red = Hex("#FF3B5C");
-        public static readonly Color Gold = Hex("#FFD000");
+        // ---- Soft arcade palette: bright candy accents on airy, light surfaces.
+        public static readonly Color Pink = Hex("#FF6F91");
+        public static readonly Color Purple = Hex("#8E7CFF");
+        public static readonly Color Blue = Hex("#3FB6FF");
+        public static readonly Color Mint = Hex("#2ED3A0");
+        public static readonly Color Lime = Hex("#9BDB4D");
+        public static readonly Color Yellow = Hex("#FFC93C");
+        public static readonly Color Orange = Hex("#FF9F43");
+        public static readonly Color Red = Hex("#FF5A6E");
+        public static readonly Color Gold = Hex("#FFC93C");
 
-        /// <summary>Deepest background navy.</summary>
-        public static readonly Color Night = Hex("#070A1F");
+        /// <summary>Deep ink navy: dimmed backdrops and dark text on bright chips.</summary>
+        public static readonly Color Night = Hex("#2B2D5C");
         /// <summary>Card / popup background.</summary>
-        public static readonly Color Panel = Hex("#141A44");
-        /// <summary>Slightly lighter card used inside panels (shop items, rows).</summary>
-        public static readonly Color PanelLight = Hex("#1E2660");
-        /// <summary>Body text on dark panels.</summary>
-        public static readonly Color Ink = Hex("#DDE3FF");
-        /// <summary>Secondary / hint text on dark panels.</summary>
-        public static readonly Color InkDim = Hex("#8E98D8");
+        public static readonly Color Panel = Hex("#FFFFFF");
+        /// <summary>Tinted card used inside panels (shop items, rows).</summary>
+        public static readonly Color PanelLight = Hex("#F3F5FF");
+        /// <summary>Body text.</summary>
+        public static readonly Color Ink = Hex("#2B2D5C");
+        /// <summary>Secondary / hint text.</summary>
+        public static readonly Color InkDim = Hex("#7C82B3");
         /// <summary>Dark colour for faces and details drawn inside sprites (eyes, clock hands).</summary>
         public static readonly Color FaceInk = Hex("#2A1440");
         /// <summary>Junk rows from harder difficulties.</summary>
-        public static readonly Color Junk = Hex("#4A5080");
+        public static readonly Color Junk = Hex("#B8BDD6");
+        /// <summary>Grass for the city.</summary>
+        public static readonly Color Grass = Hex("#9BE29A");
 
-        /// <summary>Kept for older code: popups and cards now use the dark panel colour.</summary>
+        /// <summary>Kept for older code: popups and cards use the panel colour.</summary>
         public static readonly Color Cream = Panel;
 
         public static readonly Color[] Rainbow =
         {
-            Hex("#FF3B5C"), Hex("#FF8A00"), Hex("#FFE600"), Hex("#39FF88"), Hex("#00E5FF"), Hex("#B04DFF"), Hex("#FF2E88")
+            Hex("#FF5A6E"), Hex("#FF9F43"), Hex("#FFC93C"), Hex("#2ED3A0"), Hex("#3FB6FF"), Hex("#8E7CFF"), Hex("#FF6F91")
         };
     }
 }

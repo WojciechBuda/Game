@@ -63,7 +63,7 @@ namespace JellyDrop.Gameplay
             well.drawMode = SpriteDrawMode.Sliced;
             well.size = new Vector2(width + 0.15f, visibleHeight + 0.15f);
             well.transform.localPosition = center;
-            well.color = PixelCanvas.WithAlpha(ColorUtil.Night, 0.82f);
+            well.color = new Color(1f, 1f, 1f, 0.72f);
 
             _frame = NewRenderer("Frame", SpriteFactory.RoundedRing(), OrderBackground + 4);
             _frame.drawMode = SpriteDrawMode.Sliced;
@@ -134,8 +134,8 @@ namespace JellyDrop.Gameplay
             _accent = accent;
             if (_frame == null) return;
             _frame.color = accent;
-            _frameGlow.color = PixelCanvas.WithAlpha(accent, 0.55f);
-            foreach (var d in _dots) d.color = PixelCanvas.WithAlpha(Color.Lerp(accent, Color.white, 0.4f), 0.16f);
+            _frameGlow.color = PixelCanvas.WithAlpha(accent, 0.3f);
+            foreach (var d in _dots) d.color = PixelCanvas.WithAlpha(ColorUtil.Ink, 0.1f);
         }
 
         public Color ColorOf(PieceType type)
@@ -236,9 +236,9 @@ namespace JellyDrop.Gameplay
             float pulse = 0.5f + 0.5f * Mathf.Sin(t * 6f);
             _dangerGlow.color = new Color(1f, 0.25f, 0.35f, danger * (0.15f + 0.15f * pulse));
 
-            _frameGlow.color = PixelCanvas.WithAlpha(_accent, 0.45f + 0.12f * Mathf.Sin(t * 2.5f));
+            _frameGlow.color = PixelCanvas.WithAlpha(_accent, 0.22f + 0.08f * Mathf.Sin(t * 2.5f));
             _flash = Mathf.Max(0f, _flash - deltaTime * 4f);
-            _flashOverlay.color = new Color(1f, 1f, 1f, _flash * 0.55f);
+            _flashOverlay.color = PixelCanvas.WithAlpha(ColorUtil.Yellow, _flash * 0.35f);
         }
 
         private void RenderActive(GameSession session, float deltaTime, float t)

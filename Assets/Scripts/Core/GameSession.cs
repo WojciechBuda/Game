@@ -63,6 +63,9 @@ namespace JellyDrop.Core
         /// <summary>Coins collected during play (coin cells, golden clears, lucky bonuses).</summary>
         public int CoinsCollected;
         public Difficulty Difficulty = Difficulty.Normal;
+        /// <summary>Level number on the path (Level and Boost modes), otherwise 0.</summary>
+        public int LevelNumber;
+        public int TargetScore;
         /// <summary>True when a Sprint was finished (not topped out).</summary>
         public bool Completed;
         public SessionStats Stats;
@@ -88,6 +91,8 @@ namespace JellyDrop.Core
         public event Action<GameResult> GameEnded;
         /// <summary>A junk row pushed up from the bottom (Insane difficulty).</summary>
         public event Action GarbageRose;
+        /// <summary>The level's target score was reached (fires once).</summary>
+        public event Action TargetReached;
 
         private readonly GameConfig _config;
         private readonly IRandom _rng;
@@ -134,6 +139,13 @@ namespace JellyDrop.Core
         public SessionStats Stats { get; }
         public GameConfig Config => _config;
         public Difficulty Difficulty => _config.Difficulty;
+        public bool TargetHit { get; private set; }
+
+        /// <summary>Pieces still allowed in a level, or -1 when there is no limit.</summary>
+        public int PiecesLeft => _config.PieceLimit > 0 ? Math.Max(0, _config.PieceLimit - Stats.PiecesPlaced) : -1;
+
+        /// <summary>Seconds left in a timed level, or -1 when there is no timer.</summary>
+        public float TimeLeft => _config.TimeLimitSeconds > 0f ? Math.Max(0f, _config.TimeLimitSeconds - ElapsedSeconds) : -1f;
 
         /// <summary>Upcoming pieces (excluding the current one).</summary>
         public IReadOnlyList<QueuedPiece> Preview => _generator.Queue;
@@ -157,6 +169,12 @@ namespace JellyDrop.Core
             if (IsOver || Current == null) return;
 
             ElapsedSeconds += deltaTime;
+            if (_config.TimeLimitSeconds > 0f && ElapsedSeconds >= _config.TimeLimitSeconds)
+            {
+                ElapsedSeconds = _config.TimeLimitSeconds;
+                EndGame(true);
+                return;
+            }
             if (_slowMoRemaining > 0f) _slowMoRemaining = Math.Max(0f, _slowMoRemaining - deltaTime);
 
             if (_config.GarbageRiseSeconds > 0f && _slowMoRemaining <= 0f)
@@ -198,6 +216,14 @@ namespace JellyDrop.Core
             {
                 _lockTimer = 0f;
             }
+            CheckTarget();
+        }
+
+        private void CheckTarget()
+        {
+            if (TargetHit || _config.TargetScore <= 0 || Score < _config.TargetScore) return;
+            TargetHit = true;
+            TargetReached?.Invoke();
         }
 
         // ---------------------------------------------------------------- input
@@ -470,6 +496,13 @@ namespace JellyDrop.Core
 
             ResolveLineClears(countsForBackToBack: piece.Type != PieceType.Bomb);
             if (IsOver) return;
+            CheckTarget();
+
+            if (_config.PieceLimit > 0 && Stats.PiecesPlaced >= _config.PieceLimit)
+            {
+                EndGame(true);
+                return;
+            }
 
             HoldUsedThisTurn = false;
             SpawnNext();
@@ -601,16 +634,23 @@ namespace JellyDrop.Core
             if (Mode == GameMode.Sprint && Lines >= _config.SprintLines) EndGame(true);
         }
 
-        private void EndGame(bool completed)
+        private void EndGame(bool completed, bool abandoned = false)
         {
             if (IsOver) return;
             IsOver = true;
+            if (!abandoned)
+            {
+                // A Boost level always pays out what was scored; a target level is won by reaching the target,
+                // even if the stack tops out afterwards.
+                if (Mode == GameMode.Boost) completed = true;
+                else if (_config.TargetScore > 0) completed = Score >= _config.TargetScore;
+            }
             Completed = completed;
             GameEnded?.Invoke(GetResult());
         }
 
-        /// <summary>Ends the game early (e.g. player quits from pause).</summary>
-        public void Abandon() => EndGame(false);
+        /// <summary>Ends the game early (e.g. player quits from pause). Never counts as a win.</summary>
+        public void Abandon() => EndGame(false, abandoned: true);
 
         public GameResult GetResult() => new GameResult
         {
@@ -621,6 +661,8 @@ namespace JellyDrop.Core
             TimeSeconds = ElapsedSeconds,
             CoinsCollected = CoinsCollected,
             Difficulty = _config.Difficulty,
+            LevelNumber = _config.LevelNumber,
+            TargetScore = _config.TargetScore,
             Completed = Completed,
             Stats = Stats
         };

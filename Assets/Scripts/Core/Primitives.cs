@@ -35,7 +35,11 @@ namespace JellyDrop.Core
     {
         Classic = 0,
         Sprint = 1,
-        Daily = 2
+        Daily = 2,
+        /// <summary>A numbered level on the path: reach the target score within a piece limit.</summary>
+        Level = 3,
+        /// <summary>Every 10th level: score as much as possible before the timer runs out.</summary>
+        Boost = 4
     }
 
     public enum PowerUpType
@@ -81,17 +85,22 @@ namespace JellyDrop.Core
     {
         /// <summary>Days since 1970-01-01 in the player's local time zone.</summary>
         int TodayIndex { get; }
+
+        /// <summary>Seconds since 1970-01-01 UTC (for production timers in the city).</summary>
+        long UnixSeconds { get; }
     }
 
     public sealed class SystemClock : IClock
     {
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1);
         public int TodayIndex => (int)(DateTime.Now.Date - Epoch).TotalDays;
+        public long UnixSeconds => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
     }
 
     public sealed class FixedClock : IClock
     {
         public int TodayIndex { get; set; }
-        public FixedClock(int today) { TodayIndex = today; }
+        public long UnixSeconds { get; set; }
+        public FixedClock(int today) { TodayIndex = today; UnixSeconds = today * 86400L; }
     }
 }

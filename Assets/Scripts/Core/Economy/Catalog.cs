@@ -92,7 +92,9 @@ namespace JellyDrop.Core.Economy
 
             // Skins -----------------------------------------------------------
             // The first free item of each category is the default for new players.
-            c.Add(Skin("skin_neon", "Neon Arcade", Rarity.Common, 0, 0, BlockStyle.Neon,
+            c.Add(Skin("skin_soft", "Soft Arcade", Rarity.Common, 0, 0, BlockStyle.Jelly,
+                "#5CD3F5", "#FFD25A", "#B48CFF", "#6FE0A0", "#FF7A8A", "#6E9BFF", "#FFA65C"));
+            c.Add(Skin("skin_neon", "Neon Arcade", Rarity.Common, 250, 0, BlockStyle.Neon,
                 "#00F0FF", "#FFF200", "#FF00F5", "#39FF14", "#FF2E63", "#4D7CFF", "#FF8C00"));
             c.Add(Skin("skin_jelly", "Jelly Classic", Rarity.Common, 250, 0, BlockStyle.Jelly,
                 "#3FD0FF", "#FFD23F", "#C86BFA", "#5BE37D", "#FF5C7A", "#4D7CFF", "#FF9F43"));
@@ -110,7 +112,8 @@ namespace JellyDrop.Core.Economy
                 "#FFE27A", "#FFD447", "#F5C542", "#FFE9A3", "#F2B632", "#FFDB6E", "#E8A93A")));
 
             // Themes (background + music) ----------------------------------------
-            c.Add(Theme("theme_arcade", "Neon Arcade", Rarity.Common, 0, "#0B1033", "#2A0B4F", "#FF2E88", MusicStyle.Arcade, 132, grid: true));
+            c.Add(Theme("theme_daydream", "Daydream", Rarity.Common, 0, "#EAF0FF", "#FDE9F3", "#FF6F91", MusicStyle.Bubbly, 124));
+            c.Add(Theme("theme_arcade", "Neon Arcade", Rarity.Common, 400, "#0B1033", "#2A0B4F", "#FF2E88", MusicStyle.Arcade, 132, grid: true));
             c.Add(Theme("theme_cyber", "Cyber Grid", Rarity.Rare, 1200, "#001426", "#003A4D", "#00E5FF", MusicStyle.Space, 140, grid: true));
             c.Add(Theme("theme_candy", "Candy Land", Rarity.Common, 500, "#FFB6D9", "#B38CFF", "#FF5FA2", MusicStyle.Bubbly, 128));
             c.Add(Theme("theme_mint", "Mint Meadow", Rarity.Common, 500, "#B5FFE1", "#5CC8FF", "#2ED8A3", MusicStyle.Mellow, 112));

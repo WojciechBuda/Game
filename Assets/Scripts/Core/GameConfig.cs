@@ -71,6 +71,12 @@ namespace JellyDrop.Core
         public float ScoreMultiplier = 1f;
         public float CoinMultiplier = 1f;
 
+        // Level path settings (see Levels/LevelPath.cs). 0 = no limit / no target.
+        public int LevelNumber;
+        public int PieceLimit;
+        public float TimeLimitSeconds;
+        public int TargetScore;
+
         /// <summary>Deep copy so a difficulty can tweak values without touching the base config.</summary>
         public GameConfig Clone()
         {

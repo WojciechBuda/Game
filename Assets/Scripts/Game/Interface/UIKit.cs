@@ -114,7 +114,8 @@ namespace JellyDrop.Interface
             bool raycast = true, string name = "Card", float glow = 0.35f)
         {
             var card = Panel(parent, fill ?? ColorUtil.Panel, roundness, raycast, name);
-            var halo = Image(card.transform, SpriteFactory.Glow(), PixelCanvas.WithAlpha(accent, glow), false, "Glow");
+            // Soft drop shadow outside the edge (the glow sprite is hollow), then a crisp accent outline.
+            var halo = Image(card.transform, SpriteFactory.Glow(), PixelCanvas.WithAlpha(ColorUtil.Night, Mathf.Clamp01(glow) * 0.35f), false, "Shadow");
             halo.type = UnityEngine.UI.Image.Type.Sliced;
             halo.pixelsPerUnitMultiplier = roundness;
             halo.preserveAspect = false;
@@ -145,12 +146,12 @@ namespace JellyDrop.Interface
             t.supportRichText = true;
             if (outline)
             {
-                // Neon glow: a dark shadow for contrast, then a soft halo in the text's own colour.
+                // Arcade sticker look: a white border, then a soft shadow underneath.
                 var s = rt.gameObject.AddComponent<Shadow>();
-                s.effectColor = PixelCanvas.WithAlpha(ColorUtil.Night, 0.7f);
-                s.effectDistance = new Vector2(0f, -5f);
+                s.effectColor = PixelCanvas.WithAlpha(ColorUtil.Night, 0.22f);
+                s.effectDistance = new Vector2(0f, -6f);
                 var o = rt.gameObject.AddComponent<Outline>();
-                o.effectColor = PixelCanvas.WithAlpha(color, 0.35f);
+                o.effectColor = new Color(1f, 1f, 1f, 0.9f);
                 o.effectDistance = new Vector2(3f, 3f);
             }
             return t;
@@ -205,7 +206,7 @@ namespace JellyDrop.Interface
         /// <summary>Horizontal progress bar; returns the fill image (set fillAmount).</summary>
         public static Image ProgressBar(Transform parent, Color fill, Vector2 size)
         {
-            var bg = Panel(parent, new Color(1f, 1f, 1f, 0.08f), 2.5f, false, "Bar");
+            var bg = Panel(parent, PixelCanvas.WithAlpha(ColorUtil.Night, 0.1f), 2.5f, false, "Bar");
             bg.rectTransform.sizeDelta = size;
             var f = Panel(bg.transform, fill, 2.5f, false, "Fill");
             f.rectTransform.Fill(4, 4, 4, 4);
@@ -284,7 +285,7 @@ namespace JellyDrop.Interface
         {
             var rt = (RectTransform)transform;
 
-            _glow = UIKit.Image(rt, SpriteFactory.Glow(), color, false, "Glow");
+            _glow = UIKit.Image(rt, SpriteFactory.Glow(), color, false, "Shadow");
             _glow.type = Image.Type.Sliced;
             _glow.pixelsPerUnitMultiplier = 1.4f;
             _glow.preserveAspect = false;
@@ -338,21 +339,23 @@ namespace JellyDrop.Interface
 
         private void ApplyColors()
         {
-            var c = _interactable ? _color : Color.Lerp(_color, ColorUtil.InkDim, 0.75f);
-            float alpha = _interactable ? 1f : 0.55f;
-            Face.color = Color.Lerp(ColorUtil.Panel, c, 0.32f);
-            Base.color = PixelCanvas.Darken(c, 0.35f);
-            _ring.color = PixelCanvas.WithAlpha(PixelCanvas.Lighten(c, 0.15f), alpha);
-            _glow.color = PixelCanvas.WithAlpha(c, _interactable ? 0.45f : 0f);
-            _shine.color = new Color(1f, 1f, 1f, _interactable ? 0.08f : 0.03f);
-            if (Icon != null) Icon.color = new Color(1f, 1f, 1f, alpha);
+            // Chunky arcade key: solid candy face, darker base for depth, soft shadow, light inner rim.
+            var c = _interactable ? _color : Color.Lerp(_color, Hex("#C9CDE6"), 0.8f);
+            Face.color = c;
+            Base.color = PixelCanvas.Darken(c, 0.22f);
+            _ring.color = new Color(1f, 1f, 1f, _interactable ? 0.45f : 0.25f);
+            _glow.color = PixelCanvas.WithAlpha(ColorUtil.Night, _interactable ? 0.16f : 0.06f);
+            _shine.color = new Color(1f, 1f, 1f, _interactable ? 0.22f : 0.1f);
+            if (Icon != null) Icon.color = new Color(1f, 1f, 1f, _interactable ? 1f : 0.7f);
             if (Label != null)
             {
-                Label.color = new Color(1f, 1f, 1f, _interactable ? 1f : 0.6f);
-                var halo = Label.GetComponent<Outline>();
-                if (halo != null) halo.effectColor = PixelCanvas.WithAlpha(c, _interactable ? 0.55f : 0.15f);
+                Label.color = new Color(1f, 1f, 1f, _interactable ? 1f : 0.85f);
+                var outline = Label.GetComponent<Outline>();
+                if (outline != null) outline.effectColor = PixelCanvas.WithAlpha(PixelCanvas.Darken(c, 0.3f), _interactable ? 0.35f : 0.15f);
             }
         }
+
+        private static Color Hex(string hex) => ColorUtil.Hex(hex);
 
         public bool Interactable
         {

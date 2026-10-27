@@ -32,10 +32,20 @@ namespace JellyDrop.Core.Economy
     }
 
     [Serializable]
+    public sealed class PlotData
+    {
+        /// <summary>Building id from CityCatalog, or empty for a free plot.</summary>
+        public string building = "";
+        public int level;
+        /// <summary>Unix seconds of the last collection; production accrues from here.</summary>
+        public long lastCollect;
+    }
+
+    [Serializable]
     public sealed class PlayerData
     {
         public int version = PlayerData.CurrentVersion;
-        public const int CurrentVersion = 2;
+        public const int CurrentVersion = 3;
 
         public int coins;
         public int shards;
@@ -69,6 +79,15 @@ namespace JellyDrop.Core.Economy
         public int gamesSinceInterstitial;
         public int totalGames;
         public long totalCoinsEarned;
+
+        // Level path: stars per level (index 0 = level 1). Count = levels cleared at least once.
+        public List<int> levelStars = new List<int>();
+
+        // City
+        public int wood;
+        public int brick;
+        public int glass;
+        public List<PlotData> plots = new List<PlotData>();
 
         /// <summary>(int)Difficulty last picked on the home screen.</summary>
         public int selectedDifficulty = 1;

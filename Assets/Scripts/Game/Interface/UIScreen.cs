@@ -69,7 +69,7 @@ namespace JellyDrop.Interface
         protected RectTransform BuildModalCard(Vector2 size, Color cardColor, Color? accent = null)
         {
             IsModal = true;
-            var dim = UIKit.Image(Root, null, PixelCanvas.WithAlpha(ColorUtil.Night, 0.78f), true, "Dim");
+            var dim = UIKit.Image(Root, null, PixelCanvas.WithAlpha(ColorUtil.Night, 0.45f), true, "Dim");
             dim.rectTransform.Fill();
             var card = UIKit.NeonCard(Root, accent ?? ColorUtil.Pink, cardColor, 0.8f, true, "Card");
             card.rectTransform.At(UIKit.Center, Vector2.zero, size);

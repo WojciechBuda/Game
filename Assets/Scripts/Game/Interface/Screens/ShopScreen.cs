@@ -28,7 +28,7 @@ namespace JellyDrop.Interface
             var back = UIKit.IconButton(Root, SpriteFactory.HomeIcon(), ColorUtil.Purple, App.GoHome, 120);
             back.GetComponent<RectTransform>().At(UIKit.TopLeft, new Vector2(84, -84), new Vector2(120, 120));
 
-            var title = UIKit.Text(Root, Loc.T("home.shop"), 90, Color.white).Fit(40);
+            var title = UIKit.Text(Root, Loc.T("home.shop"), 90, ColorUtil.Mint).Fit(40);
             title.rectTransform.At(UIKit.Top, new Vector2(-40, -84), new Vector2(400, 120));
 
             _coins = UIKit.CurrencyPill(Root, SpriteFactory.Coin(), ColorUtil.Ink, out var coinPill, 260);
@@ -46,7 +46,7 @@ namespace JellyDrop.Interface
             }
 
             // Scroll area
-            var viewport = UIKit.Panel(Root, PixelCanvas.WithAlpha(ColorUtil.Night, 0.45f), 0.8f, true, "Viewport");
+            var viewport = UIKit.Panel(Root, new Color(1f, 1f, 1f, 0.45f), 0.8f, true, "Viewport");
             viewport.rectTransform.Fill(30, 40, 30, 350);
             viewport.gameObject.AddComponent<RectMask2D>();
 

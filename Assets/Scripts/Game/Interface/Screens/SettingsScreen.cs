@@ -18,7 +18,7 @@ namespace JellyDrop.Interface
         {
             var back = UIKit.IconButton(Root, SpriteFactory.HomeIcon(), ColorUtil.Purple, App.GoHome, 120);
             back.GetComponent<RectTransform>().At(UIKit.TopLeft, new Vector2(84, -84), new Vector2(120, 120));
-            var title = UIKit.Text(Root, Loc.T("settings.title"), 86, Color.white).Fit(40);
+            var title = UIKit.Text(Root, Loc.T("settings.title"), 86, ColorUtil.Purple).Fit(40);
             title.rectTransform.At(UIKit.Top, new Vector2(0, -84), new Vector2(700, 120));
 
             var card = UIKit.NeonCard(Root, ColorUtil.Blue, ColorUtil.Panel, 0.8f, true, "Card");

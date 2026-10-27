@@ -1,10 +1,12 @@
 # Jelly Drop
 
-A neon-arcade falling-block puzzle game for Android and iOS, built with Unity (C#).
+A soft, bright arcade falling-block puzzle game for Android and iOS, built with Unity (C#). You play arcade levels to earn coins and building supplies, then grow your own city with them.
 
 The game includes:
 - **Gameplay:** the full falling-block game with guideline rotation (SRS wall kicks), 7-bag randomizer, hold, ghost piece, combos and back-to-back bonuses.
-- **Modes:** Classic, Sprint 40 and a Daily Challenge (the same pieces for everyone each day, always on Normal).
+- **Level path:** a winding map of levels. Each level asks for an exact target score within a limited number of pieces, and gives 1–3 stars. Every 10th level is a **Boost level**: 90 seconds, points ×2, more lucky pieces, and score as much as you can for big rewards (lots of coins plus wood, bricks and glass).
+- **City builder:** coins buy supplies at the market (wood, bricks, glass). Supplies plus coins build and upgrade 10 kinds of buildings on up to 12 plots. Houses, bakeries and windmills make coins over time; the sawmill, brickworks and glassworks make supplies; parks, the tower and the castle add a % bonus to coins from every game. Population raises the city level, which opens new plots and buildings. Buildings store up to 8 hours of production, so players come back to collect.
+- **Arcade modes:** Classic (endless, with difficulty), Sprint 40 and a Daily Challenge (the same pieces for everyone each day, always on Normal).
 - **Difficulty levels:** Easy, Normal, Hard and Insane, picked on the home screen. Best scores are kept separately for each.
 - **Lucky shots:** golden pieces (×5 coins), coin blocks, a random Rainbow bonus, a rare Jackpot, and a free lucky wheel after every game.
 - **Economy:** coins and skin shards, a shop (block skins, themes with music, avatars, power-ups), daily missions, and a 7-day login streak.
@@ -14,7 +16,7 @@ The game includes:
   - Rewarded video: +100 coins, capped at 2 per day.
   - Premium: a one-time purchase that removes ads and adds +50% coins plus exclusive items.
 - **Languages:** English, Polish, German, Spanish, French and Portuguese. The game starts in the phone's language and can be switched in Settings.
-- **Look:** neon arcade style: deep navy backgrounds, glowing pink/cyan/lime borders, a synthwave grid and a synthwave soundtrack. The older candy look is still in the shop as the Candy Land theme and Jelly Classic skin.
+- **Look:** soft modern arcade: light pastel backgrounds, white cards with soft shadows, chunky rounded buttons and bright candy colours (the Daydream theme and Soft Arcade skin). The neon and candy looks are still in the shop as unlockable themes and skins.
 - **Art and audio:** all graphics, music and sound effects are generated in code at startup, so there are no asset files to manage.
 
 Previews of the generated art are in `Docs/`.
@@ -105,6 +107,9 @@ Assets/
                  No Unity references, fully unit-tested.
       Economy/   Catalog (shop items & prices), PlayerData (save), EconomyService,
                  Missions, LuckyWheel
+      Levels/    LevelPath (targets, piece limits, boost levels, rewards), ProgressService
+      City/      CityCatalog (buildings, costs, production), CityService
+      Online/    IOnlineService + OfflineService (ready for leaderboards and challenges)
     Game/
       App.cs     Composition root and main flows (start game, game over, ads, purchases)
       Gameplay/  GameController (game feel), BoardView, effects, mascot, background
@@ -134,6 +139,8 @@ Packages/, ProjectSettings/  Unity project files (Unity 6000.0.58f2)
 | Missions | `Core/Economy/Missions.cs` |
 | All game text and translations | `Core/Localization/Strings.cs` |
 | Wheel slices and odds | `Core/Economy/LuckyWheel.cs` |
+| Level targets, piece limits, boost every 10 levels, level rewards | `Core/Levels/LevelPath.cs` |
+| Buildings, costs, production, supply prices, city levels | `Core/City/CityCatalog.cs` |
 
 All of these are plain classes, so you can later override them from Unity Remote Config or Firebase Remote Config without shipping an update.
 
@@ -183,7 +190,12 @@ Restore Purchases is in **Settings** and on the **Premium** shop tab. Apple requ
 ## 7. Nice next steps
 
 - **Font:** drop a rounded font into `Assets/Resources/Fonts/MainFont.ttf` and it is picked up automatically. Fredoka and Baloo 2 from Google Fonts are free (OFL licence). Without it, Unity's built-in font is used.
-- **Online features:** Unity Cloud Save or Firebase for cross-device progress, and leaderboards for the Daily Challenge.
+- **Multiplayer and challenges** (the groundwork is in place):
+  1. Pick a backend: Unity Gaming Services (Authentication, Cloud Save, Leaderboards, Cloud Code), PlayFab, Nakama, or your own ASP.NET Core API.
+  2. Implement `IOnlineService` (`Core/Online/IOnlineService.cs`) and set it in `App.Awake` instead of `OfflineService`. Scores are already submitted after every won level.
+  3. **Async challenges:** every level has a fixed seed (`LevelDef.Seed`), so two players get exactly the same pieces. Player A plays a level and sends a challenge with a coin stake; player B plays the same level; the higher score wins. The `Challenge` model and the send/answer calls are already defined.
+  4. Later: real-time duels (both boards side by side, cleared lines send junk rows to the opponent; the game already supports junk rows), weekly leaderboards per level, and friends visiting each other's cities.
+  5. Validate scores on the server (replay the inputs with the same seed, using the pure C# `GameSession`) to stop cheating.
 - **Analytics:** track retention, ad views and the coin economy.
 - **More languages:** add a value to the `Language` enum and one column to every row in `Core/Localization/Strings.cs`. The tests fail if any translation is missing or has different placeholders.
 - **Haptics:** a native plugin for short taps. Built-in vibration is only used for big moments.

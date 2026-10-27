@@ -143,6 +143,8 @@ namespace JellyDrop.Core
                 "Transforme la pièce actuelle en long bâton", "Transforma a peça atual em um palito longo");
 
             // ---------------------------------------------------------------- shop items (character names stay as in the catalog)
+            Add("item.skin_soft", "Soft Arcade", "Miękki automat", "Soft-Arcade", "Arcade suave", "Arcade douce", "Fliperama suave");
+            Add("item.theme_daydream", "Daydream", "Marzenie", "Tagtraum", "Ensueño", "Rêverie", "Devaneio");
             Add("item.skin_neon", "Neon Arcade", "Neonowy automat", "Neon-Arcade", "Arcade neón", "Arcade néon", "Fliperama neon");
             Add("item.skin_jelly", "Jelly Classic", "Klasyczne żelki", "Gelee Klassik", "Gelatina clásica", "Gelée classique", "Geleia clássica");
             Add("item.skin_gummy", "Gummy Buddies", "Żelkowi kumple", "Gummi-Freunde", "Amigos de goma", "Copains gommeux", "Amigos de goma");
@@ -309,6 +311,104 @@ namespace JellyDrop.Core
             Add("settings.how", "How to play", "Jak grać", "So wird gespielt", "Cómo jugar", "Comment jouer", "Como jogar");
             Add("settings.privacy_choices", "Privacy choices", "Ustawienia prywatności", "Datenschutz-Optionen", "Opciones de privacidad", "Choix de confidentialité", "Opções de privacidade");
             Add("settings.privacy_policy", "Privacy policy", "Polityka prywatności", "Datenschutzerklärung", "Política de privacidad", "Politique de confidentialité", "Política de privacidade");
+
+            // ---------------------------------------------------------------- hub
+            Add("home.levels", "LEVELS", "POZIOMY", "LEVELS", "NIVELES", "NIVEAUX", "NÍVEIS");
+            Add("home.play_level", "PLAY LEVEL {0}", "GRAJ: POZIOM {0}", "LEVEL {0} SPIELEN", "JUGAR NIVEL {0}", "JOUER NIVEAU {0}", "JOGAR NÍVEL {0}");
+            Add("home.city", "CITY", "MIASTO", "STADT", "CIUDAD", "VILLE", "CIDADE");
+            Same("home.arcade", "ARCADE");
+            Add("arcade.info", "Endless play. Coins from every game help your city grow.", "Gra bez końca. Monety z każdej gry pomagają rozwijać miasto.",
+                "Endlos spielen. Münzen aus jedem Spiel lassen deine Stadt wachsen.", "Juego sin fin. Las monedas de cada partida hacen crecer tu ciudad.",
+                "Jeu sans fin. Les pièces de chaque partie font grandir ta ville.", "Jogo sem fim. As moedas de cada partida fazem sua cidade crescer.");
+            Add("common.score", "SCORE", "WYNIK", "PUNKTE", "PUNTOS", "SCORE", "PONTOS");
+
+            // ---------------------------------------------------------------- level path
+            Add("level.title", "LEVEL {0}", "POZIOM {0}", "LEVEL {0}", "NIVEL {0}", "NIVEAU {0}", "NÍVEL {0}");
+            Add("level.goal", "Score {0} points", "Zdobądź {0} pkt", "Erziele {0} Punkte", "Consigue {0} puntos", "Marque {0} points", "Faça {0} pontos");
+            Add("level.pieces", "You have {0} pieces", "Masz klocków: {0}", "Du hast {0} Steine", "Tienes {0} piezas", "Tu as {0} pièces", "Você tem {0} peças");
+            Add("level.boost_title", "BOOST LEVEL {0}", "POZIOM BOOST {0}", "BOOST-LEVEL {0}", "NIVEL BOOST {0}", "NIVEAU BOOST {0}", "NÍVEL BOOST {0}");
+            Add("level.boost_info",
+                "{0} seconds. Points x2 and more golden pieces. Score as much as you can: big rewards for your city!",
+                "{0} sekund. Punkty x2 i więcej złotych klocków. Zdobądź jak najwięcej, by zgarnąć duże nagrody dla miasta!",
+                "{0} Sekunden. Punkte x2 und mehr goldene Steine. Hol so viel du kannst: große Belohnungen für deine Stadt!",
+                "{0} segundos. Puntos x2 y más piezas doradas. ¡Consigue todo lo que puedas: grandes premios para tu ciudad!",
+                "{0} secondes. Points x2 et plus de pièces dorées. Marque un maximum : grosses récompenses pour ta ville !",
+                "{0} segundos. Pontos x2 e mais peças douradas. Faça o máximo que puder: grandes prêmios para sua cidade!");
+            Same("level.boost", "BOOST");
+            Add("level.stars", "Stars", "Gwiazdki", "Sterne", "Estrellas", "Étoiles", "Estrelas");
+            Add("level.rewards", "Rewards", "Nagrody", "Belohnungen", "Premios", "Récompenses", "Prêmios");
+            Add("level.locked", "Finish level {0} first", "Najpierw ukończ poziom {0}", "Schaffe zuerst Level {0}", "Primero completa el nivel {0}",
+                "Termine d'abord le niveau {0}", "Conclua primeiro o nível {0}");
+            Add("level.complete", "LEVEL COMPLETE!", "POZIOM ZALICZONY!", "LEVEL GESCHAFFT!", "¡NIVEL COMPLETADO!", "NIVEAU RÉUSSI !", "NÍVEL CONCLUÍDO!");
+            Add("level.failed", "SO CLOSE!", "PRAWIE!", "KNAPP!", "¡CASI!", "PRESQUE !", "QUASE!");
+            Add("level.short", "{0} more points needed", "Zabrakło {0} pkt", "Es fehlten {0} Punkte", "Faltaron {0} puntos", "Il manquait {0} points", "Faltaram {0} pontos");
+            Add("level.boost_done", "BOOST OVER!", "KONIEC BOOSTU!", "BOOST VORBEI!", "¡FIN DEL BOOST!", "BOOST TERMINÉ !", "FIM DO BOOST!");
+            Add("level.next", "NEXT LEVEL", "DALEJ", "WEITER", "SIGUIENTE", "SUIVANT", "PRÓXIMO");
+            Add("level.retry", "RETRY", "JESZCZE RAZ", "NOCHMAL", "REINTENTAR", "RÉESSAYER", "TENTAR DE NOVO");
+            Add("level.goal_reached", "GOAL!", "CEL!", "ZIEL!", "¡META!", "OBJECTIF !", "META!");
+            Add("level.first_clear", "First clear bonus!", "Bonus za pierwsze przejście!", "Bonus für den ersten Sieg!", "¡Bonus de primera victoria!",
+                "Bonus de première victoire !", "Bônus da primeira vitória!");
+            Add("hud.pieces_left", "PIECES {0}", "KLOCKI {0}", "STEINE {0}", "PIEZAS {0}", "PIÈCES {0}", "PEÇAS {0}");
+            Add("hud.time_left", "TIME {0}", "CZAS {0}", "ZEIT {0}", "TIEMPO {0}", "TEMPS {0}", "TEMPO {0}");
+
+            // ---------------------------------------------------------------- city
+            Add("city.level", "CITY LEVEL {0}", "MIASTO: POZIOM {0}", "STADTSTUFE {0}", "CIUDAD NIVEL {0}", "VILLE NIVEAU {0}", "CIDADE NÍVEL {0}");
+            Add("city.level_short", "LV {0}", "POZ. {0}", "ST. {0}", "NV {0}", "NIV. {0}", "NV {0}");
+            Add("city.population", "Population {0} / {1}", "Mieszkańcy {0} / {1}", "Einwohner {0} / {1}", "Población {0} / {1}", "Population {0} / {1}", "População {0} / {1}");
+            Add("city.population_max", "Population {0}", "Mieszkańcy {0}", "Einwohner {0}", "Población {0}", "Population {0}", "População {0}");
+            Add("city.bonus", "+{0}% coins from games", "+{0}% monet z gier", "+{0} % Münzen aus Spielen", "+{0}% monedas de las partidas",
+                "+{0} % de pièces des parties", "+{0}% de moedas das partidas");
+            Add("city.bonus_short", "+{0}% coins", "+{0}% monet", "+{0} % Münzen", "+{0}% monedas", "+{0} % pièces", "+{0}% moedas");
+            Add("city.collect", "COLLECT", "ZBIERZ", "EINSAMMELN", "RECOGER", "RÉCOLTER", "COLETAR");
+            Add("city.nothing", "Nothing to collect yet", "Na razie nic do zebrania", "Noch nichts zum Einsammeln", "Aún no hay nada que recoger",
+                "Rien à récolter pour l'instant", "Nada para coletar ainda");
+            Add("city.collected", "Collected!", "Zebrano!", "Eingesammelt!", "¡Recogido!", "Récolté !", "Coletado!");
+            Add("city.market", "MARKET", "TARG", "MARKT", "MERCADO", "MARCHÉ", "MERCADO");
+            Add("city.empty_plot", "Empty plot", "Wolna działka", "Freies Grundstück", "Parcela libre", "Terrain libre", "Terreno livre");
+            Add("city.locked_plot", "Opens at city level {0}", "Od poziomu miasta {0}", "Ab Stadtstufe {0}", "Se abre en nivel {0}", "S'ouvre au niveau {0}", "Abre no nível {0}");
+            Add("city.build", "BUILD", "BUDUJ", "BAUEN", "CONSTRUIR", "CONSTRUIRE", "CONSTRUIR");
+            Add("city.upgrade", "UPGRADE", "ULEPSZ", "AUSBAUEN", "MEJORAR", "AMÉLIORER", "MELHORAR");
+            Add("city.max", "MAX LEVEL", "MAKS. POZIOM", "MAX. STUFE", "NIVEL MÁX.", "NIVEAU MAX", "NÍVEL MÁX.");
+            Add("city.choose", "Choose a building", "Wybierz budynek", "Gebäude wählen", "Elige un edificio", "Choisis un bâtiment", "Escolha um prédio");
+            Add("city.needs_level", "City level {0}", "Poziom miasta {0}", "Stadtstufe {0}", "Nivel de ciudad {0}", "Niveau de ville {0}", "Nível da cidade {0}");
+            Add("city.produces", "Makes {0} per hour", "Produkuje {0} na godzinę", "Macht {0} pro Stunde", "Produce {0} por hora", "Produit {0} par heure", "Produz {0} por hora");
+            Add("city.people", "+{0} people", "+{0} mieszk.", "+{0} Einwohner", "+{0} habitantes", "+{0} habitants", "+{0} moradores");
+            Add("city.built", "{0} built!", "Zbudowano: {0}!", "{0} gebaut!", "¡Construido: {0}!", "Construit : {0} !", "Construído: {0}!");
+            Add("city.upgraded", "{0} is now level {1}!", "{0}: poziom {1}!", "{0} ist jetzt Stufe {1}!", "¡{0} ahora es nivel {1}!", "{0} passe au niveau {1} !", "{0} agora é nível {1}!");
+            Add("city.not_enough_coins", "Not enough coins", "Za mało monet", "Nicht genug Münzen", "No tienes suficientes monedas", "Pas assez de pièces", "Moedas insuficientes");
+            Add("city.not_enough_supplies",
+                "Not enough supplies. Buy them at the market or win them in Boost levels!",
+                "Za mało materiałów. Kup je na targu albo wygraj w poziomach Boost!",
+                "Nicht genug Material. Kauf es auf dem Markt oder gewinne es in Boost-Levels!",
+                "No tienes suficientes materiales. ¡Cómpralos en el mercado o gánalos en niveles Boost!",
+                "Pas assez de matériaux. Achète-les au marché ou gagne-les dans les niveaux Boost !",
+                "Materiais insuficientes. Compre no mercado ou ganhe nos níveis Boost!");
+            Add("city.level_up", "CITY LEVEL {0}!", "MIASTO: POZIOM {0}!", "STADTSTUFE {0}!", "¡CIUDAD NIVEL {0}!", "VILLE NIVEAU {0} !", "CIDADE NÍVEL {0}!");
+            Add("city.level_up_body", "New plots and buildings are open.", "Nowe działki i budynki są dostępne.", "Neue Grundstücke und Gebäude sind frei.",
+                "Hay nuevas parcelas y edificios.", "De nouveaux terrains et bâtiments sont ouverts.", "Novos terrenos e prédios liberados.");
+            Add("city.full", "FULL", "PEŁNE", "VOLL", "LLENO", "PLEIN", "CHEIO");
+            Add("city.intro",
+                "Win levels to earn coins and supplies, then build and upgrade your city. Buildings keep producing while you're away.",
+                "Wygrywaj poziomy, zdobywaj monety i materiały, a potem buduj i rozwijaj miasto. Budynki produkują, nawet gdy nie grasz.",
+                "Gewinne Levels für Münzen und Material, dann baue deine Stadt aus. Gebäude produzieren auch, wenn du nicht spielst.",
+                "Gana niveles para conseguir monedas y materiales, y luego construye tu ciudad. Los edificios producen aunque no juegues.",
+                "Gagne des niveaux pour obtenir pièces et matériaux, puis construis ta ville. Les bâtiments produisent même quand tu ne joues pas.",
+                "Vença níveis para ganhar moedas e materiais, depois construa sua cidade. Os prédios produzem mesmo quando você não joga.");
+            Add("market.info", "Buy building supplies with coins.", "Kupuj materiały budowlane za monety.", "Kaufe Baumaterial mit Münzen.",
+                "Compra materiales con monedas.", "Achète des matériaux avec des pièces.", "Compre materiais com moedas.");
+            Add("supply.Wood", "Wood", "Drewno", "Holz", "Madera", "Bois", "Madeira");
+            Add("supply.Brick", "Bricks", "Cegły", "Ziegel", "Ladrillos", "Briques", "Tijolos");
+            Add("supply.Glass", "Glass", "Szkło", "Glas", "Vidrio", "Verre", "Vidro");
+            Add("building.house", "House", "Dom", "Haus", "Casa", "Maison", "Casa");
+            Add("building.sawmill", "Sawmill", "Tartak", "Sägewerk", "Aserradero", "Scierie", "Serraria");
+            Add("building.bakery", "Bakery", "Piekarnia", "Bäckerei", "Panadería", "Boulangerie", "Padaria");
+            Add("building.brickworks", "Brickworks", "Cegielnia", "Ziegelei", "Ladrillera", "Briqueterie", "Olaria");
+            Add("building.park", "Park", "Park", "Park", "Parque", "Parc", "Parque");
+            Add("building.windmill", "Windmill", "Wiatrak", "Windmühle", "Molino", "Moulin", "Moinho");
+            Add("building.glassworks", "Glassworks", "Huta szkła", "Glashütte", "Vidriería", "Verrerie", "Vidraria");
+            Add("building.market", "Market Hall", "Hala targowa", "Markthalle", "Mercado", "Halle", "Mercadão");
+            Add("building.tower", "Tower", "Wieża", "Turm", "Torre", "Tour", "Torre");
+            Add("building.castle", "Castle", "Zamek", "Schloss", "Castillo", "Château", "Castelo");
 
             // ---------------------------------------------------------------- ads & purchases
             Add("ads.done_title", "All done for today!", "To wszystko na dziś!", "Für heute erledigt!", "¡Listo por hoy!", "C'est tout pour aujourd'hui !", "Tudo pronto por hoje!");

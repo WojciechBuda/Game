@@ -1,7 +1,10 @@
 using System;
 using JellyDrop.Audio;
 using JellyDrop.Core;
+using JellyDrop.Core.City;
 using JellyDrop.Core.Economy;
+using JellyDrop.Core.Levels;
+using JellyDrop.Core.Online;
 using JellyDrop.GameInput;
 using JellyDrop.Gameplay;
 using JellyDrop.Interface;
@@ -30,6 +33,10 @@ namespace JellyDrop
         public IAdService Ads { get; private set; }
         public IIapService Iap { get; private set; }
         public GameController Game { get; private set; }
+        public CityService City { get; private set; }
+        public ProgressService Progress { get; private set; }
+        /// <summary>Backend for leaderboards and challenges. Offline for now; swap for a real service later.</summary>
+        public IOnlineService Online { get; private set; }
         public Camera Camera { get; private set; }
         public ScreenStack Screens { get; } = new ScreenStack();
         public RectTransform UiRoot { get; private set; }
@@ -45,6 +52,16 @@ namespace JellyDrop
         public FakeAdOverlay AdOverlay { get; private set; }
         public TutorialOverlay Tutorial { get; private set; }
         public LanguagePicker LanguagePicker { get; private set; }
+        public ArcadeScreen Arcade { get; private set; }
+        public PathScreen Path { get; private set; }
+        public LevelIntro LevelIntro { get; private set; }
+        public LevelResultScreen LevelResult { get; private set; }
+        public CityScreen CityView { get; private set; }
+        public BuildMenu BuildMenu { get; private set; }
+        public MarketPopup Market { get; private set; }
+
+        /// <summary>The level being played, or 0 for endless modes.</summary>
+        public int CurrentLevel { get; private set; }
 
         public GameMode LastMode { get; private set; } = GameMode.Classic;
 
@@ -74,6 +91,11 @@ namespace JellyDrop
             GameConfig = new GameConfig();
             Save = new SaveService();
             Economy = new EconomyService(Save.Load(), Catalog.CreateDefault(), new EconomyConfig(), new SystemClock());
+            City = new CityService(Economy);
+            Progress = new ProgressService(Economy);
+            Economy.CoinBonusPercent = () => City.CoinBonusPercent;
+            Online = new OfflineService();
+            Online.SignIn(_ => { });
             Economy.Changed += OnEconomyChanged;
             Haptics.Enabled = Economy.Data.hapticsOn;
             ApplyLanguage();
@@ -173,6 +195,10 @@ namespace JellyDrop
             UiRoot.gameObject.AddComponent<SafeAreaFitter>();
 
             Home = AddScreen<HomeScreen>("Home");
+            Arcade = AddScreen<ArcadeScreen>("Arcade");
+            Path = AddScreen<PathScreen>("Path");
+            CityView = AddScreen<CityScreen>("City");
+            LevelResult = AddScreen<LevelResultScreen>("LevelResult");
             Hud = AddScreen<HudScreen>("Hud");
             GameOver = AddScreen<GameOverScreen>("GameOver");
             Shop = AddScreen<ShopScreen>("Shop");
@@ -180,6 +206,9 @@ namespace JellyDrop
             Settings = AddScreen<SettingsScreen>("Settings");
             Pause = AddScreen<PauseScreen>("Pause");
             Tutorial = AddScreen<TutorialOverlay>("Tutorial");
+            LevelIntro = AddScreen<LevelIntro>("LevelIntro");
+            BuildMenu = AddScreen<BuildMenu>("BuildMenu");
+            Market = AddScreen<MarketPopup>("Market");
             Popup = AddScreen<Popup>("Popup");
             LanguagePicker = AddScreen<LanguagePicker>("Language");
             AdOverlay = AddScreen<FakeAdOverlay>("FakeAd");
@@ -264,9 +293,25 @@ namespace JellyDrop
         public void StartGame(GameMode mode)
         {
             LastMode = mode;
+            CurrentLevel = 0;
             int seed = mode == GameMode.Daily ? Economy.DailyChallengeSeed : 0;
             var difficulty = Economy.DifficultyFor(mode);
             var config = DifficultySettings.For(difficulty).Apply(GameConfig);
+            Launch(mode, seed, config);
+        }
+
+        /// <summary>Plays a level from the path. Levels use a fixed seed so everyone gets the same pieces.</summary>
+        public void StartLevel(int level)
+        {
+            if (!Progress.IsUnlocked(level)) return;
+            var def = LevelPath.Get(level);
+            LastMode = def.IsBoost ? GameMode.Boost : GameMode.Level;
+            CurrentLevel = level;
+            Launch(LastMode, def.Seed, LevelPath.ConfigFor(def, GameConfig));
+        }
+
+        private void Launch(GameMode mode, int seed, GameConfig config)
+        {
             Screens.Show(Hud);
             Game.StartGame(mode, seed, config);
             Hud.OnGameStarted();
@@ -291,7 +336,11 @@ namespace JellyDrop
             Game.Resume();
         }
 
-        public void RestartGame() => StartGame(LastMode);
+        public void RestartGame()
+        {
+            if (CurrentLevel > 0) StartLevel(CurrentLevel);
+            else StartGame(LastMode);
+        }
 
         /// <summary>Ends the run from the pause menu; coins earned so far are still paid out.</summary>
         public void QuitGame()
@@ -314,6 +363,19 @@ namespace JellyDrop
         }
 
         public void OpenMissions() => Screens.Show(Missions);
+        public void OpenArcade() => Screens.Show(Arcade);
+
+        public void OpenPath()
+        {
+            Game.Leave();
+            Screens.Show(Path);
+        }
+
+        public void OpenCity()
+        {
+            Game.Leave();
+            Screens.Show(CityView);
+        }
         public void OpenSettings() => Screens.Show(Settings);
 
         private void OnGameEnded(GameResult result)
@@ -321,7 +383,20 @@ namespace JellyDrop
             var rewards = Economy.ApplyGameResult(result);
             Save.Save(Economy.Data);
 
-            void ShowResults() => Screens.Show(GameOver.With(result, rewards));
+            LevelOutcome outcome = null;
+            if (result.Mode == GameMode.Level || result.Mode == GameMode.Boost)
+            {
+                outcome = Progress.Apply(result);
+                Save.Save(Economy.Data);
+                if (outcome.Won)
+                    Online.SubmitLevelScore(new LevelScore { playerId = Online.PlayerId, playerName = Online.PlayerName, level = result.LevelNumber, score = result.Score, stars = outcome.Stars }, _ => { });
+            }
+
+            void ShowResults()
+            {
+                if (outcome != null) Screens.Show(LevelResult.With(result, rewards, outcome));
+                else Screens.Show(GameOver.With(result, rewards));
+            }
 
             if (Economy.ShouldShowInterstitial())
             {

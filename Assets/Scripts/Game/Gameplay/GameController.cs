@@ -257,6 +257,7 @@ namespace JellyDrop.Gameplay
             s.PowerUpActivated += OnPowerUp;
             s.GameEnded += OnGameEnded;
             s.GarbageRose += OnGarbageRose;
+            s.TargetReached += OnTargetReached;
         }
 
         private void EndSessionSubscriptions()
@@ -272,6 +273,7 @@ namespace JellyDrop.Gameplay
             s.PowerUpActivated -= OnPowerUp;
             s.GameEnded -= OnGameEnded;
             s.GarbageRose -= OnGarbageRose;
+            s.TargetReached -= OnTargetReached;
         }
 
         private void OnLocked(ActivePiece piece)
@@ -394,6 +396,14 @@ namespace JellyDrop.Gameplay
             _audio.Play(Sfx.LevelUp);
             _audio.SetIntensity(level);
             FloatingText?.Invoke(Loc.T("fx.level", level), Board.CellWorld(_config.BoardWidth / 2, _config.BoardVisibleHeight - 4), ColorUtil.Mint, 1.3f);
+        }
+
+        private void OnTargetReached()
+        {
+            _audio.Play(Sfx.Win);
+            Avatar.React(AvatarMood.Excited, 3f);
+            FloatingText?.Invoke(Loc.T("level.goal_reached"), Board.CellWorld(_config.BoardWidth / 2, _config.BoardVisibleHeight - 6), ColorUtil.Gold, 1.8f);
+            StateChanged?.Invoke();
         }
 
         private void OnBomb(List<Int2> destroyed)
