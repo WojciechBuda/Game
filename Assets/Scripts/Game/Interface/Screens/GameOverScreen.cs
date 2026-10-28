@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using JellyDrop.Audio;
 using JellyDrop.Core;
 using JellyDrop.Core.Economy;
+using JellyDrop.Core.Loyalty;
 using JellyDrop.Util;
 using JellyDrop.Visuals;
 using UnityEngine;
@@ -19,6 +20,8 @@ namespace JellyDrop.Interface
         private Text _breakdown;
         private Text _total;
         private Text _missions;
+        private Text _loyalty;
+        private LoyaltyGain _gain;
         private WheelView _wheel;
         private CandyButton _spin;
         private Text _spinInfo;
@@ -30,10 +33,11 @@ namespace JellyDrop.Interface
         private bool _spinning;
         private readonly SystemRandom _rng = new SystemRandom();
 
-        public GameOverScreen With(GameResult result, GameRewards rewards)
+        public GameOverScreen With(GameResult result, GameRewards rewards, LoyaltyGain gain = null)
         {
             _result = result;
             _rewards = rewards;
+            _gain = gain;
             _spun = false;
             return this;
         }
@@ -69,6 +73,8 @@ namespace JellyDrop.Interface
             coin.rectTransform.At(UIKit.Top, new Vector2(270, -580), new Vector2(90, 90));
             _missions = UIKit.Text(c, "", 34, ColorUtil.Mint, TextAnchor.MiddleCenter, true).Fit(20);
             _missions.rectTransform.At(UIKit.Top, new Vector2(0, -700), new Vector2(900, 90));
+            _loyalty = UIKit.Text(c, "", 32, ColorUtil.Orange, TextAnchor.MiddleCenter, false).Fit(18);
+            _loyalty.rectTransform.At(UIKit.Top, new Vector2(0, -775), new Vector2(900, 50));
 
             // Lucky wheel
             _wheel = UIKit.Node("Wheel", c).gameObject.AddComponent<WheelView>();
@@ -123,7 +129,9 @@ namespace JellyDrop.Interface
             if (_rewards.PersonalBestBonus > 0) lines.Add($"{Loc.T("go.new_best_bonus")}  +{_rewards.PersonalBestBonus}");
             if (_rewards.SprintBonus > 0) lines.Add($"{Loc.T("go.sprint_bonus")}  +{_rewards.SprintBonus}");
             if (_rewards.PremiumBonus > 0) lines.Add($"{Loc.T("go.premium_bonus", Loc.Decimal(e.Config.PremiumCoinMultiplier))}  +{Loc.Number(_rewards.PremiumBonus)}");
+            if (_rewards.CityBonus > 0) lines.Add($"{Loc.T("go.bonus", _rewards.BonusPercent)}  +{Loc.Number(_rewards.CityBonus)}");
             _breakdown.text = string.Join("\n", lines);
+            _loyalty.text = _gain != null && _gain.Points > 0 ? Loc.T("player.gain", _gain.Points) : "";
             UIKit.CountUp(_total, 0, _rewards.Total, 1.2f, "+");
 
             var done = new List<string>();

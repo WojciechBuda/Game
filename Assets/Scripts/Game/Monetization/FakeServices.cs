@@ -55,6 +55,10 @@ namespace JellyDrop.Monetization
             onResult?.Invoke(true, null);
         }
 
+        public string SeasonPassPrice => MonetizationIds.SeasonPassFallbackPrice;
+
+        public void BuySeasonPass(Action<bool, string> onResult) => onResult?.Invoke(true, null);
+
         public void RestorePurchases(Action<bool> onResult) =>
             onResult?.Invoke(PlayerPrefs.GetInt(FakeOwnedKey, 0) == 1);
     }

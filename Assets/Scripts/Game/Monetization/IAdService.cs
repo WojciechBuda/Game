@@ -34,6 +34,11 @@ namespace JellyDrop.Monetization
 
         void BuyPremium(Action<bool, string> onResult);
 
+        /// <summary>Localised price of the season pass (a consumable, bought once per season).</summary>
+        string SeasonPassPrice { get; }
+
+        void BuySeasonPass(Action<bool, string> onResult);
+
         /// <summary>Required by Apple. On Android purchases restore automatically at startup.</summary>
         void RestorePurchases(Action<bool> onResult);
     }

@@ -45,7 +45,7 @@ namespace JellyDrop.Core.Economy
     public sealed class PlayerData
     {
         public int version = PlayerData.CurrentVersion;
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = 4;
 
         public int coins;
         public int shards;
@@ -88,6 +88,15 @@ namespace JellyDrop.Core.Economy
         public int brick;
         public int glass;
         public List<PlotData> plots = new List<PlotData>();
+
+        // Player level and season pass
+        public int xp;
+        /// <summary>Season the fields below belong to (see SeasonPass.SeasonIndex).</summary>
+        public int seasonIndex;
+        public int seasonPoints;
+        public bool seasonPremium;
+        public List<int> seasonFreeClaimed = new List<int>();
+        public List<int> seasonPremiumClaimed = new List<int>();
 
         /// <summary>(int)Difficulty last picked on the home screen.</summary>
         public int selectedDifficulty = 1;

@@ -24,6 +24,12 @@ namespace JellyDrop.Core.Economy
         public int ShardPrice;
         /// <summary>Granted with the Premium purchase; cannot be bought with coins.</summary>
         public bool PremiumOnly;
+        /// <summary>Unlocked by reaching this player level (0 = not a level reward). Not sold.</summary>
+        public int UnlockLevel;
+        /// <summary>Won on the season pass (index into the rotating season sets). Not sold.</summary>
+        public bool SeasonReward;
+
+        public bool IsReward => UnlockLevel > 0 || SeasonReward;
 
         // Skin data
         public BlockStyle BlockStyle;
@@ -44,7 +50,7 @@ namespace JellyDrop.Core.Economy
         /// <summary>0 round, 1 drop, 2 square, 3 star, 4 crown.</summary>
         public int AvatarShape;
 
-        public bool IsFree => CoinPrice == 0 && ShardPrice == 0 && !PremiumOnly;
+        public bool IsFree => CoinPrice == 0 && ShardPrice == 0 && !PremiumOnly && !IsReward;
     }
 
     public sealed class PowerUpOffer
@@ -130,6 +136,33 @@ namespace JellyDrop.Core.Economy
             c.Add(Avatar("avatar_star", "Twinkle", Rarity.Epic, 2000, "#FFD60A", 3, shards: 8));
             c.Add(Premium(Avatar("avatar_king", "King Bloop", Rarity.Premium, 0, "#FF7EB6", 4)));
 
+            // Player level rewards ----------------------------------------------
+            c.Add(LevelReward(5, Skin("skin_bubble", "Bubble Pop", Rarity.Rare, 0, 0, BlockStyle.Gummy,
+                "#8FE3FF", "#FFE58A", "#D7B4FF", "#9DF0C0", "#FFA3B5", "#9DB8FF", "#FFC48F")));
+            c.Add(LevelReward(10, Avatar("avatar_ace", "Ace", Rarity.Rare, 0, "#3FB6FF", 3)));
+            c.Add(LevelReward(20, Theme("theme_aurora", "Aurora", Rarity.Epic, 0, "#D9F7FF", "#E7DBFF", "#8E7CFF", MusicStyle.Dreamy, 110)));
+            c.Add(LevelReward(30, Skin("skin_champion", "Champion", Rarity.Epic, 0, 0, BlockStyle.Gem,
+                "#36D6FF", "#FFD23F", "#B57BFF", "#3DDC97", "#FF5D7D", "#5B7BFF", "#FF9A3C")));
+            c.Add(LevelReward(50, Avatar("avatar_legend", "Legend", Rarity.Epic, 0, "#FFC93C", 4)));
+
+            // Season pass rewards: four rotating sets (spring, summer, autumn, winter) ----
+            c.Add(Season(Theme("theme_bloom", "Spring Bloom", Rarity.Epic, 0, "#FFF0F6", "#E3FFE9", "#FF7AAE", MusicStyle.Bubbly, 122)));
+            c.Add(Season(Avatar("avatar_bunny", "Bunny", Rarity.Epic, 0, "#FFC2DA", 1)));
+            c.Add(Season(Skin("skin_blossom", "Blossom", Rarity.Epic, 0, 0, BlockStyle.Sprinkles,
+                "#9FE6FF", "#FFE7A0", "#F2B8FF", "#B6F5B0", "#FF9EC4", "#A9BDFF", "#FFC79E")));
+            c.Add(Season(Theme("theme_splash", "Summer Splash", Rarity.Epic, 0, "#DFF8FF", "#FFF4D6", "#2EC4F0", MusicStyle.Funky, 128)));
+            c.Add(Season(Avatar("avatar_surfer", "Surfer", Rarity.Epic, 0, "#2EC4F0", 0)));
+            c.Add(Season(Skin("skin_tropical", "Tropical", Rarity.Epic, 0, 0, BlockStyle.Jelly,
+                "#22D3EE", "#FDE047", "#F472B6", "#4ADE80", "#FB7185", "#60A5FA", "#FB923C")));
+            c.Add(Season(Theme("theme_harvest", "Autumn Arcade", Rarity.Epic, 0, "#FFF1E0", "#FFE0D1", "#FF8A3D", MusicStyle.Mellow, 108)));
+            c.Add(Season(Avatar("avatar_pumpkin", "Pumpkin", Rarity.Epic, 0, "#FF9F43", 2)));
+            c.Add(Season(Skin("skin_maple", "Maple", Rarity.Epic, 0, 0, BlockStyle.Gem,
+                "#F59E0B", "#FCD34D", "#C084FC", "#84CC16", "#EF4444", "#6366F1", "#F97316")));
+            c.Add(Season(Theme("theme_frost", "Winter Glow", Rarity.Epic, 0, "#EEF6FF", "#E9E6FF", "#5B9BFF", MusicStyle.Dreamy, 100)));
+            c.Add(Season(Avatar("avatar_snowy", "Snowy", Rarity.Epic, 0, "#E8F4FF", 3)));
+            c.Add(Season(Skin("skin_ice", "Ice Crystal", Rarity.Epic, 0, 0, BlockStyle.Gem,
+                "#A5F3FC", "#FEF9C3", "#DDD6FE", "#BBF7D0", "#FBCFE8", "#BFDBFE", "#FED7AA")));
+
             // Power-up packs -----------------------------------------------------
             c.PowerUpOffers.Add(new PowerUpOffer { Id = "pu_bomb3", Type = PowerUpType.Bomb, Name = "Jelly Bomb", Description = "Next piece is a bomb that blasts a 3x3 area", Quantity = 3, CoinPrice = 150 });
             c.PowerUpOffers.Add(new PowerUpOffer { Id = "pu_zap3", Type = PowerUpType.LineZap, Name = "Line Zap", Description = "Zaps away the bottom row", Quantity = 3, CoinPrice = 120 });
@@ -147,6 +180,18 @@ namespace JellyDrop.Core.Economy
 
         private static ShopItem Avatar(string id, string name, Rarity rarity, int coins, string body, int shape, int shards = 0) =>
             new ShopItem { Id = id, Name = name, Category = ItemCategory.Avatar, Rarity = rarity, CoinPrice = coins, ShardPrice = shards, BodyColor = body, AvatarShape = shape };
+
+        private static ShopItem LevelReward(int level, ShopItem item)
+        {
+            item.UnlockLevel = level;
+            return item;
+        }
+
+        private static ShopItem Season(ShopItem item)
+        {
+            item.SeasonReward = true;
+            return item;
+        }
 
         private static ShopItem Premium(ShopItem item)
         {

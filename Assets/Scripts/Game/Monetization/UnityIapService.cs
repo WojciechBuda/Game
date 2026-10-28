@@ -17,6 +17,7 @@ namespace JellyDrop.Monetization
         private IExtensionProvider _extensions;
         private Action<bool> _onInit;
         private Action<bool, string> _pendingPurchase;
+        private Action<bool, string> _pendingSeasonPass;
 
         public string PremiumPrice
         {
@@ -43,6 +44,7 @@ namespace JellyDrop.Monetization
 
             var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
             builder.AddProduct(MonetizationIds.PremiumProductId, ProductType.NonConsumable);
+            builder.AddProduct(MonetizationIds.SeasonPassProductId, ProductType.Consumable);
             UnityPurchasing.Initialize(this, builder);
         }
 
@@ -75,8 +77,41 @@ namespace JellyDrop.Monetization
             _controller.InitiatePurchase(MonetizationIds.PremiumProductId);
         }
 
+        public string SeasonPassPrice
+        {
+            get
+            {
+                var product = _controller?.products.WithID(MonetizationIds.SeasonPassProductId);
+                return product != null && product.availableToPurchase
+                    ? product.metadata.localizedPriceString
+                    : MonetizationIds.SeasonPassFallbackPrice;
+            }
+        }
+
+        public void BuySeasonPass(Action<bool, string> onResult)
+        {
+            if (_controller == null)
+            {
+                onResult?.Invoke(false, JellyDrop.Core.Loc.T("iap.unavailable"));
+                return;
+            }
+            _pendingSeasonPass = onResult;
+            _controller.InitiatePurchase(MonetizationIds.SeasonPassProductId);
+        }
+
+        /// <summary>Raised when a season pass purchase completes outside a BuySeasonPass call (deferred payments).</summary>
+        public event Action SeasonPassPurchased;
+
         public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
         {
+            if (args.purchasedProduct.definition.id == MonetizationIds.SeasonPassProductId)
+            {
+                // TODO before launch: validate the receipt on a server.
+                if (_pendingSeasonPass != null) _pendingSeasonPass(true, null);
+                else SeasonPassPurchased?.Invoke();
+                _pendingSeasonPass = null;
+                return PurchaseProcessingResult.Complete;
+            }
             if (args.purchasedProduct.definition.id == MonetizationIds.PremiumProductId)
             {
                 // TODO before launch: validate the receipt on a server to block fake purchases.
@@ -92,12 +127,24 @@ namespace JellyDrop.Monetization
 
         public void OnPurchaseFailed(Product product, PurchaseFailureDescription failure)
         {
+            if (product != null && product.definition.id == MonetizationIds.SeasonPassProductId)
+            {
+                _pendingSeasonPass?.Invoke(false, failure.reason == PurchaseFailureReason.UserCancelled ? null : failure.message);
+                _pendingSeasonPass = null;
+                return;
+            }
             _pendingPurchase?.Invoke(false, failure.reason == PurchaseFailureReason.UserCancelled ? null : failure.message);
             _pendingPurchase = null;
         }
 
         public void OnPurchaseFailed(Product product, PurchaseFailureReason reason)
         {
+            if (product != null && product.definition.id == MonetizationIds.SeasonPassProductId)
+            {
+                _pendingSeasonPass?.Invoke(false, reason == PurchaseFailureReason.UserCancelled ? null : reason.ToString());
+                _pendingSeasonPass = null;
+                return;
+            }
             _pendingPurchase?.Invoke(false, reason == PurchaseFailureReason.UserCancelled ? null : reason.ToString());
             _pendingPurchase = null;
         }

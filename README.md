@@ -6,6 +6,8 @@ The game includes:
 - **Gameplay:** the full falling-block game with guideline rotation (SRS wall kicks), 7-bag randomizer, hold, ghost piece, combos and back-to-back bonuses.
 - **Level path:** a winding map of levels. Each level asks for an exact target score within a limited number of pieces, and gives 1–3 stars. Every 10th level is a **Boost level**: 90 seconds, points ×2, more lucky pieces, and score as much as you can for big rewards (lots of coins plus wood, bricks and glass).
 - **City builder:** coins buy supplies at the market (wood, bricks, glass). Supplies plus coins build and upgrade 10 kinds of buildings on up to 12 plots. Houses, bakeries and windmills make coins over time; the sawmill, brickworks and glassworks make supplies; parks, the tower and the castle add a % bonus to coins from every game. Population raises the city level, which opens new plots and buildings. Buildings store up to 8 hours of production, so players come back to collect.
+- **Player level:** XP from every game, won level and mission. Each level-up pays coins (plus shards and supplies on milestones), unlocks exclusive items at levels 5, 10, 20, 30 and 50, and adds +1% coins from games every 5 levels (up to +20%). It never resets.
+- **Season pass:** a new 28-day season with 30 tiers. Every tier has a free reward and a pass reward (coins, shards, power-ups, supplies). Each season has its own exclusive theme (free track), avatar and skin (pass track), rotating spring, summer, autumn and winter sets. The pass is a one-time purchase per season; unclaimed rewards are paid out automatically when a season ends.
 - **Arcade modes:** Classic (endless, with difficulty), Sprint 40 and a Daily Challenge (the same pieces for everyone each day, always on Normal).
 - **Difficulty levels:** Easy, Normal, Hard and Insane, picked on the home screen. Best scores are kept separately for each.
 - **Lucky shots:** golden pieces (×5 coins), coin blocks, a random Rainbow bonus, a rare Jackpot, and a free lucky wheel after every game.
@@ -109,6 +111,7 @@ Assets/
                  Missions, LuckyWheel
       Levels/    LevelPath (targets, piece limits, boost levels, rewards), ProgressService
       City/      CityCatalog (buildings, costs, production), CityService
+      Loyalty/   Player level and season pass (points, tiers, rewards, season calendar)
       Online/    IOnlineService + OfflineService (ready for leaderboards and challenges)
     Game/
       App.cs     Composition root and main flows (start game, game over, ads, purchases)
@@ -141,6 +144,7 @@ Packages/, ProjectSettings/  Unity project files (Unity 6000.0.58f2)
 | Wheel slices and odds | `Core/Economy/LuckyWheel.cs` |
 | Level targets, piece limits, boost every 10 levels, level rewards | `Core/Levels/LevelPath.cs` |
 | Buildings, costs, production, supply prices, city levels | `Core/City/CityCatalog.cs` |
+| XP curve, level rewards, season length, tiers, points per tier, tier rewards, points per game/mission | `Core/Loyalty/Loyalty.cs` |
 
 All of these are plain classes, so you can later override them from Unity Remote Config or Firebase Remote Config without shipping an update.
 
@@ -158,9 +162,9 @@ Until this is set up, the game shows **fake test ads**, so the whole reward flow
 ## 5. In-app purchase (Premium)
 
 1. Install **In-App Purchasing** from Window → Package Manager → Unity Registry. The code targets version **4.12.x**.
-2. Create a **non-consumable** product with ID `jellydrop_premium` in both stores:
-   - Google Play Console
-   - App Store Connect
+2. Create these products in both stores (Google Play Console and App Store Connect):
+   - `jellydrop_premium`: **non-consumable** (no ads + Premium pack).
+   - `jellydrop_season_pass`: **consumable** (the season pass, bought again each season).
 3. Run the menu **Jelly Drop → IAP: enable Unity IAP**. This adds the `UNITY_PURCHASING` define.
 4. Test it:
    - **Android:** use license testers in the Play Console, with an internal-testing build.

@@ -437,6 +437,89 @@ namespace JellyDrop.Core
             Add("iap.nothing_body", "No previous purchases were found for this account.", "Nie znaleziono wcześniejszych zakupów na tym koncie.",
                 "Für dieses Konto wurden keine Käufe gefunden.", "No se encontraron compras previas en esta cuenta.",
                 "Aucun achat précédent trouvé pour ce compte.", "Nenhuma compra anterior encontrada nesta conta.");
+
+            // ---------------------------------------------------------------- player level & season pass
+            Add("item.skin_bubble", "Bubble Pop", "Bańkowy pop", "Blubber-Pop", "Pop de burbujas", "Bulles pop", "Pop de bolhas");
+            Add("item.skin_champion", "Champion", "Mistrz", "Champion", "Campeón", "Champion", "Campeão");
+            Add("item.theme_aurora", "Aurora", "Zorza", "Polarlicht", "Aurora", "Aurore", "Aurora");
+            Add("item.theme_bloom", "Spring Bloom", "Wiosenny rozkwit", "Frühlingsblüte", "Flor de primavera", "Floraison", "Flor da primavera");
+            Add("item.skin_blossom", "Blossom", "Kwiat wiśni", "Kirschblüte", "Cerezo", "Fleur de cerisier", "Flor de cerejeira");
+            Add("item.theme_splash", "Summer Splash", "Letni plusk", "Sommerplatsch", "Chapuzón de verano", "Plouf d'été", "Mergulho de verão");
+            Add("item.skin_tropical", "Tropical", "Tropiki", "Tropisch", "Tropical", "Tropical", "Tropical");
+            Add("item.theme_harvest", "Autumn Arcade", "Jesienny automat", "Herbst-Arcade", "Arcade de otoño", "Arcade d'automne", "Arcade de outono");
+            Add("item.skin_maple", "Maple", "Klon", "Ahorn", "Arce", "Érable", "Bordo");
+            Add("item.theme_frost", "Winter Glow", "Zimowy blask", "Winterglanz", "Brillo de invierno", "Lueur d'hiver", "Brilho de inverno");
+            Add("item.skin_ice", "Ice Crystal", "Lodowy kryształ", "Eiskristall", "Cristal de hielo", "Cristal de glace", "Cristal de gelo");
+
+            Add("player.level", "LEVEL {0}", "POZIOM {0}", "STUFE {0}", "NIVEL {0}", "NIVEAU {0}", "NÍVEL {0}");
+            Add("player.lv", "LV", "POZ", "ST", "NV", "NIV", "NV");
+            Add("player.level_up", "LEVEL {0}!", "POZIOM {0}!", "STUFE {0}!", "¡NIVEL {0}!", "NIVEAU {0} !", "NÍVEL {0}!");
+            Add("player.info",
+                "{0} / {1} XP to the next level.\nYour level gives +{2}% coins from every game (+1% every 5 levels).",
+                "{0} / {1} XP do następnego poziomu.\nTwój poziom daje +{2}% monet z każdej gry (+1% co 5 poziomów).",
+                "{0} / {1} XP bis zur nächsten Stufe.\nDeine Stufe gibt +{2} % Münzen pro Spiel (+1 % alle 5 Stufen).",
+                "{0} / {1} XP para el siguiente nivel.\nTu nivel da +{2}% de monedas en cada partida (+1% cada 5 niveles).",
+                "{0} / {1} XP jusqu'au niveau suivant.\nTon niveau donne +{2} % de pièces par partie (+1 % tous les 5 niveaux).",
+                "{0} / {1} XP para o próximo nível.\nSeu nível dá +{2}% de moedas em cada partida (+1% a cada 5 níveis).");
+            Add("player.next_item", "Level {0} unlocks: {1}", "Poziom {0} odblokowuje: {1}", "Stufe {0} schaltet frei: {1}",
+                "El nivel {0} desbloquea: {1}", "Le niveau {0} débloque : {1}", "O nível {0} desbloqueia: {1}");
+            Add("player.gain", "+{0} XP  ·  +{0} season points", "+{0} XP  ·  +{0} pkt sezonu", "+{0} XP  ·  +{0} Saisonpunkte",
+                "+{0} XP  ·  +{0} puntos de temporada", "+{0} XP  ·  +{0} points de saison", "+{0} XP  ·  +{0} pontos da temporada");
+            Add("go.bonus", "city & level +{0}%", "miasto i poziom +{0}%", "Stadt & Stufe +{0} %", "ciudad y nivel +{0}%", "ville & niveau +{0} %", "cidade e nível +{0}%");
+
+            Add("season.home", "SEASON", "SEZON", "SAISON", "TEMPORADA", "SAISON", "TEMPORADA");
+            Add("season.title", "SEASON {0}", "SEZON {0}", "SAISON {0}", "TEMPORADA {0}", "SAISON {0}", "TEMPORADA {0}");
+            Add("season.name.0", "Spring Bloom", "Wiosenny rozkwit", "Frühlingsblüte", "Flor de primavera", "Floraison", "Flor da primavera");
+            Add("season.name.1", "Summer Splash", "Letni plusk", "Sommerplatsch", "Chapuzón de verano", "Plouf d'été", "Mergulho de verão");
+            Add("season.name.2", "Autumn Arcade", "Jesienny automat", "Herbst-Arcade", "Arcade de otoño", "Arcade d'automne", "Arcade de outono");
+            Add("season.name.3", "Winter Glow", "Zimowy blask", "Winterglanz", "Brillo de invierno", "Lueur d'hiver", "Brilho de inverno");
+            Add("season.ends", "Ends in {0}d {1}h", "Koniec za {0} d {1} h", "Endet in {0} T {1} Std.", "Termina en {0} d {1} h", "Fin dans {0} j {1} h", "Termina em {0} d {1} h");
+            Add("season.tier", "TIER {0}", "STOPIEŃ {0}", "STUFE {0}", "NIVEL {0}", "PALIER {0}", "NÍVEL {0}");
+            Add("season.free", "FREE", "DARMOWE", "GRATIS", "GRATIS", "GRATUIT", "GRÁTIS");
+            Add("season.pass", "PASS", "PRZEPUSTKA", "PASS", "PASE", "PASS", "PASSE");
+            Add("season.buy", "GET PASS {0}", "KUP PRZEPUSTKĘ {0}", "PASS HOLEN {0}", "CONSEGUIR PASE {0}", "OBTENIR LE PASS {0}", "PEGAR PASSE {0}");
+            Add("season.active", "PASS ACTIVE", "PRZEPUSTKA AKTYWNA", "PASS AKTIV", "PASE ACTIVO", "PASS ACTIF", "PASSE ATIVO");
+            Add("season.buy_title", "Season Pass", "Przepustka sezonowa", "Saisonpass", "Pase de temporada", "Pass de saison", "Passe da temporada");
+            Add("season.buy_body",
+                "Unlock the pass track for this season: an exclusive skin and avatar, 2,000 bonus coins, shards and building supplies. Tiers you already reached are unlocked at once.",
+                "Odblokuj ścieżkę przepustki w tym sezonie: ekskluzywną skórkę i awatara, 2000 monet, kryształy i materiały budowlane. Osiągnięte już stopnie odblokują się od razu.",
+                "Schalte die Pass-Leiste dieser Saison frei: exklusiver Skin und Avatar, 2.000 Bonusmünzen, Splitter und Baumaterial. Bereits erreichte Stufen werden sofort freigeschaltet.",
+                "Desbloquea el pase de esta temporada: aspecto y avatar exclusivos, 2000 monedas extra, fragmentos y materiales. Los niveles ya alcanzados se desbloquean al momento.",
+                "Débloque le pass de cette saison : skin et avatar exclusifs, 2 000 pièces bonus, éclats et matériaux. Les paliers déjà atteints sont débloqués tout de suite.",
+                "Desbloqueie o passe desta temporada: visual e avatar exclusivos, 2.000 moedas extras, fragmentos e materiais. Os níveis já alcançados são liberados na hora.");
+            Add("season.bought", "Pass unlocked!", "Przepustka odblokowana!", "Pass freigeschaltet!", "¡Pase desbloqueado!", "Pass débloqué !", "Passe liberado!");
+            Add("season.claim_all", "CLAIM ALL", "ODBIERZ WSZYSTKO", "ALLES ABHOLEN", "RECOGER TODO", "TOUT RÉCUPÉRER", "PEGAR TUDO");
+            Add("season.claimed", "Rewards claimed!", "Nagrody odebrane!", "Belohnungen abgeholt!", "¡Premios recogidos!", "Récompenses récupérées !", "Prêmios recebidos!");
+            Add("season.reach", "Reach tier {0} to claim this.", "Osiągnij stopień {0}, by to odebrać.", "Erreiche Stufe {0}, um das abzuholen.",
+                "Alcanza el nivel {0} para recogerlo.", "Atteins le palier {0} pour le récupérer.", "Alcance o nível {0} para pegar isso.");
+            Add("season.how", "Earn season points by playing games, winning levels and finishing missions.",
+                "Zdobywaj punkty sezonu, grając, wygrywając poziomy i wykonując misje.",
+                "Sammle Saisonpunkte durch Spiele, gewonnene Levels und Missionen.",
+                "Gana puntos de temporada jugando, superando niveles y completando misiones.",
+                "Gagne des points de saison en jouant, en réussissant des niveaux et en finissant des missions.",
+                "Ganhe pontos da temporada jogando, vencendo níveis e completando missões.");
+            Add("season.new", "NEW SEASON!", "NOWY SEZON!", "NEUE SAISON!", "¡NUEVA TEMPORADA!", "NOUVELLE SAISON !", "NOVA TEMPORADA!");
+            Add("season.new_body", "Rewards you hadn't claimed last season were added for you:\n{0}",
+                "Nieodebrane nagrody z poprzedniego sezonu zostały ci dodane:\n{0}",
+                "Nicht abgeholte Belohnungen der letzten Saison wurden dir gutgeschrieben:\n{0}",
+                "Te añadimos los premios que no recogiste la temporada pasada:\n{0}",
+                "Les récompenses non récupérées de la saison passée ont été ajoutées :\n{0}",
+                "Os prêmios que você não pegou na última temporada foram adicionados:\n{0}");
+            Add("shop.level_reward", "LEVEL {0}", "POZIOM {0}", "STUFE {0}", "NIVEL {0}", "NIVEAU {0}", "NÍVEL {0}");
+            Add("shop.season_reward", "SEASON", "SEZON", "SAISON", "TEMPORADA", "SAISON", "TEMPORADA");
+            Add("shop.reward_body", "This item can't be bought. It's a reward for reaching player level {0}.",
+                "Tego nie da się kupić. To nagroda za osiągnięcie poziomu gracza {0}.",
+                "Das kann man nicht kaufen. Es ist eine Belohnung für Spielerstufe {0}.",
+                "No se puede comprar. Es un premio por llegar al nivel de jugador {0}.",
+                "Impossible à acheter. C'est une récompense du niveau de joueur {0}.",
+                "Não dá para comprar. É um prêmio por chegar ao nível de jogador {0}.");
+            Add("shop.season_body", "This item can't be bought. It comes back in its season's pass.",
+                "Tego nie da się kupić. Wraca w przepustce swojego sezonu.",
+                "Das kann man nicht kaufen. Es kommt im Pass seiner Saison zurück.",
+                "No se puede comprar. Vuelve en el pase de su temporada.",
+                "Impossible à acheter. Il revient dans le pass de sa saison.",
+                "Não dá para comprar. Ele volta no passe da sua temporada.");
+            Add("reward.shards", "{0} shards", "{0} kryształów", "{0} Splitter", "{0} fragmentos", "{0} éclats", "{0} fragmentos");
         }
     }
 }

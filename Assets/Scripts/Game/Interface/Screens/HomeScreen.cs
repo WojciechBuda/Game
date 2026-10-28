@@ -17,6 +17,8 @@ namespace JellyDrop.Interface
         private Text _cityInfo;
         private CandyButton _play;
         private CandyButton _city;
+        private CandyButton _season;
+        private LevelBadge _level;
         private CandyButton _adButton;
         private CandyButton _missionsButton;
         private CandyButton _premiumButton;
@@ -51,6 +53,12 @@ namespace JellyDrop.Interface
             var mascotBob = _avatar.gameObject.AddComponent<Bobber>();
             mascotBob.Amplitude = 16f;
             mascotBob.Speed = 2f;
+
+            // Player level on the left of the mascot, the season pass on the right.
+            _level = LevelBadge.Create(Root, ShowLevelInfo);
+            _level.Place(UIKit.Center, new Vector2(-340, 345));
+            _season = UIKit.Button(Root, Loc.T("season.home"), ColorUtil.Orange, App.OpenSeason, new Vector2(230, 200), 38, SpriteFactory.Star());
+            _season.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(340, 345), new Vector2(230, 200));
 
             _cityInfo = UIKit.Text(Root, "", 34, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(20);
             _cityInfo.rectTransform.At(UIKit.Center, new Vector2(0, 175), new Vector2(900, 56));
@@ -88,6 +96,9 @@ namespace JellyDrop.Interface
             _play.SetLabel(LevelPath.IsBoost(level) ? Loc.T("level.boost_title", level) : Loc.T("home.play_level", level));
             _play.SetColor(LevelPath.IsBoost(level) ? ColorUtil.Gold : ColorUtil.Pink);
 
+            _level.Refresh(App.Loyalty);
+            _season.SetBadge(App.Loyalty.ClaimableCount);
+
             var city = App.City;
             _cityInfo.text = Loc.T("city.level", city.CityLevel) + "  ·  " + Loc.T("city.population_max", city.Population);
             _city.SetBadge(city.PendingTotal().IsEmpty ? 0 : 1);
@@ -103,6 +114,19 @@ namespace JellyDrop.Interface
         protected override void OnShow()
         {
             App.Audio.PlayThemeMusic(App.Economy.EquippedTheme);
+        }
+
+        private void ShowLevelInfo()
+        {
+            var l = App.Loyalty;
+            int level = l.Level;
+            int into = l.Xp - Core.Loyalty.PlayerLevels.TotalXpFor(level);
+            string body = Loc.T("player.info", Loc.Number(into), Loc.Number(Core.Loyalty.PlayerLevels.XpForNext(level)), l.CoinBonusPercent);
+            Core.Economy.ShopItem next = null;
+            foreach (var item in App.Economy.Catalog.Items)
+                if (item.UnlockLevel > level && (next == null || item.UnlockLevel < next.UnlockLevel)) next = item;
+            if (next != null) body += "\n\n" + Loc.T("player.next_item", next.UnlockLevel, Loc.ItemName(next));
+            App.Popup.ShowMessage(Loc.T("player.level", level), body, next != null ? RewardUi.ItemIcon(next) : SpriteFactory.Star());
         }
 
         public override bool OnBack()

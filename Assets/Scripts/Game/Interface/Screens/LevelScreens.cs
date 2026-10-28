@@ -4,6 +4,7 @@ using JellyDrop.Core;
 using JellyDrop.Core.City;
 using JellyDrop.Core.Economy;
 using JellyDrop.Core.Levels;
+using JellyDrop.Core.Loyalty;
 using JellyDrop.Visuals;
 using UnityEngine;
 using UnityEngine.UI;
@@ -294,9 +295,11 @@ namespace JellyDrop.Interface
         private GameResult _result;
         private GameRewards _rewards;
         private LevelOutcome _outcome;
+        private LoyaltyGain _gain;
 
-        public LevelResultScreen With(GameResult result, GameRewards rewards, LevelOutcome outcome)
+        public LevelResultScreen With(GameResult result, GameRewards rewards, LevelOutcome outcome, LoyaltyGain gain = null)
         {
+            _gain = gain;
             _result = result;
             _rewards = rewards;
             _outcome = outcome;
@@ -360,6 +363,12 @@ namespace JellyDrop.Interface
                     var bonus = UIKit.Text(_content, Loc.T("level.first_clear"), 34, ColorUtil.Mint, TextAnchor.MiddleCenter, true);
                     bonus.rectTransform.At(UIKit.Top, new Vector2(0, y), new Vector2(800, 56));
                 }
+            }
+
+            if (_gain != null && _gain.Points > 0)
+            {
+                var xp = UIKit.Text(_content, Loc.T("player.gain", _gain.Points), 32, ColorUtil.Orange, TextAnchor.MiddleCenter, false).Fit(18);
+                xp.rectTransform.At(UIKit.Bottom, new Vector2(0, 410), new Vector2(860, 50));
             }
 
             // Buttons

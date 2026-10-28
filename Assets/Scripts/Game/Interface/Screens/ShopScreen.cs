@@ -141,6 +141,13 @@ namespace JellyDrop.Interface
                 {
                     CardButton(card, Loc.T("shop.equip"), ColorUtil.Blue, () => Equip(item));
                 }
+                else if (item.IsReward)
+                {
+                    string label = item.UnlockLevel > 0 ? Loc.T("shop.level_reward", item.UnlockLevel) : Loc.T("shop.season_reward");
+                    var reward = CardButton(card, label, item.UnlockLevel > 0 ? ColorUtil.Purple : ColorUtil.Orange, () => ShowRewardInfo(item), SpriteFactory.LockIcon());
+                    reward.Interactable = false;
+                    reward.ClickWhenDisabled = true;
+                }
                 else if (item.PremiumOnly)
                 {
                     CardButton(card, Loc.T("shop.premium_only"), ColorUtil.Gold, () => SelectTab(ShopTab.Premium), SpriteFactory.Star());
@@ -200,6 +207,15 @@ namespace JellyDrop.Interface
                     av.gameObject.AddComponent<Bobber>().Amplitude = 6f;
                     break;
             }
+        }
+
+        private void ShowRewardInfo(ShopItem item)
+        {
+            App.Audio.Play(Sfx.Pop);
+            if (item.UnlockLevel > 0)
+                App.Popup.ShowMessage(Loc.ItemName(item), Loc.T("shop.reward_body", item.UnlockLevel), RewardUi.ItemIcon(item));
+            else
+                App.Popup.ShowConfirm(Loc.ItemName(item), Loc.T("shop.season_body"), Loc.T("season.home"), App.OpenSeason);
         }
 
         private void Equip(ShopItem item)

@@ -4,6 +4,7 @@ using JellyDrop.Core;
 using JellyDrop.Core.City;
 using JellyDrop.Core.Economy;
 using JellyDrop.Core.Levels;
+using JellyDrop.Core.Loyalty;
 using JellyDrop.Core.Online;
 using JellyDrop.GameInput;
 using JellyDrop.Gameplay;
@@ -35,6 +36,8 @@ namespace JellyDrop
         public GameController Game { get; private set; }
         public CityService City { get; private set; }
         public ProgressService Progress { get; private set; }
+        /// <summary>Player level and season pass.</summary>
+        public LoyaltyService Loyalty { get; private set; }
         /// <summary>Backend for leaderboards and challenges. Offline for now; swap for a real service later.</summary>
         public IOnlineService Online { get; private set; }
         public Camera Camera { get; private set; }
@@ -59,6 +62,7 @@ namespace JellyDrop
         public CityScreen CityView { get; private set; }
         public BuildMenu BuildMenu { get; private set; }
         public MarketPopup Market { get; private set; }
+        public SeasonScreen Season { get; private set; }
 
         /// <summary>The level being played, or 0 for endless modes.</summary>
         public int CurrentLevel { get; private set; }
@@ -93,7 +97,8 @@ namespace JellyDrop
             Economy = new EconomyService(Save.Load(), Catalog.CreateDefault(), new EconomyConfig(), new SystemClock());
             City = new CityService(Economy);
             Progress = new ProgressService(Economy);
-            Economy.CoinBonusPercent = () => City.CoinBonusPercent;
+            Loyalty = new LoyaltyService(Economy);
+            Economy.CoinBonusPercent = () => City.CoinBonusPercent + Loyalty.CoinBonusPercent;
             Online = new OfflineService();
             Online.SignIn(_ => { });
             Economy.Changed += OnEconomyChanged;
@@ -127,6 +132,13 @@ namespace JellyDrop
         {
             Screens.Show(Home);
             Audio.PlayThemeMusic(Economy.EquippedTheme);
+            // A new season may have started while the game was closed; leftovers of the old one are paid out.
+            Loyalty.SeasonRolledOver += reward => JellyDrop.Util.Tweener.Delay(0.3f, () =>
+            {
+                Audio.Play(Sfx.Win);
+                Popup.ShowReward(Loc.T("season.new"), Loc.T("season.new_body", RewardUi.Describe(reward, Economy.Catalog)), SpriteFactory.Star());
+            }, this);
+            Loyalty.CheckSeason();
             // Daily reward greets the player once per day.
             if (Economy.CanClaimStreak)
                 JellyDrop.Util.Tweener.Delay(0.6f, () => { if (Home.IsVisible && !Screens.HasModal) Popup.ShowDailyReward(); }, this);
@@ -198,6 +210,7 @@ namespace JellyDrop
             Arcade = AddScreen<ArcadeScreen>("Arcade");
             Path = AddScreen<PathScreen>("Path");
             CityView = AddScreen<CityScreen>("City");
+            Season = AddScreen<SeasonScreen>("Season");
             LevelResult = AddScreen<LevelResultScreen>("LevelResult");
             Hud = AddScreen<HudScreen>("Hud");
             GameOver = AddScreen<GameOverScreen>("GameOver");
@@ -274,6 +287,7 @@ namespace JellyDrop
 #if UNITY_PURCHASING && !UNITY_EDITOR
             var iap = new UnityIapService();
             iap.PremiumRestored += () => { if (!Economy.IsPremium) Economy.GrantPremium(); };
+            iap.SeasonPassPurchased += () => Loyalty.GrantPass();
             Iap = iap;
 #else
             Iap = new FakeIapService();
@@ -364,6 +378,34 @@ namespace JellyDrop
 
         public void OpenMissions() => Screens.Show(Missions);
         public void OpenArcade() => Screens.Show(Arcade);
+        public void OpenSeason() => Screens.Show(Season);
+
+        public void BuySeasonPass()
+        {
+            if (Loyalty.HasPass) return;
+            Iap.BuySeasonPass((success, error) =>
+            {
+                if (success)
+                {
+                    Loyalty.GrantPass();
+                    Save.Save(Economy.Data);
+                    Audio.Play(Sfx.Win);
+                    Popup.ShowReward(Loc.T("season.bought"), Loc.T("season.buy_title"), SpriteFactory.Star());
+                }
+                else if (!string.IsNullOrEmpty(error))
+                {
+                    Popup.ShowMessage(Loc.T("iap.failed"), error, null);
+                }
+            });
+        }
+
+        private void ShowLevelUp(LoyaltyGain gain)
+        {
+            Audio.Play(Sfx.LevelUp);
+            var item = gain.LevelRewards.ItemId != null ? Economy.Catalog.Get(gain.LevelRewards.ItemId) : null;
+            Popup.ShowReward(Loc.T("player.level_up", gain.LevelAfter), RewardUi.Describe(gain.LevelRewards, Economy.Catalog),
+                item != null ? RewardUi.ItemIcon(item) : SpriteFactory.Star());
+        }
 
         public void OpenPath()
         {
@@ -391,11 +433,14 @@ namespace JellyDrop
                 if (outcome.Won)
                     Online.SubmitLevelScore(new LevelScore { playerId = Online.PlayerId, playerName = Online.PlayerName, level = result.LevelNumber, score = result.Score, stars = outcome.Stars }, _ => { });
             }
+            var gain = Loyalty.AwardGame(result, outcome);
+            Save.Save(Economy.Data);
 
             void ShowResults()
             {
-                if (outcome != null) Screens.Show(LevelResult.With(result, rewards, outcome));
-                else Screens.Show(GameOver.With(result, rewards));
+                if (outcome != null) Screens.Show(LevelResult.With(result, rewards, outcome, gain));
+                else Screens.Show(GameOver.With(result, rewards, gain));
+                if (gain.LeveledUp) JellyDrop.Util.Tweener.Delay(1.6f, () => { if (!Screens.HasModal) ShowLevelUp(gain); }, this);
             }
 
             if (Economy.ShouldShowInterstitial())

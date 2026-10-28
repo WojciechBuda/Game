@@ -30,7 +30,9 @@ namespace JellyDrop.Core.Economy
         NotEnoughCoins,
         NotEnoughShards,
         RequiresPremium,
-        UnknownItem
+        UnknownItem,
+        /// <summary>Level or season reward: earned, never sold.</summary>
+        NotForSale
     }
 
     public sealed class GameRewards
@@ -41,7 +43,9 @@ namespace JellyDrop.Core.Economy
         public int SprintBonus;
         public int PremiumBonus;
         /// <summary>Extra coins from city buildings (parks, tower, castle).</summary>
+        /// <summary>Extra coins from the city and player level bonus (see <see cref="BonusPercent"/>).</summary>
         public int CityBonus;
+        public int BonusPercent;
         public bool IsPersonalBest;
         public int Total => ScoreCoins + CollectedCoins + PersonalBestBonus + SprintBonus + PremiumBonus + CityBonus;
         public List<MissionDef> MissionsCompleted = new List<MissionDef>();
@@ -54,6 +58,8 @@ namespace JellyDrop.Core.Economy
     public sealed class EconomyService
     {
         public event Action Changed;
+        /// <summary>Raised when a daily mission reward is claimed (season pass points listen to it).</summary>
+        public event Action<MissionDef> MissionClaimed;
 
         public PlayerData Data { get; }
         public Catalog Catalog { get; }
@@ -152,6 +158,7 @@ namespace JellyDrop.Core.Economy
             if (item == null) return PurchaseResult.UnknownItem;
             if (IsOwned(itemId)) return PurchaseResult.AlreadyOwned;
             if (item.PremiumOnly) return PurchaseResult.RequiresPremium;
+            if (item.IsReward) return PurchaseResult.NotForSale;
             if (withShards)
             {
                 if (item.ShardPrice <= 0) return PurchaseResult.UnknownItem;
@@ -170,6 +177,22 @@ namespace JellyDrop.Core.Economy
             Data.owned.Add(itemId);
             Notify();
             return PurchaseResult.Success;
+        }
+
+        /// <summary>Gives an item for free (level and season rewards). Returns false if already owned.</summary>
+        public bool GrantItem(string itemId)
+        {
+            if (Catalog.Get(itemId) == null || IsOwned(itemId)) return false;
+            Data.owned.Add(itemId);
+            Notify();
+            return true;
+        }
+
+        public void AddShards(int amount)
+        {
+            if (amount <= 0) return;
+            Data.shards += amount;
+            Notify();
         }
 
         public bool Equip(string itemId)
@@ -344,6 +367,7 @@ namespace JellyDrop.Core.Economy
             var def = MissionPool.Get(id);
             if (p == null || def == null || p.claimed || p.progress < def.Target) return 0;
             p.claimed = true;
+            MissionClaimed?.Invoke(def);
             Data.coins += def.RewardCoins;
             Data.totalCoinsEarned += def.RewardCoins;
             Notify();
@@ -463,6 +487,7 @@ namespace JellyDrop.Core.Economy
             }
 
             int cityPercent = CoinBonusPercent?.Invoke() ?? 0;
+            rewards.BonusPercent = cityPercent;
             if (cityPercent > 0)
             {
                 int baseTotal = rewards.ScoreCoins + rewards.CollectedCoins + rewards.PersonalBestBonus + rewards.SprintBonus;
