@@ -198,7 +198,7 @@ namespace JellyDrop.Interface
                         var b = UIKit.Image(bg.transform, SpriteFactory.SoftDot(), new Color(1f, 1f, 1f, 0.35f));
                         b.rectTransform.At(UIKit.Center, new Vector2(-120 + i * 50, -80 + (i * 37 % 160)), Vector2.one * (30 + i * 9));
                     }
-                    var note = UIKit.Text(bg.transform, "♪ " + Loc.MusicName(item.Music), 34, Color.white).Fit(20);
+                    var note = UIKit.Text(bg.transform, Loc.MusicName(item.Music), 34, Color.white).Fit(20);
                     note.rectTransform.At(UIKit.Bottom, new Vector2(0, 36), new Vector2(340, 50));
                     break;
                 case ItemCategory.Avatar:
@@ -316,7 +316,7 @@ namespace JellyDrop.Interface
 
             if (e.IsPremium)
             {
-                var thanks = UIKit.Text(card, Loc.T("shop.thanks") + " ♥", 44, ColorUtil.Pink).Fit(26);
+                var thanks = UIKit.Text(card, Loc.T("shop.thanks"), 44, ColorUtil.Pink).Fit(26);
                 thanks.rectTransform.At(UIKit.Bottom, new Vector2(0, 200), new Vector2(900, 80));
             }
             else

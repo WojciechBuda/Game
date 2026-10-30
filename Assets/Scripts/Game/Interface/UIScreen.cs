@@ -49,8 +49,22 @@ namespace JellyDrop.Interface
             OnShow();
             Refresh();
             var g = _group;
-            Tweener.Run(0.18f, k => { if (g != null) g.alpha = k; }, Ease.OutQuad, owner: this);
-            if (PopTarget != null) UIKit.Pop(PopTarget, 0.7f, 0.35f);
+            Tweener.Run(0.22f, k => { if (g != null) g.alpha = k; }, Ease.OutQuad, owner: this);
+            if (PopTarget != null)
+            {
+                UIKit.Pop(PopTarget, 0.85f, 0.42f);
+            }
+            else if (!IsModal)
+            {
+                // Full screens glide up into place with a soft spring.
+                var rt = Root;
+                Tweener.Run(0.42f, k =>
+                {
+                    if (rt == null) return;
+                    rt.anchoredPosition = new Vector2(0f, Mathf.LerpUnclamped(-70f, 0f, k));
+                    rt.localScale = Vector3.one * Mathf.LerpUnclamped(0.97f, 1f, k);
+                }, Ease.OutBack, owner: this);
+            }
         }
 
         public void Hide()

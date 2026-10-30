@@ -20,10 +20,15 @@ namespace JellyDrop.Interface
         public static Action ClickSound;
 
         private static Font _font;
+        private static Font _titleFont;
+        private static bool _custom;
+
+        /// <summary>Text this size or bigger uses the heavier title font.</summary>
+        public const int TitleSize = 64;
 
         /// <summary>
-        /// Uses Assets/Resources/Fonts/MainFont.ttf if present (drop in a rounded font such as
-        /// Fredoka or Baloo 2 from Google Fonts, OFL licence), otherwise Unity's built-in font.
+        /// Poppins Bold from Assets/Resources/Fonts/MainFont.ttf (OFL licence, see Poppins-OFL.txt),
+        /// otherwise Unity's built-in font.
         /// </summary>
         public static Font Font
         {
@@ -31,6 +36,7 @@ namespace JellyDrop.Interface
             {
                 if (_font != null) return _font;
                 _font = Resources.Load<Font>("Fonts/MainFont");
+                _custom = _font != null;
                 if (_font == null)
                 {
                     try { _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); } catch { /* older Unity */ }
@@ -42,6 +48,21 @@ namespace JellyDrop.Interface
                 return _font;
             }
         }
+
+        /// <summary>Poppins ExtraBold for big titles and numbers (falls back to the main font).</summary>
+        public static Font TitleFont
+        {
+            get
+            {
+                if (_titleFont != null) return _titleFont;
+                _titleFont = Resources.Load<Font>("Fonts/TitleFont");
+                if (_titleFont == null) _titleFont = Font;
+                return _titleFont;
+            }
+        }
+
+        /// <summary>The custom fonts already have the right weight; only the built-in font needs fake bold.</summary>
+        public static bool HasCustomFont { get { var _ = Font; return _custom; } }
 
         // ------------------------------------------------------------------ layout helpers
 
@@ -113,15 +134,26 @@ namespace JellyDrop.Interface
         public static Image NeonCard(Transform parent, Color accent, Color? fill = null, float roundness = 1f,
             bool raycast = true, string name = "Card", float glow = 0.35f)
         {
-            var card = Panel(parent, fill ?? ColorUtil.Panel, roundness, raycast, name);
-            // Soft drop shadow outside the edge (the glow sprite is hollow), then a crisp accent outline.
-            var halo = Image(card.transform, SpriteFactory.Glow(), PixelCanvas.WithAlpha(ColorUtil.Night, Mathf.Clamp01(glow) * 0.35f), false, "Shadow");
+            // Frosted glass: a translucent body brighter at the top, a soft accent-tinted shadow underneath,
+            // a thin bright edge and a faint accent rim.
+            roundness *= 0.8f; // bigger, softer corners
+            var baseFill = fill ?? ColorUtil.Panel;
+            var card = Panel(parent, new Color(baseFill.r, baseFill.g, baseFill.b, baseFill.a * 0.82f), roundness, raycast, name);
+            UIGradient.Add(card, Color.white, new Color(0.94f, 0.95f, 1f, 0.86f));
+            var halo = Image(card.transform, SpriteFactory.Glow(), PixelCanvas.WithAlpha(Color.Lerp(ColorUtil.Night, accent, 0.45f), Mathf.Clamp01(glow) * 0.42f), false, "Shadow");
             halo.type = UnityEngine.UI.Image.Type.Sliced;
             halo.pixelsPerUnitMultiplier = roundness;
             halo.preserveAspect = false;
             float pad = 30f / roundness; // glow sprite's inset, in canvas units at this roundness
-            halo.rectTransform.Fill(-pad, -pad, -pad, -pad);
-            var ring = Image(card.transform, SpriteFactory.RoundedRing(), accent, false, "Ring");
+            float drop = Mathf.Min(18f, pad * 0.4f);
+            halo.rectTransform.Fill(-pad, -pad - drop, -pad, -pad + drop);
+            var edge = Image(card.transform, SpriteFactory.RoundedRing(), new Color(1f, 1f, 1f, 0.9f), false, "Edge");
+            edge.type = UnityEngine.UI.Image.Type.Sliced;
+            edge.pixelsPerUnitMultiplier = roundness * 1.6f;
+            edge.preserveAspect = false;
+            edge.rectTransform.Fill();
+            UIGradient.Add(edge, Color.white, new Color(1f, 1f, 1f, 0.25f));
+            var ring = Image(card.transform, SpriteFactory.RoundedRing(), PixelCanvas.WithAlpha(accent, 0.45f), false, "Ring");
             ring.type = UnityEngine.UI.Image.Type.Sliced;
             ring.pixelsPerUnitMultiplier = roundness;
             ring.preserveAspect = false;
@@ -134,10 +166,11 @@ namespace JellyDrop.Interface
         {
             var rt = Node(name, parent);
             var t = rt.gameObject.AddComponent<Text>();
-            t.font = Font;
+            t.font = size >= TitleSize ? TitleFont : Font;
             t.text = text;
             t.fontSize = size;
-            t.fontStyle = FontStyle.Bold;
+            t.fontStyle = HasCustomFont ? FontStyle.Normal : FontStyle.Bold;
+            t.lineSpacing = HasCustomFont ? 0.9f : 1f;
             t.color = color;
             t.alignment = anchor;
             t.raycastTarget = false;
@@ -146,13 +179,16 @@ namespace JellyDrop.Interface
             t.supportRichText = true;
             if (outline)
             {
-                // Arcade sticker look: a white border, then a soft shadow underneath.
+                // Modern look: no sticker border, just a soft lift. Big titles also get a light-to-colour gradient.
                 var s = rt.gameObject.AddComponent<Shadow>();
-                s.effectColor = PixelCanvas.WithAlpha(ColorUtil.Night, 0.22f);
-                s.effectDistance = new Vector2(0f, -6f);
-                var o = rt.gameObject.AddComponent<Outline>();
-                o.effectColor = new Color(1f, 1f, 1f, 0.9f);
-                o.effectDistance = new Vector2(3f, 3f);
+                s.effectColor = PixelCanvas.WithAlpha(ColorUtil.Night, 0.16f);
+                s.effectDistance = new Vector2(0f, -Mathf.Max(2f, size * 0.05f));
+                if (size >= TitleSize && color.a > 0f)
+                {
+                    // Multiplier that turns the text colour into a lighter tint at the top of the glyphs.
+                    var light = Color.Lerp(color, Color.white, 0.38f);
+                    UIGradient.Add(t, new Color(light.r / Mathf.Max(0.01f, color.r), light.g / Mathf.Max(0.01f, color.g), light.b / Mathf.Max(0.01f, color.b), 1f), Color.white);
+                }
             }
             return t;
         }
@@ -279,7 +315,7 @@ namespace JellyDrop.Interface
         private bool _interactable = true;
         private bool _pressed;
         private Color _color;
-        private const float Depth = 14f;
+        private const float Depth = 7f;
 
         public void Build(string label, Color color, int fontSize, Sprite icon)
         {
@@ -289,7 +325,7 @@ namespace JellyDrop.Interface
             _glow.type = Image.Type.Sliced;
             _glow.pixelsPerUnitMultiplier = 1.4f;
             _glow.preserveAspect = false;
-            _glow.rectTransform.Fill(-21.4f, -21.4f, -21.4f, -21.4f); // 30 px inset / 1.4 roundness
+            _glow.rectTransform.Fill(-21.4f, -21.4f - 12f, -21.4f, -21.4f + 12f); // 30 px inset / 1.4 roundness, dropped 12 px
 
             Base = UIKit.Panel(rt, color, 1.4f, true, "Base");
             Base.rectTransform.Fill();
@@ -297,11 +333,15 @@ namespace JellyDrop.Interface
             Face = UIKit.Panel(rt, color, 1.4f, false, "Face");
             _faceRt = Face.rectTransform;
             _faceRt.Fill(0, Depth, 0, 0);
+            // Lit from above: the face fades from a light top to the full colour at the bottom.
+            UIGradient.Add(Face, Color.white, new Color(0.86f, 0.86f, 0.9f, 1f));
 
-            _shine = UIKit.Panel(_faceRt, Color.white, 2.2f, false, "Shine");
-            _shine.rectTransform.anchorMin = new Vector2(0.06f, 0.6f);
-            _shine.rectTransform.anchorMax = new Vector2(0.94f, 0.9f);
-            _shine.rectTransform.offsetMin = _shine.rectTransform.offsetMax = Vector2.zero;
+            _shine = UIKit.Panel(_faceRt, Color.white, 1.6f, false, "Shine");
+            _shine.rectTransform.anchorMin = new Vector2(0f, 0.5f);
+            _shine.rectTransform.anchorMax = new Vector2(1f, 1f);
+            _shine.rectTransform.offsetMin = new Vector2(3, 0);
+            _shine.rectTransform.offsetMax = new Vector2(-3, -3);
+            UIGradient.Add(_shine, Color.white, new Color(1f, 1f, 1f, 0f));
 
             _ring = UIKit.Image(_faceRt, SpriteFactory.RoundedRing(), color, false, "Ring");
             _ring.type = Image.Type.Sliced;
@@ -325,7 +365,10 @@ namespace JellyDrop.Interface
 
             if (!string.IsNullOrEmpty(label))
             {
-                Label = UIKit.Text(_faceRt, label, fontSize, Color.white);
+                Label = UIKit.Text(_faceRt, label, fontSize, Color.white, TextAnchor.MiddleCenter, false);
+                var lift = Label.gameObject.AddComponent<Shadow>();
+                lift.effectColor = new Color(0f, 0f, 0f, 0.18f);
+                lift.effectDistance = new Vector2(0f, -3f);
                 Label.rectTransform.Fill(icon != null ? rt.sizeDelta.y * 0.75f : 16, 4, 16, 0);
                 Label.resizeTextForBestFit = true;
                 Label.resizeTextMinSize = 20;
@@ -340,18 +383,18 @@ namespace JellyDrop.Interface
         private void ApplyColors()
         {
             // Chunky arcade key: solid candy face, darker base for depth, soft shadow, light inner rim.
+            // Modern key: lit gradient face, thin lip, glass edge, and a soft glow in the button's own colour.
             var c = _interactable ? _color : Color.Lerp(_color, Hex("#C9CDE6"), 0.8f);
-            Face.color = c;
-            Base.color = PixelCanvas.Darken(c, 0.22f);
-            _ring.color = new Color(1f, 1f, 1f, _interactable ? 0.45f : 0.25f);
-            _glow.color = PixelCanvas.WithAlpha(ColorUtil.Night, _interactable ? 0.16f : 0.06f);
-            _shine.color = new Color(1f, 1f, 1f, _interactable ? 0.22f : 0.1f);
+            Face.color = PixelCanvas.Lighten(c, 0.12f);
+            Base.color = PixelCanvas.Darken(c, 0.16f);
+            _ring.color = new Color(1f, 1f, 1f, _interactable ? 0.38f : 0.2f);
+            _glow.color = PixelCanvas.WithAlpha(Color.Lerp(c, ColorUtil.Night, 0.25f), _interactable ? 0.38f : 0.08f);
+            _shine.color = new Color(1f, 1f, 1f, _interactable ? 0.28f : 0.12f);
             if (Icon != null) Icon.color = new Color(1f, 1f, 1f, _interactable ? 1f : 0.7f);
             if (Label != null)
             {
                 Label.color = new Color(1f, 1f, 1f, _interactable ? 1f : 0.85f);
-                var outline = Label.GetComponent<Outline>();
-                if (outline != null) outline.effectColor = PixelCanvas.WithAlpha(PixelCanvas.Darken(c, 0.3f), _interactable ? 0.35f : 0.15f);
+
             }
         }
 
@@ -397,7 +440,9 @@ namespace JellyDrop.Interface
             _pressed = true;
             _faceRt.offsetMin = new Vector2(0, Depth * 0.3f);
             _faceRt.offsetMax = new Vector2(0, -Depth * 0.7f);
-            transform.localScale = Vector3.one * 0.96f;
+            var t = transform;
+            Tweener.Run(0.08f, k => { if (t != null) t.localScale = Vector3.one * Mathf.Lerp(1f, 0.94f, k); }, Ease.OutQuad, owner: this);
+            Services.Haptics.Tap();
         }
 
         public void OnPointerUp(PointerEventData eventData) => Release();
@@ -409,7 +454,8 @@ namespace JellyDrop.Interface
             _faceRt.offsetMin = new Vector2(0, Depth);
             _faceRt.offsetMax = Vector2.zero;
             var t = transform;
-            Tweener.Run(0.25f, k => { if (t != null) t.localScale = Vector3.one * Mathf.LerpUnclamped(0.96f, 1f, k); }, Ease.OutBack, owner: this);
+            float from = t.localScale.x;
+            Tweener.Run(0.35f, k => { if (t != null) t.localScale = Vector3.one * Mathf.LerpUnclamped(from, 1f, k); }, Ease.OutElastic, owner: this);
         }
 
         public void OnPointerClick(PointerEventData eventData)

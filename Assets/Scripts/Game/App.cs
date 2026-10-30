@@ -85,7 +85,11 @@ namespace JellyDrop
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            Application.targetFrameRate = 60;
+            // Smooth on 90/120 Hz screens, 60 elsewhere.
+            float hz = 60f;
+            try { hz = (float)Screen.currentResolution.refreshRateRatio.value; } catch { /* very old devices */ }
+            Application.targetFrameRate = Mathf.Clamp(Mathf.RoundToInt(hz), 60, 120);
+            QualitySettings.vSyncCount = 0;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             Screen.orientation = ScreenOrientation.Portrait;
 #if ENABLE_LEGACY_INPUT_MANAGER

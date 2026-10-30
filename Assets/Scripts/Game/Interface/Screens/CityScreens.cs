@@ -446,8 +446,8 @@ namespace JellyDrop.Interface
                 return;
             }
 
-            var arrow = UIKit.Text(_content, "▼", 48, ColorUtil.Mint, TextAnchor.MiddleCenter, false);
-            arrow.rectTransform.At(UIKit.Top, new Vector2(0, -730), new Vector2(100, 60));
+            var arrow = UIKit.Image(_content, SpriteFactory.Triangle(), ColorUtil.Mint, false, "Arrow");
+            arrow.rectTransform.At(UIKit.Top, new Vector2(0, -730), new Vector2(56, 44));
             var next = UIKit.Text(_content, Loc.T("city.level_short", p.level + 1) + ":  " + CityUi.Describe(def, p.level + 1), 36, ColorUtil.Mint, TextAnchor.MiddleCenter, false).Fit(20);
             next.rectTransform.At(UIKit.Top, new Vector2(0, -810), new Vector2(860, 90));
 

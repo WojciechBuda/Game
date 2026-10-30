@@ -79,8 +79,8 @@ namespace JellyDrop.Gameplay
             Particles = new GameObject("Particles").AddComponent<ParticleField>();
             Particles.transform.SetParent(transform, false);
 
-            _gestures.OnRotate = () => { if (Session.RotateClockwise()) _audio.Play(Sfx.Rotate, 0.7f); };
-            _gestures.OnRotateCCW = () => { if (Session.RotateCounterClockwise()) _audio.Play(Sfx.Rotate, 0.7f); };
+            _gestures.OnRotate = () => { if (Session.RotateClockwise()) { _audio.Play(Sfx.Rotate, 0.7f); Haptics.Tap(); } };
+            _gestures.OnRotateCCW = () => { if (Session.RotateCounterClockwise()) { _audio.Play(Sfx.Rotate, 0.7f); Haptics.Tap(); } };
             _gestures.OnMove = () => _audio.Play(Sfx.Move, 0.5f, 0.08f);
             _gestures.OnHardDrop = () => Session.HardDrop();
             _gestures.OnHold = () => { if (Session.Hold()) _audio.Play(Sfx.Hold, 0.8f); };
@@ -280,6 +280,7 @@ namespace JellyDrop.Gameplay
         {
             Board.Squish(piece);
             _audio.Play(Sfx.Lock, 0.8f);
+            Haptics.Tap();
             var col = piece.Golden ? ColorUtil.Gold : Board.ColorOf(piece.Type);
             foreach (var c in piece.BoardCells())
                 if (c.y < _config.BoardVisibleHeight)
@@ -290,6 +291,7 @@ namespace JellyDrop.Gameplay
         private void OnHardDropped(int distance)
         {
             _audio.Play(Sfx.HardDrop, 0.9f);
+            Haptics.Medium();
             if (distance > 4) _shake.Shake(0.12f, 0.15f);
         }
 
@@ -318,9 +320,9 @@ namespace JellyDrop.Gameplay
 
             switch (result.LineCount)
             {
-                case 1: _audio.Play(Sfx.Clear1); break;
-                case 2: _audio.Play(Sfx.Clear2); break;
-                case 3: _audio.Play(Sfx.Clear3); break;
+                case 1: _audio.Play(Sfx.Clear1); Haptics.Medium(); break;
+                case 2: _audio.Play(Sfx.Clear2); Haptics.Medium(); break;
+                case 3: _audio.Play(Sfx.Clear3); Haptics.Big(); break;
                 default:
                     _audio.Play(Sfx.Quad);
                     _shake.Shake(0.45f, 0.4f);
