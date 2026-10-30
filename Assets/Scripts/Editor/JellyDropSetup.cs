@@ -51,7 +51,8 @@ namespace JellyDrop.EditorTools
             // Android: Google Play requires 64-bit (ARM64) and an AAB upload.
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
-            PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel24;
+            // Android 8.0+ (API 26); newer Unity versions dropped the older levels.
+            PlayerSettings.Android.minSdkVersion = (AndroidSdkVersions)26;
             PlayerSettings.Android.bundleVersionCode = 1;
             EditorUserBuildSettings.buildAppBundle = true;
 

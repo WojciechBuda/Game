@@ -37,9 +37,9 @@ namespace JellyDrop.Interface
             _privacy = Action(c, ref y, Loc.T("settings.privacy_choices"), ColorUtil.Mint, () => App.Ads.ShowPrivacyOptions());
             Action(c, ref y, Loc.T("settings.privacy_policy"), ColorUtil.Mint, () => Application.OpenURL(MonetizationIds.PrivacyPolicyUrl));
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Action(c, ref y, "DEBUG: +5000", ColorUtil.Red, () => App.Economy.AddCoins(5000));
-#endif
+            // Test helper, only in the editor and development builds.
+            if (Application.isEditor || Debug.isDebugBuild)
+                Action(c, ref y, "DEBUG: +5000", ColorUtil.Red, () => App.Economy.AddCoins(5000));
 
             var version = UIKit.Text(c, $"Jelly Drop v{Application.version}", 32, ColorUtil.InkDim, TextAnchor.MiddleCenter, false);
             version.rectTransform.At(UIKit.Bottom, new Vector2(0, 50), new Vector2(800, 60));
