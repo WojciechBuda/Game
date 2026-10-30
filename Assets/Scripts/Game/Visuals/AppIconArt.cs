@@ -5,7 +5,7 @@ using UnityEngine;
 namespace JellyDrop.Visuals
 {
     /// <summary>
-    /// The Stackville app icon: one big 3D block with a wide, toothy grin, a palm tree and the sun behind it.
+    /// The Stackville app icon: one big 3D block with eyebrows and a wide, toothy grin on a clean gradient.
     /// Drawn in code like every other sprite (Stackville > Generate App Icon).
     /// </summary>
     public static class AppIconArt
@@ -18,28 +18,12 @@ namespace JellyDrop.Visuals
             var c = new PixelCanvas(size, size);
             float s = size / 1024f;
 
-            // Sky: deeper blue at the top, almost white near the horizon.
-            var top = ColorUtil.Hex("#3FB6FF");
-            var low = ColorUtil.Hex("#C9F3FF");
+            // Clean background: a soft diagonal gradient, so the block is the only thing in the icon.
+            var top = ColorUtil.Hex("#6C7BFF");
+            var low = ColorUtil.Hex("#7FD8FF");
             for (int y = 0; y < size; y++)
-            {
-                var col = Color.Lerp(low, top, Mathf.Pow(y / (float)size, 0.9f));
-                for (int x = 0; x < size; x++) c.Set(x, y, col);
-            }
-
-            // Sun with a warm halo (top left)
-            float sunX = 250 * s, sunY = 790 * s;
-            c.Paint((x, y) => PixelCanvas.Circle(x, y, sunX, sunY, 230 * s),
-                (x, y, d) => new Color(1f, 0.95f, 0.7f, Mathf.Clamp01(-d / (230 * s)) * 0.6f), 2f);
-            c.Paint((x, y) => PixelCanvas.Circle(x, y, sunX, sunY, 118 * s),
-                (x, y, d) => Color.Lerp(ColorUtil.Hex("#FFB938"), ColorUtil.Hex("#FFE27A"), Mathf.Clamp01((y - sunY + 118 * s) / (236 * s))), 1.5f * s);
-
-            Palm(c, s);
-
-            // Sand dune
-            float dune = 235 * s;
-            c.Paint((x, y) => y - (dune + Mathf.Sin((x / size) * Mathf.PI * 1.1f + 0.2f) * 45 * s),
-                (x, y, d) => Color.Lerp(ColorUtil.Hex("#F6C77D"), ColorUtil.Hex("#FFE3A8"), Mathf.Clamp01(y / (dune + 45 * s))), 1.5f * s);
+                for (int x = 0; x < size; x++)
+                    c.Set(x, y, Color.Lerp(low, top, Mathf.Clamp01((y + (size - x) * 0.3f) / (size * 1.3f))));
 
             Block(c, s);
             return c;
@@ -103,13 +87,13 @@ namespace JellyDrop.Visuals
 
         private static void Block(PixelCanvas c, float s)
         {
-            float half = 230 * s, radius = 70 * s;
-            var front = new Vector2(450 * s, 450 * s);
+            float half = 250 * s, radius = 76 * s;
+            var front = new Vector2(474 * s, 486 * s);
             var depth = new Vector2(70 * s, 58 * s); // extrusion towards the upper right
 
             // Soft shadow on the sand
             c.Paint((x, y) => PixelCanvas.Ellipse(x, y, front.x + 40 * s, front.y - half - 10 * s, half * 1.2f, 34 * s),
-                new Color(0.55f, 0.35f, 0.15f, 0.3f), 20 * s);
+                new Color(0.12f, 0.12f, 0.4f, 0.28f), 22 * s);
 
             // Extruded sides: stacked copies from back to front, darker at the back.
             int steps = Mathf.CeilToInt(depth.magnitude / (2f * s));
@@ -141,23 +125,42 @@ namespace JellyDrop.Visuals
                 c.Paint((x, y) => PixelCanvas.Circle(x, y, cx + 16 * s, ey + 20 * s, 9 * s), Color.white, 1.5f * s);
             }
 
-            // Wide open grin: a D-shaped mouth with a row of teeth on top and a tongue at the bottom.
-            float mx = front.x, my = front.y - 30 * s, mrx = 150 * s, mry = 125 * s;
-            Func<float, float, float> mouth = (x, y) => Mathf.Max(PixelCanvas.Ellipse(x, y, mx, my, mrx, mry), y - my);
-            c.Paint((x, y) => mouth(x, y), Ink, 1.5f * s);
-            c.Paint((x, y) => Mathf.Max(mouth(x, y) + 4 * s, PixelCanvas.Circle(x, y, mx, my - mry - 10 * s, 84 * s)), ColorUtil.Hex("#FF8FB0"), 1.5f * s);
-            // Teeth: a white band under the top edge, split into teeth by thin gaps
+            // Eyebrows: thick rounded bars, raised a little on the outside for a cheeky look.
+            foreach (int side in new[] { -1, 1 })
+            {
+                float cx = front.x + side * ex;
+                float y1 = ey + 92 * s, y2 = ey + 106 * s;
+                float ax = cx - side * 50 * s, bx = cx + side * 50 * s;
+                c.Paint((x, y) => PixelCanvas.Segment(x, y, ax, y1, bx, y2, 36 * s), Ink, 1.5f * s);
+            }
+
+            // Big toothy grin: a crescent between two upward curves, filled with two rows of teeth.
+            float mx = front.x, my = front.y - 50 * s, mrx = 170 * s;
+            Func<float, float> topEdge = x => { float u = (x - mx) / mrx; return my - 2 * s + 34 * s * u * u; };
+            Func<float, float> bottomEdge = x => { float u = (x - mx) / mrx; return my - 112 * s + 140 * s * u * u; };
+            Func<float, float, float> grin = (x, y) => Mathf.Max(Mathf.Max(bottomEdge(x) - y, y - topEdge(x)), Mathf.Abs(x - mx) - mrx);
+            // Dark lips/outline, then the teeth
+            c.Paint((x, y) => grin(x, y) - 9 * s, Ink, 1.5f * s);
+            c.Paint((x, y) => grin(x, y), (x, y, d) => Color.Lerp(ColorUtil.Hex("#E4E4F0"), Color.white, Mathf.Clamp01(-d / (14 * s))), 1.5f * s);
+            // Line between the upper and lower teeth
+            c.Paint((x, y) => Mathf.Max(Mathf.Abs(y - (topEdge(x) * 0.55f + bottomEdge(x) * 0.45f)) - 3 * s, grin(x, y)),
+                ColorUtil.Hex("#B9B9CC"), 1.2f * s);
+            // Gaps between teeth
             c.Paint((x, y) =>
             {
-                float band = Mathf.Max(mouth(x, y) + 8 * s, (my - 46 * s) - y);
-                // Thin gaps every 50 px split the band into teeth.
-                float fromGap = Mathf.Abs(Mathf.Repeat(x - mx + 25 * s, 50 * s) - 25 * s);
-                return Mathf.Max(band, 3.5f * s - fromGap);
-            }, Color.white, 1.5f * s);
+                float fromGap = Mathf.Abs(Mathf.Repeat(x - mx + 32 * s, 64 * s) - 32 * s);
+                return Mathf.Max(fromGap - 2.6f * s, grin(x, y) + 2 * s);
+            }, ColorUtil.Hex("#D3D3E2"), 1.2f * s);
+            // Smile dimples at the corners
+            foreach (int side in new[] { -1, 1 })
+            {
+                float cx0 = mx + side * (mrx + 14 * s), cy0 = my + 34 * s;
+                c.Paint((x, y) => PixelCanvas.Segment(x, y, cx0 - side * 4 * s, cy0 - 18 * s, cx0 + side * 8 * s, cy0 + 14 * s, 6 * s), Ink, 1.5f * s);
+            }
 
             // Rosy cheeks
-            c.Paint((x, y) => Mathf.Min(PixelCanvas.Ellipse(x, y, front.x - 175 * s, front.y - 5 * s, 34 * s, 22 * s),
-                PixelCanvas.Ellipse(x, y, front.x + 175 * s, front.y - 5 * s, 34 * s, 22 * s)), new Color(1f, 0.85f, 0.88f, 0.55f), 6 * s);
+            c.Paint((x, y) => Mathf.Min(PixelCanvas.Ellipse(x, y, front.x - 175 * s, front.y + 4 * s, 34 * s, 22 * s),
+                PixelCanvas.Ellipse(x, y, front.x + 175 * s, front.y + 4 * s, 34 * s, 22 * s)), new Color(1f, 0.85f, 0.88f, 0.55f), 6 * s);
         }
 
         // ------------------------------------------------------------------ helpers
