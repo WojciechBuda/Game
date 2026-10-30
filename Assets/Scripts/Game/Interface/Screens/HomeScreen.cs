@@ -39,8 +39,8 @@ namespace JellyDrop.Interface
                 if (title[i] == ' ') continue;
                 var letter = UIKit.Text(titleRow, title[i].ToString(), 150, ColorUtil.Rainbow[i % ColorUtil.Rainbow.Length]);
                 letter.rectTransform.At(UIKit.Center, new Vector2(startX + i * letterW, i < 5 ? 40 : -40), new Vector2(130, 180));
-                var outline = letter.GetComponent<Outline>();
-                outline.effectDistance = new Vector2(6, 6);
+                var lift = letter.GetComponent<Shadow>();
+                if (lift != null) lift.effectDistance = new Vector2(0, -10);
                 var bob = letter.gameObject.AddComponent<Bobber>();
                 bob.Amplitude = 10f;
                 bob.Speed = 2.4f;
