@@ -49,7 +49,7 @@ The APK is signed with Unity's debug key: fine for testing, not for the Play Sto
 
 ## 2. Open the project in Unity
 
-1. Install **Unity 6000.0.58f2** (Unity 6 LTS, includes the September 2025 security fix) through Unity Hub, with these modules:
+1. Install **Unity 6000.6.7f1** through Unity Hub, with these modules:
    - **Android Build Support** (includes OpenJDK and the Android SDK/NDK).
    - **iOS Build Support**. iOS builds need a Mac with Xcode.
 2. Clone this repo. In Unity Hub choose **Add → Add project from disk** and select the repo folder. The first import takes a few minutes.
@@ -125,7 +125,7 @@ Assets/
     Editor/      "Jelly Drop" menu: project setup, icon, SDK switches, reset progress
   Tests/EditMode/ NUnit tests (Window → General → Test Runner)
 Tools/CoreTests/  Runs the same tests outside Unity: `dotnet test`
-Packages/, ProjectSettings/  Unity project files (Unity 6000.0.58f2)
+Packages/, ProjectSettings/  Unity project files (Unity 6000.6.7f1)
 .github/workflows/android.yml  Cloud build: tests + installable APK on every push
 ```
 
