@@ -115,21 +115,31 @@ namespace JellyDrop.Visuals
             c.Paint((x, y) => PixelCanvas.RoundedBox(x, y, front.x - 30 * s, front.y + half * 0.72f, half * 0.7f, 24 * s, 24 * s),
                 new Color(1f, 1f, 1f, 0.28f), 6 * s);
 
-            // Eyes: white with big pupils looking slightly up, plus shine dots
-            float ex = 95 * s, ey = front.y + 70 * s;
-            foreach (int side in new[] { -1, 1 })
+            // Sunglasses: two rounded dark lenses with a shine, a bridge and arms reaching to the sides.
+            float ex = 100 * s, ey = front.y + 74 * s;
+            float lw = 84 * s, lh = 60 * s, lr = 50 * s, frame = 12 * s;
+            Func<float, float, float> lenses = (x, y) => Mathf.Min(
+                PixelCanvas.RoundedBox(x, y, front.x - ex, ey, lw, lh, lr),
+                PixelCanvas.RoundedBox(x, y, front.x + ex, ey, lw, lh, lr));
+            // Arms to the edges of the block, then the frame, bridge and lenses
+            c.Paint((x, y) => Mathf.Min(
+                PixelCanvas.Segment(x, y, front.x - ex - lw, ey + 22 * s, front.x - half + 6 * s, ey + 30 * s, 10 * s),
+                PixelCanvas.Segment(x, y, front.x + ex + lw, ey + 22 * s, front.x + half - 6 * s, ey + 30 * s, 10 * s)), Ink, 1.5f * s);
+            c.Paint((x, y) => Mathf.Min(lenses(x, y) - frame,
+                PixelCanvas.Segment(x, y, front.x - ex + lw, ey + 24 * s, front.x + ex - lw, ey + 24 * s, 11 * s)), Ink, 1.5f * s);
+            c.Paint((x, y) => lenses(x, y), (x, y, d) => Color.Lerp(ColorUtil.Hex("#4B3F72"), ColorUtil.Hex("#1F1A33"), Mathf.Clamp01((y - ey + lh) / (2 * lh))), 1.5f * s);
+            // Diagonal shine on each lens
+            c.Paint((x, y) =>
             {
-                float cx = front.x + side * ex;
-                c.Paint((x, y) => PixelCanvas.Ellipse(x, y, cx, ey, 44 * s, 54 * s), Color.white, 1.5f * s);
-                c.Paint((x, y) => PixelCanvas.Circle(x, y, cx + 6 * s, ey + 8 * s, 28 * s), Ink, 1.5f * s);
-                c.Paint((x, y) => PixelCanvas.Circle(x, y, cx + 16 * s, ey + 20 * s, 9 * s), Color.white, 1.5f * s);
-            }
+                float stripe = Mathf.Abs((x - front.x) * 0.0f + (y - ey) + (Mathf.Repeat(x - front.x + ex * 2f, ex * 2f) - ex) * 0.9f) - 9 * s;
+                return Mathf.Max(stripe, lenses(x, y) + 8 * s);
+            }, new Color(1f, 1f, 1f, 0.35f), 2 * s);
 
             // Eyebrows: thick rounded bars, raised a little on the outside for a cheeky look.
             foreach (int side in new[] { -1, 1 })
             {
                 float cx = front.x + side * ex;
-                float y1 = ey + 92 * s, y2 = ey + 106 * s;
+                float y1 = ey + 104 * s, y2 = ey + 120 * s;
                 float ax = cx - side * 50 * s, bx = cx + side * 50 * s;
                 c.Paint((x, y) => PixelCanvas.Segment(x, y, ax, y1, bx, y2, 36 * s), Ink, 1.5f * s);
             }
@@ -159,8 +169,8 @@ namespace JellyDrop.Visuals
             }
 
             // Rosy cheeks
-            c.Paint((x, y) => Mathf.Min(PixelCanvas.Ellipse(x, y, front.x - 175 * s, front.y + 4 * s, 34 * s, 22 * s),
-                PixelCanvas.Ellipse(x, y, front.x + 175 * s, front.y + 4 * s, 34 * s, 22 * s)), new Color(1f, 0.85f, 0.88f, 0.55f), 6 * s);
+            c.Paint((x, y) => Mathf.Min(PixelCanvas.Ellipse(x, y, front.x - 175 * s, front.y - 22 * s, 34 * s, 22 * s),
+                PixelCanvas.Ellipse(x, y, front.x + 175 * s, front.y - 22 * s, 34 * s, 22 * s)), new Color(1f, 0.85f, 0.88f, 0.55f), 6 * s);
         }
 
         // ------------------------------------------------------------------ helpers
