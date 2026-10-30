@@ -10,25 +10,25 @@ using UnityEngine;
 namespace JellyDrop.EditorTools
 {
     /// <summary>
-    /// One-click project setup: Jelly Drop > Setup Project.
+    /// One-click project setup: Stackville > Setup Project.
     /// Sets app name/IDs/orientation, Android IL2CPP + ARM64, creates the Main scene and the app icon.
     /// </summary>
     public static class JellyDropSetup
     {
         // Change these before publishing. The package name can't be changed after the first upload.
         private const string Company = "Wojciech Buda";
-        private const string Product = "Jelly Drop";
-        private const string BundleId = "com.wojciechbuda.jellydrop";
+        private const string Product = "Stackville";
+        private const string BundleId = "com.wojciechbuda.stackville";
         public const string ScenePath = "Assets/Scenes/Main.unity";
         private const string IconPath = "Assets/Art/AppIcon.png";
 
-        [MenuItem("Jelly Drop/Setup Project", priority = 0)]
+        [MenuItem("Stackville/Setup Project", priority = 0)]
         public static void SetupProject()
         {
             ApplySettings();
-            Debug.Log("[Jelly Drop] Project set up. Press Play in Assets/Scenes/Main.unity.");
+            Debug.Log("[Stackville] Project set up. Press Play in Assets/Scenes/Main.unity.");
             if (!Application.isBatchMode)
-                EditorUtility.DisplayDialog("Jelly Drop", "Project set up!\n\nOpen Assets/Scenes/Main.unity and press Play.", "OK");
+                EditorUtility.DisplayDialog("Stackville", "Project set up!\n\nOpen Assets/Scenes/Main.unity and press Play.", "OK");
         }
 
         /// <summary>Applies all player settings, creates the scene and icon. No dialogs, so CI builds can call it.</summary>
@@ -80,7 +80,7 @@ namespace JellyDrop.EditorTools
             EditorSceneManager.OpenScene(ScenePath);
         }
 
-        [MenuItem("Jelly Drop/Generate App Icon", priority = 10)]
+        [MenuItem("Stackville/Generate App Icon", priority = 10)]
         public static void GenerateIcon()
         {
             const int size = 1024;
@@ -114,7 +114,7 @@ namespace JellyDrop.EditorTools
                 AssetDatabase.ImportAsset(IconPath);
                 var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(IconPath);
                 PlayerSettings.SetIcons(NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
-                Debug.Log("[Jelly Drop] App icon written to " + IconPath);
+                Debug.Log("[Stackville] App icon written to " + IconPath);
             }
             finally
             {
@@ -139,25 +139,25 @@ namespace JellyDrop.EditorTools
 
         // ------------------------------------------------------------------ SDK switches
 
-        [MenuItem("Jelly Drop/Ads: enable AdMob (after importing Google Mobile Ads)", priority = 30)]
+        [MenuItem("Stackville/Ads: enable AdMob (after importing Google Mobile Ads)", priority = 30)]
         public static void EnableAdMob() => SetDefine("ADMOB", true);
 
-        [MenuItem("Jelly Drop/Ads: use test ads only", priority = 31)]
+        [MenuItem("Stackville/Ads: use test ads only", priority = 31)]
         public static void DisableAdMob() => SetDefine("ADMOB", false);
 
-        [MenuItem("Jelly Drop/IAP: enable Unity IAP (after installing In-App Purchasing)", priority = 32)]
+        [MenuItem("Stackville/IAP: enable Unity IAP (after installing In-App Purchasing)", priority = 32)]
         public static void EnableIap() => SetDefine("UNITY_PURCHASING", true);
 
-        [MenuItem("Jelly Drop/IAP: use fake store", priority = 33)]
+        [MenuItem("Stackville/IAP: use fake store", priority = 33)]
         public static void DisableIap() => SetDefine("UNITY_PURCHASING", false);
 
-        [MenuItem("Jelly Drop/Reset saved progress", priority = 50)]
+        [MenuItem("Stackville/Reset saved progress", priority = 50)]
         public static void ResetProgress()
         {
-            if (!EditorUtility.DisplayDialog("Jelly Drop", "Delete all saved coins, items and settings?", "Delete", "Cancel")) return;
+            if (!EditorUtility.DisplayDialog("Stackville", "Delete all saved coins, items and settings?", "Delete", "Cancel")) return;
             PlayerPrefs.DeleteAll();
             PlayerPrefs.Save();
-            Debug.Log("[Jelly Drop] Progress reset.");
+            Debug.Log("[Stackville] Progress reset.");
         }
 
         private static void SetDefine(string define, bool enabled)
@@ -171,7 +171,7 @@ namespace JellyDrop.EditorTools
                 if (!enabled) list.Remove(define);
                 PlayerSettings.SetScriptingDefineSymbols(target, string.Join(";", list));
             }
-            Debug.Log($"[Jelly Drop] {define} {(enabled ? "enabled" : "disabled")} for Android and iOS.");
+            Debug.Log($"[Stackville] {define} {(enabled ? "enabled" : "disabled")} for Android and iOS.");
         }
     }
 }

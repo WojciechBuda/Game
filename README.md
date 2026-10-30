@@ -1,4 +1,4 @@
-# Jelly Drop
+# Stackville
 
 A soft, bright arcade falling-block puzzle game for Android and iOS, built with Unity (C#). You play arcade levels to earn coins and building supplies, then grow your own city with them.
 
@@ -41,7 +41,7 @@ Every push to `main` builds an installable APK in GitHub Actions and publishes i
 4. Go to **Actions → Android APK → Run workflow** (or push any commit). The first build takes roughly 20–40 minutes; later builds are faster thanks to caching.
 
 **Install on the phone:**
-1. On the phone, open this repo's **Releases** page and download `JellyDrop.apk` from the newest "Jelly Drop test build".
+1. On the phone, open this repo's **Releases** page and download `Stackville.apk` from the newest "Stackville test build".
 2. Open the file. Android asks you to allow installing unknown apps for your browser: allow it, then tap **Install**.
 3. Updates: install a newer build over the old one. Progress is kept.
 
@@ -53,15 +53,15 @@ The APK is signed with Unity's debug key: fine for testing, not for the Play Sto
    - **Android Build Support** (includes OpenJDK and the Android SDK/NDK).
    - **iOS Build Support**. iOS builds need a Mac with Xcode.
 2. Clone this repo. In Unity Hub choose **Add → Add project from disk** and select the repo folder. The first import takes a few minutes.
-3. Run the menu **Jelly Drop → Setup Project**. It does the following:
-   - Sets the app name, bundle id (`com.wojciechbuda.jellydrop`) and portrait orientation.
+3. Run the menu **Stackville → Setup Project**. It does the following:
+   - Sets the app name, bundle id (`com.wojciechbuda.stackville`) and portrait orientation.
    - Configures Android for IL2CPP + ARM64 and App Bundle (.aab) output, which Google Play requires.
    - Creates `Assets/Scenes/Main.unity` and adds it to the build.
    - Generates the app icon at `Assets/Art/AppIcon.png`.
 4. Open `Assets/Scenes/Main.unity` and press **Play**. The game builds itself from code; the scene itself contains nothing.
 5. To build an APK locally instead of in GitHub: **File → Build Profiles → Android → Switch Platform**, untick "Build App Bundle", then **Build**, or run the menu-free command `Unity -batchmode -quit -projectPath . -executeMethod JellyDrop.EditorTools.CiBuild.BuildAndroid`.
 
-> The bundle id `com.wojciechbuda.jellydrop` is set in `Assets/Scripts/Editor/JellyDropSetup.cs`. Change it before your first store upload if you want a different one: it can't change after you publish.
+> The bundle id `com.wojciechbuda.stackville` is set in `Assets/Scripts/Editor/JellyDropSetup.cs`. Change it before your first store upload if you want a different one: it can't change after you publish.
 
 ### Difficulty levels
 
@@ -122,7 +122,7 @@ Assets/
       Input/     Touch gestures + keyboard (new Input System or legacy, both work)
       Monetization/ Ad/IAP interfaces, fake services, AdMob & Unity IAP implementations
       Services/  Save (PlayerPrefs JSON + backup), haptics
-    Editor/      "Jelly Drop" menu: project setup, icon, SDK switches, reset progress
+    Editor/      "Stackville" menu: project setup, icon, SDK switches, reset progress
   Tests/EditMode/ NUnit tests (Window → General → Test Runner)
 Tools/CoreTests/  Runs the same tests outside Unity: `dotnet test`
 Packages/, ProjectSettings/  Unity project files (Unity 6000.6.7f1)
@@ -156,7 +156,7 @@ Until this is set up, the game shows **fake test ads**, so the whole reward flow
 2. Import the **Google Mobile Ads Unity plugin** from its GitHub releases (`.unitypackage`). Then run **Assets → External Dependency Manager → Android Resolver → Force Resolve**.
 3. Open **Assets → Google Mobile Ads → Settings** and enter your AdMob **App IDs**.
 4. In `Game/Monetization/MonetizationIds.cs`, replace the ad unit IDs. The ones in the file are Google's test IDs, which are safe to use while developing.
-5. Run the menu **Jelly Drop → Ads: enable AdMob**. This adds the `ADMOB` define.
+5. Run the menu **Stackville → Ads: enable AdMob**. This adds the `ADMOB` define.
 6. In the AdMob console, create a GDPR consent message under **Privacy & messaging**. The game already shows Google's consent form (UMP) to EU users, and offers "Privacy choices" in Settings.
 
 ## 5. In-app purchase (Premium)
@@ -165,7 +165,7 @@ Until this is set up, the game shows **fake test ads**, so the whole reward flow
 2. Create these products in both stores (Google Play Console and App Store Connect):
    - `jellydrop_premium`: **non-consumable** (no ads + Premium pack).
    - `jellydrop_season_pass`: **consumable** (the season pass, bought again each season).
-3. Run the menu **Jelly Drop → IAP: enable Unity IAP**. This adds the `UNITY_PURCHASING` define.
+3. Run the menu **Stackville → IAP: enable Unity IAP**. This adds the `UNITY_PURCHASING` define.
 4. Test it:
    - **Android:** use license testers in the Play Console, with an internal-testing build.
    - **iOS:** use a Sandbox account.

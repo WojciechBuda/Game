@@ -28,8 +28,8 @@ namespace JellyDrop.EditorTools
                 PlayerSettings.bundleVersion = "0.1." + code;
             }
 
-            string path = Arg("-customBuildPath") ?? "build/Android/JellyDrop.apk";
-            if (!path.EndsWith(".apk", StringComparison.OrdinalIgnoreCase)) path = Path.Combine(path, "JellyDrop.apk");
+            string path = Arg("-customBuildPath") ?? "build/Android/Stackville.apk";
+            if (!path.EndsWith(".apk", StringComparison.OrdinalIgnoreCase)) path = Path.Combine(path, "Stackville.apk");
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path)));
 
             var options = new BuildPlayerOptions
@@ -43,7 +43,7 @@ namespace JellyDrop.EditorTools
 
             var report = BuildPipeline.BuildPlayer(options);
             var summary = report.summary;
-            Debug.Log($"[Jelly Drop] Android build {summary.result}: {path} ({summary.totalSize / (1024 * 1024)} MB, {summary.totalErrors} errors)");
+            Debug.Log($"[Stackville] Android build {summary.result}: {path} ({summary.totalSize / (1024 * 1024)} MB, {summary.totalErrors} errors)");
             if (summary.result != BuildResult.Succeeded && Application.isBatchMode) EditorApplication.Exit(1);
         }
 

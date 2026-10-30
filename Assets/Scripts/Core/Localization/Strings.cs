@@ -43,7 +43,7 @@ namespace JellyDrop.Core
                 "+{0} MONEDAS GRATIS  ({1}/{2})", "+{0} PIÈCES GRATUITES  ({1}/{2})", "+{0} MOEDAS GRÁTIS  ({1}/{2})");
             Add("home.free_coins_tomorrow", "FREE COINS - BACK TOMORROW", "DARMOWE MONETY - WRÓĆ JUTRO", "GRATIS-MÜNZEN - MORGEN WIEDER",
                 "MONEDAS GRATIS - VUELVE MAÑANA", "PIÈCES GRATUITES - REVIENS DEMAIN", "MOEDAS GRÁTIS - VOLTE AMANHÃ");
-            Add("home.quit_title", "Leave Jelly Drop?", "Wyjść z Jelly Drop?", "Jelly Drop verlassen?", "¿Salir de Jelly Drop?", "Quitter Jelly Drop ?", "Sair do Jelly Drop?");
+            Add("home.quit_title", "Leave Stackville?", "Wyjść ze Stackville?", "Stackville verlassen?", "¿Salir de Stackville?", "Quitter Stackville ?", "Sair do Stackville?");
             Add("home.quit_body", "See you soon!", "Do zobaczenia!", "Bis bald!", "¡Hasta pronto!", "À bientôt !", "Até logo!");
             Add("home.quit", "QUIT", "WYJDŹ", "BEENDEN", "SALIR", "QUITTER", "SAIR");
 
@@ -257,8 +257,8 @@ namespace JellyDrop.Core
             Add("shop.perk4", "King Bloop buddy", "Kumpel Król Bloop", "Freund König Bloop", "Amigo Rey Bloop", "Copain Roi Bloop", "Amigo Rei Bloop");
             Add("shop.perk5", "Free bonus videos still available", "Darmowe filmy z bonusem nadal dostępne", "Gratis-Bonusvideos weiterhin verfügbar",
                 "Los vídeos con premio siguen disponibles", "Les vidéos bonus restent disponibles", "Vídeos de bônus continuam disponíveis");
-            Add("shop.thanks", "Thank you for supporting Jelly Drop!", "Dziękujemy za wsparcie Jelly Drop!", "Danke, dass du Jelly Drop unterstützt!",
-                "¡Gracias por apoyar Jelly Drop!", "Merci de soutenir Jelly Drop !", "Obrigado por apoiar o Jelly Drop!");
+            Add("shop.thanks", "Thank you for supporting Stackville!", "Dziękujemy za wsparcie Stackville!", "Danke, dass du Stackville unterstützt!",
+                "¡Gracias por apoyar Stackville!", "Merci de soutenir Stackville !", "Obrigado por apoiar o Stackville!");
             Add("shop.buy", "BUY  {0}", "KUP  {0}", "KAUFEN  {0}", "COMPRAR  {0}", "ACHETER  {0}", "COMPRAR  {0}");
             Add("shop.one_time", "one-time purchase", "jednorazowy zakup", "einmaliger Kauf", "compra única", "achat unique", "compra única");
 

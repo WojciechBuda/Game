@@ -41,7 +41,7 @@ namespace JellyDrop.Interface
             if (Application.isEditor || Debug.isDebugBuild)
                 Action(c, ref y, "DEBUG: +5000", ColorUtil.Red, () => App.Economy.AddCoins(5000));
 
-            var version = UIKit.Text(c, $"Jelly Drop v{Application.version}", 32, ColorUtil.InkDim, TextAnchor.MiddleCenter, false);
+            var version = UIKit.Text(c, $"Stackville v{Application.version}", 32, ColorUtil.InkDim, TextAnchor.MiddleCenter, false);
             version.rectTransform.At(UIKit.Bottom, new Vector2(0, 50), new Vector2(800, 60));
         }
 

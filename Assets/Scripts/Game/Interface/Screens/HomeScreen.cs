@@ -30,7 +30,7 @@ namespace JellyDrop.Interface
             gear.GetComponent<RectTransform>().At(UIKit.TopRight, new Vector2(-80, -80), new Vector2(110, 110));
 
             // Title: each letter its own colour and bob
-            const string title = "JELLY DROP";
+            const string title = "STACKVILLE";
             var titleRow = UIKit.Node("Title", Root).At(UIKit.Top, new Vector2(0, -300), new Vector2(1000, 220));
             float letterW = 96f;
             float startX = -(title.Length - 1) * letterW / 2f;

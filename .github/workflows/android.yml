@@ -78,24 +78,24 @@ jobs:
         run: |
           APK=$(find build -name '*.apk' | head -n 1)
           if [ -z "$APK" ]; then echo "::error::No APK was produced"; exit 1; fi
-          cp "$APK" JellyDrop.apk
-          echo "Built $(du -h JellyDrop.apk | cut -f1) APK"
+          cp "$APK" Stackville.apk
+          echo "Built $(du -h Stackville.apk | cut -f1) APK"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: JellyDrop-apk
-          path: JellyDrop.apk
+          path: Stackville.apk
 
       - name: Publish test release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
-          name: Jelly Drop test build ${{ github.run_number }}
+          name: Stackville test build ${{ github.run_number }}
           prerelease: true
-          files: JellyDrop.apk
+          files: Stackville.apk
           body: |
             Test build from commit ${{ github.sha }}.
-            Download **JellyDrop.apk** on your Android phone and open it to install
+            Download **Stackville.apk** on your Android phone and open it to install
             (allow "Install unknown apps" for your browser when asked).
             Signed with Unity's debug key: for testing only, not for the Play Store.
