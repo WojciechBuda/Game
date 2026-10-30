@@ -10,7 +10,7 @@ namespace JellyDrop.Visuals
     /// </summary>
     public static class AppIconArt
     {
-        private static readonly Color BlockColor = ColorUtil.Hex("#FF6F91");
+        private static readonly Color BlockColor = ColorUtil.Hex("#FF8A2A");
         private static readonly Color Ink = ColorUtil.Hex("#3A1F3D");
 
         public static PixelCanvas Draw(int size = 1024)
