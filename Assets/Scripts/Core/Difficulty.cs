@@ -54,7 +54,7 @@ namespace JellyDrop.Core
                     return new DifficultySettings
                     {
                         Level = d, Name = "EASY", Description = "Slow and relaxed. Extra previews, more power-ups.", Color = "#2ED3A0",
-                        StartLevel = 1, FirstLevelFallSeconds = 1.1f, FallSpeedupPerLevel = 0.9f,
+                        StartLevel = 1, FirstLevelFallSeconds = 0.7f, FallSpeedupPerLevel = 0.88f,
                         LockDelaySeconds = 0.8f, MaxLockResets = 25, PreviewCount = 3, ShowGhost = true, HoldEnabled = true,
                         StartingGarbageRows = 0, GarbageRiseSeconds = 0f, MaxPowerUpsPerGame = 4,
                         ScoreMultiplier = 0.75f, CoinMultiplier = 0.75f, LuckMultiplier = 1.2f
@@ -63,7 +63,7 @@ namespace JellyDrop.Core
                     return new DifficultySettings
                     {
                         Level = d, Name = "HARD", Description = "Fast start, junk rows, less time to slide. x1.5 coins.", Color = "#FF9F43",
-                        StartLevel = 5, FirstLevelFallSeconds = 0.9f, FallSpeedupPerLevel = 0.82f,
+                        StartLevel = 5, FirstLevelFallSeconds = 0.6f, FallSpeedupPerLevel = 0.82f,
                         LockDelaySeconds = 0.4f, MaxLockResets = 10, PreviewCount = 2, ShowGhost = true, HoldEnabled = true,
                         StartingGarbageRows = 4, GarbageRiseSeconds = 0f, MaxPowerUpsPerGame = 1,
                         ScoreMultiplier = 1.5f, CoinMultiplier = 1.5f, LuckMultiplier = 1f
@@ -81,7 +81,7 @@ namespace JellyDrop.Core
                     return new DifficultySettings
                     {
                         Level = Difficulty.Normal, Name = "NORMAL", Description = "The classic experience.", Color = "#3FB6FF",
-                        StartLevel = 1, FirstLevelFallSeconds = 0.9f, FallSpeedupPerLevel = 0.85f,
+                        StartLevel = 1, FirstLevelFallSeconds = 0.55f, FallSpeedupPerLevel = 0.85f,
                         LockDelaySeconds = 0.5f, MaxLockResets = 15, PreviewCount = 3, ShowGhost = true, HoldEnabled = true,
                         StartingGarbageRows = 0, GarbageRiseSeconds = 0f, MaxPowerUpsPerGame = 2,
                         ScoreMultiplier = 1f, CoinMultiplier = 1f, LuckMultiplier = 1f

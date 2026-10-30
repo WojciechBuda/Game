@@ -38,7 +38,7 @@ namespace JellyDrop.Core
         public int MaxLevel = 20;
         public int SprintLines = 40;
 
-        public float FirstLevelFallSeconds = 0.9f;
+        public float FirstLevelFallSeconds = 0.55f;
         public float FallSpeedupPerLevel = 0.85f;
         public float MinFallSeconds = 0.04f;
         public float SoftDropMultiplier = 20f;

@@ -88,25 +88,8 @@ namespace JellyDrop.EditorTools
             SpriteFactory.ClearCache();
             try
             {
-                var canvas = new PixelCanvas(size, size);
-                var top = ColorUtil.Hex("#2A0B4F");
-                var bottom = ColorUtil.Hex("#0B1033");
-                for (int y = 0; y < size; y++)
-                    for (int x = 0; x < size; x++)
-                        canvas.Set(x, y, Color.Lerp(bottom, top, y / (float)size));
-
-                // Synthwave grid and a few neon blocks
-                var catalog = Catalog.CreateDefault();
-                Stamp(canvas, SpriteFactory.NeonGrid(ColorUtil.Pink).texture, 0, 0, size, size / 2);
-                var skin = catalog.Get("skin_neon");
-                Stamp(canvas, SpriteFactory.Block(BlockStyle.Neon, ColorUtil.Hex(skin.Palette[0])).texture, 60, 60, 260);
-                Stamp(canvas, SpriteFactory.Block(BlockStyle.Neon, ColorUtil.Hex(skin.Palette[1])).texture, 320, 60, 260);
-                Stamp(canvas, SpriteFactory.Block(BlockStyle.Neon, ColorUtil.Hex(skin.Palette[3])).texture, 704, 60, 260);
-                Stamp(canvas, SpriteFactory.Block(BlockStyle.Neon, ColorUtil.Hex(skin.Palette[2])).texture, 704, 320, 260);
-
-                // Mascot
-                var avatar = SpriteFactory.Avatar(catalog.Get("avatar_bloop"), AvatarMood.Happy).texture;
-                Stamp(canvas, avatar, 150, 260, 720, 720);
+                // A little town built from falling-block pieces, with one more piece dropping in.
+                var canvas = AppIconArt.Draw(size);
 
                 var tex = canvas.ToTexture();
                 Directory.CreateDirectory(Path.GetDirectoryName(IconPath));
@@ -120,20 +103,6 @@ namespace JellyDrop.EditorTools
             {
                 PixelCanvas.KeepReadable = false;
                 SpriteFactory.ClearCache();
-            }
-        }
-
-        private static void Stamp(PixelCanvas canvas, Texture2D src, int x0, int y0, int size) => Stamp(canvas, src, x0, y0, size, size);
-
-        private static void Stamp(PixelCanvas canvas, Texture2D src, int x0, int y0, int width, int height)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    var c = src.GetPixelBilinear((x + 0.5f) / width, (y + 0.5f) / height);
-                    canvas.Blend(x0 + x, y0 + y, c);
-                }
             }
         }
 

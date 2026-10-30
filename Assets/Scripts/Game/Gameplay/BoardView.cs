@@ -35,6 +35,8 @@ namespace JellyDrop.Gameplay
         private ShopItem _skin;
         private Color[] _palette;
         private Vector3 _activeVisualOffset;
+        private int _lastRotation;
+        private float _rotatePop;
         private ActivePiece _lastPiece;
         private Int2 _lastOrigin;
         private float _flash;
@@ -258,19 +260,28 @@ namespace JellyDrop.Gameplay
                 var delta = _lastOrigin - piece.Origin;
                 if (delta.x != 0 || delta.y != 0)
                 {
-                    if (Mathf.Abs(delta.y) <= 1 && Mathf.Abs(delta.x) <= 1)
+                    // One row down is gravity or soft drop: the continuous fall below already glides there.
+                    bool fallStep = delta.x == 0 && delta.y == 1;
+                    if (fallStep) { }
+                    else if (Mathf.Abs(delta.y) <= 2 && Mathf.Abs(delta.x) <= 2)
                         _activeVisualOffset += new Vector3(delta.x, delta.y, 0f);
                     else
                         _activeVisualOffset = Vector3.zero;
                 }
+                if (piece.Rotation != _lastRotation) _rotatePop = 1f;
             }
             else
             {
                 _activeVisualOffset = Vector3.zero;
+                _rotatePop = 0f;
             }
             _lastPiece = piece;
             _lastOrigin = piece.Origin;
-            _activeVisualOffset = Vector3.Lerp(_activeVisualOffset, Vector3.zero, 1f - Mathf.Exp(-deltaTime * 30f));
+            _lastRotation = piece.Rotation;
+            _activeVisualOffset = Vector3.Lerp(_activeVisualOffset, Vector3.zero, 1f - Mathf.Exp(-deltaTime * 26f));
+            _rotatePop = Mathf.Max(0f, _rotatePop - deltaTime * 7f);
+            // Smooth gravity: the piece slides continuously between rows instead of jumping.
+            var fallOffset = new Vector3(0f, -session.FallProgress, 0f);
 
             var cells = piece.LocalCells;
             var ghostOrigin = session.GhostOrigin();
@@ -292,8 +303,9 @@ namespace JellyDrop.Gameplay
                 bool visible = p.y < _height;
                 r.enabled = visible;
                 r.sprite = sprite;
-                r.transform.localPosition = CellLocal(p.x, p.y) + _activeVisualOffset;
+                r.transform.localPosition = CellLocal(p.x, p.y) + _activeVisualOffset + fallOffset;
                 float pulse = piece.Type == PieceType.Bomb ? 1f + Mathf.Sin(t * 12f) * 0.08f : 1f;
+                pulse *= 1f + Mathf.Sin(_rotatePop * Mathf.PI) * 0.08f;
                 r.transform.localScale = Vector3.one * pulse;
                 r.color = Color.white;
 

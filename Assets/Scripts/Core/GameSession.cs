@@ -99,6 +99,7 @@ namespace JellyDrop.Core
         private readonly PieceGenerator _generator;
 
         private float _fallTimer;
+        private float _fallInterval = 1f;
         private float _lockTimer;
         private int _lockResets;
         private int _lowestRowReached;
@@ -142,6 +143,12 @@ namespace JellyDrop.Core
         public bool TargetHit { get; private set; }
 
         /// <summary>Pieces still allowed in a level, or -1 when there is no limit.</summary>
+        /// <summary>
+        /// 0..1: how far the current piece is towards dropping one more row. The view uses it to glide the piece
+        /// down smoothly instead of jumping cell by cell. 0 when the piece rests on something.
+        /// </summary>
+        public float FallProgress => Current == null || IsOver || IsGrounded ? 0f : Math.Min(1f, Math.Max(0f, _fallTimer / Math.Max(0.0001f, _fallInterval)));
+
         public int PiecesLeft => _config.PieceLimit > 0 ? Math.Max(0, _config.PieceLimit - Stats.PiecesPlaced) : -1;
 
         /// <summary>Seconds left in a timed level, or -1 when there is no timer.</summary>
@@ -192,6 +199,7 @@ namespace JellyDrop.Core
             if (_slowMoRemaining > 0f) fall /= _config.SlowMoFactor;
             if (_softDrop) fall = Math.Min(fall, _config.FallSecondsForLevel(1)) / _config.SoftDropMultiplier;
 
+            _fallInterval = fall;
             _fallTimer += deltaTime;
             while (_fallTimer >= fall)
             {
