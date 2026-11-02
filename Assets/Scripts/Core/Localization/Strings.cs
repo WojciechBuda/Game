@@ -174,6 +174,8 @@ namespace JellyDrop.Core
             Add("music.Space", "Space", "Kosmiczna", "Weltraum", "Espacial", "Spatial", "Espacial");
             Add("music.Dreamy", "Dreamy", "Marzycielska", "Verträumt", "Soñadora", "Rêveur", "Sonhadora");
             Same("music.Arcade", "Arcade");
+            Same("music.Chill", "Lo-fi");
+            Add("music.Future", "Future House", "Future House", "Future House", "Future House", "Future House", "Future House");
 
             // ---------------------------------------------------------------- missions ({0} = target)
             Add("mission.ClearLines", "Clear {0} lines", "Wyczyść linie: {0}", "Räume {0} Reihen ab", "Completa {0} líneas", "Efface {0} lignes", "Limpe {0} linhas");

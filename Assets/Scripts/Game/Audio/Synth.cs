@@ -131,6 +131,143 @@ namespace JellyDrop.Audio
             }
         }
 
+        // ------------------------------------------------------------------ modern sounds
+
+        /// <summary>
+        /// Warm "supersaw" pad: several slightly detuned saws through a soft low-pass filter.
+        /// <paramref name="cutoff"/> is 0..1 (how bright the filter is).
+        /// </summary>
+        public static void Pad(float[] buffer, float startSeconds, float duration, float freq, float volume,
+            float cutoff = 0.12f, float attack = 0.35f, float release = 0.6f, int voices = 5, float detune = 0.012f, bool wrap = true)
+        {
+            int start = (int)(startSeconds * SampleRate);
+            int noteLen = Samples(duration);
+            int total = noteLen + Samples(release);
+            float a = Mathf.Max(1, Samples(attack)), r = Mathf.Max(1, Samples(release));
+            var phases = new float[voices];
+            for (int v = 0; v < voices; v++) phases[v] = v * 0.37f;
+            float lp = 0f, lp2 = 0f;
+            for (int i = 0; i < total; i++)
+            {
+                int idx = start + i;
+                if (idx >= buffer.Length) { if (!wrap) break; idx %= buffer.Length; }
+                float env = i < a ? i / a : i < noteLen ? 1f : 1f - (i - noteLen) / r;
+                if (env <= 0f) continue;
+                float sum = 0f;
+                for (int v = 0; v < voices; v++)
+                {
+                    float spread = voices == 1 ? 0f : (v / (float)(voices - 1) - 0.5f) * 2f;
+                    phases[v] += freq * (1f + spread * detune) / SampleRate;
+                    float ph = phases[v] - Mathf.Floor(phases[v]);
+                    sum += 2f * ph - 1f;
+                }
+                sum /= voices;
+                // Two one-pole low-pass stages = gentle 12 dB slope.
+                lp += (sum - lp) * cutoff;
+                lp2 += (lp - lp2) * cutoff;
+                buffer[idx] += lp2 * env * volume;
+            }
+        }
+
+        /// <summary>Electric-piano style key: a sine body with a bell-like tine that fades quickly.</summary>
+        public static void Keys(float[] buffer, float startSeconds, float duration, float freq, float volume, bool wrap = true)
+        {
+            int start = (int)(startSeconds * SampleRate);
+            int total = Samples(duration + 0.4f);
+            float p1 = 0f, p2 = 0f;
+            for (int i = 0; i < total; i++)
+            {
+                int idx = start + i;
+                if (idx >= buffer.Length) { if (!wrap) break; idx %= buffer.Length; }
+                float t = (float)i / SampleRate;
+                float env = Mathf.Min(1f, t / 0.004f) * Mathf.Exp(-t * (t < duration ? 2.2f : 9f));
+                p1 += freq / SampleRate;
+                p2 += freq * 3.01f / SampleRate;
+                float body = Mathf.Sin(p1 * 2f * Mathf.PI);
+                float tine = Mathf.Sin(p2 * 2f * Mathf.PI) * Mathf.Exp(-t * 14f) * 0.35f;
+                buffer[idx] += (body + tine) * env * volume;
+            }
+        }
+
+        /// <summary>Round sub bass (sine with a touch of saturation).</summary>
+        public static void Sub(float[] buffer, float startSeconds, float duration, float freq, float volume, bool wrap = true)
+        {
+            int start = (int)(startSeconds * SampleRate);
+            int total = Samples(duration + 0.05f);
+            float phase = 0f;
+            for (int i = 0; i < total; i++)
+            {
+                int idx = start + i;
+                if (idx >= buffer.Length) { if (!wrap) break; idx %= buffer.Length; }
+                float t = (float)i / SampleRate;
+                float env = Mathf.Min(1f, t / 0.01f) * (t < duration ? 1f : Mathf.Max(0f, 1f - (t - duration) / 0.05f));
+                phase += freq / SampleRate;
+                float x = Mathf.Sin(phase * 2f * Mathf.PI);
+                buffer[idx] += (float)Math.Tanh(x * 1.6f) * env * volume;
+            }
+        }
+
+        /// <summary>Hand clap: three quick noise bursts and a short tail.</summary>
+        public static void Clap(float[] buffer, float startSeconds, float volume, bool wrap = true)
+        {
+            int start = (int)(startSeconds * SampleRate);
+            int len = Samples(0.22f);
+            uint noise = 99173u + (uint)start;
+            float prev = 0f;
+            for (int i = 0; i < len; i++)
+            {
+                int idx = start + i;
+                if (idx >= buffer.Length) { if (!wrap) break; idx %= buffer.Length; }
+                float t = (float)i / SampleRate;
+                float burst = t < 0.03f ? Mathf.Exp(-(t % 0.01f) * 300f) : Mathf.Exp(-(t - 0.03f) * 18f);
+                float n = Osc(Wave.Noise, 0f, ref noise);
+                float bp = n - prev; prev = n * 0.6f;
+                buffer[idx] += bp * burst * volume;
+            }
+        }
+
+        /// <summary>Quiet vinyl hiss and random crackles across the whole buffer (lo-fi texture).</summary>
+        public static void Vinyl(float[] buffer, float volume, int seed)
+        {
+            uint noise = 12345u + (uint)seed;
+            var rng = new System.Random(seed);
+            float lp = 0f;
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                float n = Osc(Wave.Noise, 0f, ref noise);
+                lp += (n - lp) * 0.05f;
+                buffer[i] += lp * volume * 0.5f;
+                if (rng.NextDouble() < 0.00025) buffer[i] += (float)(rng.NextDouble() * 2 - 1) * volume * 6f;
+            }
+        }
+
+        /// <summary>Feedback echo (wraps around so loops stay seamless).</summary>
+        public static void Echo(float[] buffer, float delaySeconds, float feedback, float mix)
+        {
+            int d = Samples(delaySeconds);
+            if (d <= 0 || d >= buffer.Length) return;
+            var wet = new float[buffer.Length];
+            for (int pass = 0; pass < 2; pass++)
+                for (int i = 0; i < buffer.Length; i++)
+                {
+                    int j = i - d;
+                    if (j < 0) j += buffer.Length;
+                    wet[i] = buffer[j] * mix + wet[j] * feedback;
+                }
+            for (int i = 0; i < buffer.Length; i++) buffer[i] += wet[i];
+        }
+
+        /// <summary>Gentle low-pass over a whole buffer (0..1, lower = darker).</summary>
+        public static void LowPass(float[] buffer, float amount)
+        {
+            float lp = buffer.Length > 0 ? buffer[buffer.Length - 1] : 0f;
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                lp += (buffer[i] - lp) * amount;
+                buffer[i] = lp;
+            }
+        }
+
         /// <summary>Soft-clips and scales the buffer so it never distorts harshly.</summary>
         public static void Master(float[] buffer, float gain)
         {

@@ -47,8 +47,13 @@ namespace JellyDrop.Audio
             }
         }
 
-        public static AudioClip Compose(MusicStyle style, int bpm, int seed = 1)
+        public static AudioClip Compose(MusicStyle style, int bpm, int seed = 1) =>
+            Synth.ToClip($"music_{style}", ComposeData(style, bpm, seed));
+
+        /// <summary>The raw samples. Pure math, so it can run on a background thread.</summary>
+        public static float[] ComposeData(MusicStyle style, int bpm, int seed = 1)
         {
+            if (ModernComposer.Handles(style)) return ModernComposer.Compose(style, bpm, seed);
             var def = Style(style);
             var scale = def.IsMinor ? Minor : Major;
             var rng = new System.Random(seed * 31 + (int)style);
@@ -149,7 +154,7 @@ namespace JellyDrop.Audio
             }
 
             Synth.Master(buffer, 1.6f);
-            return Synth.ToClip($"music_{style}", buffer);
+            return buffer;
         }
 
         private struct MelodyEvent

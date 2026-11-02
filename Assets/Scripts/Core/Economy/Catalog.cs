@@ -10,7 +10,7 @@ namespace JellyDrop.Core.Economy
     public enum BlockStyle { Jelly, Gummy, Sprinkles, Gem, Pixel, Neon, Gold }
 
     /// <summary>Which procedural music style plays with a theme.</summary>
-    public enum MusicStyle { Bubbly, Mellow, Funky, Space, Dreamy, Arcade }
+    public enum MusicStyle { Bubbly, Mellow, Funky, Space, Dreamy, Arcade, Chill, Future }
 
     public sealed class ShopItem
     {
@@ -118,15 +118,15 @@ namespace JellyDrop.Core.Economy
                 "#FFE27A", "#FFD447", "#F5C542", "#FFE9A3", "#F2B632", "#FFDB6E", "#E8A93A")));
 
             // Themes (background + music) ----------------------------------------
-            c.Add(Theme("theme_dusk", "Dusk", Rarity.Common, 0, "#171A3F", "#3A2461", "#FF8A5C", MusicStyle.Dreamy, 92));
-            c.Add(Theme("theme_daydream", "Daydream", Rarity.Common, 300, "#EAF0FF", "#FDE9F3", "#FF6F91", MusicStyle.Bubbly, 124));
+            c.Add(Theme("theme_dusk", "Dusk", Rarity.Common, 0, "#171A3F", "#3A2461", "#FF8A5C", MusicStyle.Chill, 84));
+            c.Add(Theme("theme_daydream", "Daydream", Rarity.Common, 300, "#EAF0FF", "#FDE9F3", "#FF6F91", MusicStyle.Future, 120));
             c.Add(Theme("theme_arcade", "Neon Arcade", Rarity.Common, 400, "#0B1033", "#2A0B4F", "#FF2E88", MusicStyle.Arcade, 132, grid: true));
-            c.Add(Theme("theme_cyber", "Cyber Grid", Rarity.Rare, 1200, "#001426", "#003A4D", "#00E5FF", MusicStyle.Space, 140, grid: true));
-            c.Add(Theme("theme_candy", "Candy Land", Rarity.Common, 500, "#FFB6D9", "#B38CFF", "#FF5FA2", MusicStyle.Bubbly, 128));
-            c.Add(Theme("theme_mint", "Mint Meadow", Rarity.Common, 500, "#B5FFE1", "#5CC8FF", "#2ED8A3", MusicStyle.Mellow, 112));
-            c.Add(Theme("theme_cotton", "Cotton Cloud", Rarity.Common, 600, "#FFFFFF", "#FFC6E7", "#FF8AC5", MusicStyle.Dreamy, 104));
-            c.Add(Theme("theme_soda", "Sunset Soda", Rarity.Rare, 900, "#FFD27F", "#FF6F91", "#FF9671", MusicStyle.Funky, 120));
-            c.Add(Theme("theme_galaxy", "Bubblegum Galaxy", Rarity.Epic, 1800, "#3A1C71", "#D76D77", "#FFAF7B", MusicStyle.Space, 136));
+            c.Add(Theme("theme_cyber", "Cyber Grid", Rarity.Rare, 1200, "#001426", "#003A4D", "#00E5FF", MusicStyle.Future, 124, grid: true));
+            c.Add(Theme("theme_candy", "Candy Land", Rarity.Common, 500, "#FFB6D9", "#B38CFF", "#FF5FA2", MusicStyle.Future, 118));
+            c.Add(Theme("theme_mint", "Mint Meadow", Rarity.Common, 500, "#B5FFE1", "#5CC8FF", "#2ED8A3", MusicStyle.Chill, 80));
+            c.Add(Theme("theme_cotton", "Cotton Cloud", Rarity.Common, 600, "#FFFFFF", "#FFC6E7", "#FF8AC5", MusicStyle.Chill, 76));
+            c.Add(Theme("theme_soda", "Sunset Soda", Rarity.Rare, 900, "#FFD27F", "#FF6F91", "#FF9671", MusicStyle.Future, 122));
+            c.Add(Theme("theme_galaxy", "Bubblegum Galaxy", Rarity.Epic, 1800, "#3A1C71", "#D76D77", "#FFAF7B", MusicStyle.Future, 126));
 
             // Avatars ------------------------------------------------------------
             c.Add(Avatar("avatar_bloop", "Bloop", Rarity.Common, 0, "#FF7EB6", 0));
@@ -141,25 +141,25 @@ namespace JellyDrop.Core.Economy
             c.Add(LevelReward(5, Skin("skin_bubble", "Bubble Pop", Rarity.Rare, 0, 0, BlockStyle.Gummy,
                 "#8FE3FF", "#FFE58A", "#D7B4FF", "#9DF0C0", "#FFA3B5", "#9DB8FF", "#FFC48F")));
             c.Add(LevelReward(10, Avatar("avatar_ace", "Ace", Rarity.Rare, 0, "#3FB6FF", 3)));
-            c.Add(LevelReward(20, Theme("theme_aurora", "Aurora", Rarity.Epic, 0, "#D9F7FF", "#E7DBFF", "#8E7CFF", MusicStyle.Dreamy, 110)));
+            c.Add(LevelReward(20, Theme("theme_aurora", "Aurora", Rarity.Epic, 0, "#D9F7FF", "#E7DBFF", "#8E7CFF", MusicStyle.Chill, 82)));
             c.Add(LevelReward(30, Skin("skin_champion", "Champion", Rarity.Epic, 0, 0, BlockStyle.Gem,
                 "#36D6FF", "#FFD23F", "#B57BFF", "#3DDC97", "#FF5D7D", "#5B7BFF", "#FF9A3C")));
             c.Add(LevelReward(50, Avatar("avatar_legend", "Legend", Rarity.Epic, 0, "#FFC93C", 4)));
 
             // Season pass rewards: four rotating sets (spring, summer, autumn, winter) ----
-            c.Add(Season(Theme("theme_bloom", "Spring Bloom", Rarity.Epic, 0, "#FFF0F6", "#E3FFE9", "#FF7AAE", MusicStyle.Bubbly, 122)));
+            c.Add(Season(Theme("theme_bloom", "Spring Bloom", Rarity.Epic, 0, "#FFF0F6", "#E3FFE9", "#FF7AAE", MusicStyle.Future, 120)));
             c.Add(Season(Avatar("avatar_bunny", "Bunny", Rarity.Epic, 0, "#FFC2DA", 1)));
             c.Add(Season(Skin("skin_blossom", "Blossom", Rarity.Epic, 0, 0, BlockStyle.Sprinkles,
                 "#9FE6FF", "#FFE7A0", "#F2B8FF", "#B6F5B0", "#FF9EC4", "#A9BDFF", "#FFC79E")));
-            c.Add(Season(Theme("theme_splash", "Summer Splash", Rarity.Epic, 0, "#DFF8FF", "#FFF4D6", "#2EC4F0", MusicStyle.Funky, 128)));
+            c.Add(Season(Theme("theme_splash", "Summer Splash", Rarity.Epic, 0, "#DFF8FF", "#FFF4D6", "#2EC4F0", MusicStyle.Future, 124)));
             c.Add(Season(Avatar("avatar_surfer", "Surfer", Rarity.Epic, 0, "#2EC4F0", 0)));
             c.Add(Season(Skin("skin_tropical", "Tropical", Rarity.Epic, 0, 0, BlockStyle.Jelly,
                 "#22D3EE", "#FDE047", "#F472B6", "#4ADE80", "#FB7185", "#60A5FA", "#FB923C")));
-            c.Add(Season(Theme("theme_harvest", "Autumn Arcade", Rarity.Epic, 0, "#FFF1E0", "#FFE0D1", "#FF8A3D", MusicStyle.Mellow, 108)));
+            c.Add(Season(Theme("theme_harvest", "Autumn Arcade", Rarity.Epic, 0, "#FFF1E0", "#FFE0D1", "#FF8A3D", MusicStyle.Chill, 86)));
             c.Add(Season(Avatar("avatar_pumpkin", "Pumpkin", Rarity.Epic, 0, "#FF9F43", 2)));
             c.Add(Season(Skin("skin_maple", "Maple", Rarity.Epic, 0, 0, BlockStyle.Gem,
                 "#F59E0B", "#FCD34D", "#C084FC", "#84CC16", "#EF4444", "#6366F1", "#F97316")));
-            c.Add(Season(Theme("theme_frost", "Winter Glow", Rarity.Epic, 0, "#EEF6FF", "#E9E6FF", "#5B9BFF", MusicStyle.Dreamy, 100)));
+            c.Add(Season(Theme("theme_frost", "Winter Glow", Rarity.Epic, 0, "#EEF6FF", "#E9E6FF", "#5B9BFF", MusicStyle.Chill, 78)));
             c.Add(Season(Avatar("avatar_snowy", "Snowy", Rarity.Epic, 0, "#E8F4FF", 3)));
             c.Add(Season(Skin("skin_ice", "Ice Crystal", Rarity.Epic, 0, 0, BlockStyle.Gem,
                 "#A5F3FC", "#FEF9C3", "#DDD6FE", "#BBF7D0", "#FBCFE8", "#BFDBFE", "#FED7AA")));

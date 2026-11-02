@@ -15,6 +15,9 @@ namespace JellyDrop.Audio
         private Dictionary<Sfx, AudioClip> _sfx;
         private readonly Dictionary<string, AudioClip> _musicCache = new Dictionary<string, AudioClip>();
         private string _currentMusicKey;
+        // Music is composed on a background thread (a few seconds on slower phones), then turned into a clip here.
+        private System.Threading.Tasks.Task<float[]> _composing;
+        private string _composingKey;
         private float _targetPitch = 1f;
         private float _musicVolume = 0.55f;
         private float _duck = 1f;
@@ -49,18 +52,39 @@ namespace JellyDrop.Audio
         {
             if (theme == null) return;
             string key = theme.Id;
-            if (_currentMusicKey == key && _music.isPlaying) return;
-            if (!_musicCache.TryGetValue(key, out var clip))
-            {
-                int seed = 17;
-                foreach (char ch in key) seed = seed * 31 + ch; // stable across runtimes, unlike GetHashCode
-                clip = MusicComposer.Compose(theme.Music, theme.MusicBpm, seed);
-                _musicCache[key] = clip;
-            }
+            if (_currentMusicKey == key && (_music.isPlaying || _composingKey == key)) return;
             _currentMusicKey = key;
+            if (_musicCache.TryGetValue(key, out var clip))
+            {
+                StartClip(clip);
+                return;
+            }
+            int seed = 17;
+            foreach (char ch in key) seed = seed * 31 + ch; // stable across runtimes, unlike GetHashCode
+            var style = theme.Music;
+            int bpm = theme.MusicBpm;
+            _composingKey = key;
+            _composing = System.Threading.Tasks.Task.Run(() => MusicComposer.ComposeData(style, bpm, seed));
+        }
+
+        private void StartClip(AudioClip clip)
+        {
             _music.clip = clip;
             _music.time = 0f;
             if (MusicOn) _music.Play();
+        }
+
+        private void FinishComposing()
+        {
+            if (_composing == null || !_composing.IsCompleted) return;
+            var task = _composing;
+            string key = _composingKey;
+            _composing = null;
+            _composingKey = null;
+            if (task.IsFaulted) { Debug.LogWarning("[Audio] Music failed: " + task.Exception?.GetBaseException().Message); return; }
+            var clip = Synth.ToClip("music_" + key, task.Result);
+            _musicCache[key] = clip;
+            if (_currentMusicKey == key) StartClip(clip);
         }
 
         /// <summary>Music gets faster and a bit higher with the level (1.0 .. 1.25).</summary>
@@ -95,6 +119,7 @@ namespace JellyDrop.Audio
 
         private void Update()
         {
+            FinishComposing();
             _music.pitch = Mathf.MoveTowards(_music.pitch, _targetPitch, Time.unscaledDeltaTime * 0.1f);
             _music.volume = Mathf.MoveTowards(_music.volume, _musicVolume * _duck, Time.unscaledDeltaTime * 1.5f);
         }
