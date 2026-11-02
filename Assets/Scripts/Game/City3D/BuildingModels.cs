@@ -28,9 +28,20 @@ namespace JellyDrop.City3D
         private static readonly Color Gold = H("#FFC93C");
         private static readonly Color Water = H("#4FB8FF");
 
+        /// <summary>
+        /// Looks change in 4 steps as a building levels up: 1-2 simple, 3-4 bigger, 5-7 elegant (gold trims,
+        /// flower boxes, lanterns, a wing), 8-10 grand (marble, columns, domes, statues, banners).
+        /// </summary>
+        public static int Tier(int level) => level >= 8 ? 4 : level >= 5 ? 3 : level >= 3 ? 2 : 1;
+
+        /// <summary>First level of the next look (0 when already grand).</summary>
+        public static int NextTierLevel(int level) => level < 3 ? 3 : level < 5 ? 5 : level < 8 ? 8 : 0;
+
         public static void Build(MeshBuilder mb, string id, int level)
         {
-            level = Mathf.Clamp(level, 1, 3);
+            int tier = Tier(Mathf.Max(1, level));
+            level = Mathf.Min(3, tier);
+            int first = mb.Colors.Count;
             switch (id)
             {
                 case "house": House(mb, level); break;
@@ -45,10 +56,171 @@ namespace JellyDrop.City3D
                 case "castle": Castle(mb, level); break;
                 default: mb.Box(Vector3.zero, new Vector3(2f, 1.2f, 2f), Wall); break;
             }
+            // Grand buildings get a richer palette: royal blue roofs, cream marble walls, dark doors.
+            if (tier >= 4)
+            {
+                var royal = H("#3A5BD9"); var cream = H("#FFF3E2"); var night = H("#3A2A6E"); var violet = H("#B04AE0");
+                mb.Recolor(first, c =>
+                {
+                    if (Same(c, RoofRed) || Same(c, H("#C0743E"))) return Tint(c, RoofRed, royal);
+                    if (Same(c, Wall) || Same(c, WallWarm) || Same(c, H("#FFE2C2"))) return Tint(c, Wall, cream);
+                    if (Same(c, Door)) return Tint(c, Door, night);
+                    if (Same(c, RoofPurple)) return Tint(c, RoofPurple, violet);
+                    return c;
+                });
+            }
+            if (tier >= 2) Refined(mb, id);
+            if (tier >= 3) Elegant(mb, id);
+            if (tier >= 4) Grand(mb, id);
+        }
+
+        // ------------------------------------------------------------------ looks for higher levels
+
+        private static readonly Color Marble = H("#F5F2EC");
+        private static readonly Color Flower1 = H("#FF6F91");
+        private static readonly Color Flower2 = H("#FFE27A");
+        private static readonly Color Hedge = H("#3E9A50");
+
+        private static bool IsHouseLike(string id) => id == "house" || id == "bakery" || id == "glassworks";
+
+        /// <summary>Levels 3+: a paved step, flower beds and a lantern.</summary>
+        private static void Refined(MeshBuilder mb, string id)
+        {
+            if (id == "park") { foreach (var x in new[] { -1.1f, 1.1f }) mb.Box(new Vector3(x, 0.1f, -1.2f), new Vector3(0.5f, 0.15f, 0.12f), Hedge); return; }
+            mb.Box(new Vector3(0, -0.02f, -1.28f), new Vector3(1.0f, 0.08f, 0.3f), Stone);
+            foreach (var x in new[] { -1.15f, 1.15f })
+            {
+                mb.Box(new Vector3(x, 0, -1.15f), new Vector3(0.35f, 0.18f, 0.3f), WoodDark);
+                mb.Sphere(new Vector3(x - 0.08f, 0.25f, -1.15f), 0.09f, Flower1, 2, 5);
+                mb.Sphere(new Vector3(x + 0.08f, 0.25f, -1.1f), 0.09f, Flower2, 2, 5);
+            }
+            Lantern(mb, new Vector3(-0.6f, 0, -1.3f));
+        }
+
+        /// <summary>Levels 5+: gold trims, a side wing, water wheel, second chimney, hedges...</summary>
+        private static void Elegant(MeshBuilder mb, string id)
+        {
+            switch (id)
+            {
+                case "house":
+                    mb.Box(new Vector3(1.25f, 0.15f, 0.4f), new Vector3(0.6f, 1.1f, 0.9f), WallWarm);
+                    mb.Roof(new Vector3(1.25f, 1.25f, 0.4f), new Vector3(0.75f, 0.45f, 1.0f), RoofRed);
+                    mb.Box(new Vector3(0, 1.3f, -0.98f), new Vector3(1.4f, 0.08f, 0.35f), WoodDark);
+                    break;
+                case "bakery":
+                    mb.Box(new Vector3(-1.2f, 0, 0.5f), new Vector3(0.5f, 0.5f, 0.6f), Brick);
+                    mb.Cylinder(new Vector3(-1.2f, 0.5f, 0.5f), 0.12f, 0.6f, StoneDark, 8);
+                    break;
+                case "sawmill":
+                    mb.Cylinder(new Vector3(1.15f, 0.55f, 0.6f), 0.55f, 0.15f, Wood, 12);
+                    mb.Box(new Vector3(1.15f, 0, 0.6f), new Vector3(0.3f, 0.2f, 1.2f), Water);
+                    break;
+                case "brickworks":
+                    mb.Cylinder(new Vector3(-0.9f, 0.12f, 0.8f), 0.2f, 2.4f, H("#9E3F2E"), 10, 0.16f);
+                    break;
+                case "park":
+                    foreach (var x in new[] { -1.15f, 1.15f }) mb.Box(new Vector3(x, 0.1f, 0), new Vector3(0.2f, 0.4f, 2.4f), Hedge);
+                    mb.Box(new Vector3(0.5f, 0.1f, 0.55f), new Vector3(0.5f, 0.12f, 0.15f), Wood);
+                    break;
+                case "windmill":
+                    mb.Cylinder(new Vector3(0, 1.2f, 0), 0.95f, 0.08f, WoodDark, 12);
+                    break;
+                case "glassworks":
+                    for (int i = 0; i < 4; i++) mb.Cylinder(new Vector3(-0.9f + i * 0.6f, 0.15f, -1.05f), 0.08f, 0.6f, Glass, 6);
+                    break;
+                case "market":
+                    mb.Box(new Vector3(0, 0.1f, 0), new Vector3(0.3f, 1.6f, 0.3f), WoodDark);
+                    mb.Pyramid(new Vector3(0, 1.7f, 0), new Vector3(1.4f, 0.5f, 1.4f), H("#FF9F43"));
+                    break;
+                case "tower":
+                    mb.Cylinder(new Vector3(0, 1.6f, 0), 0.92f, 0.12f, Gold, 10);
+                    break;
+                case "castle":
+                    foreach (var x in new[] { -0.6f, 0.6f }) Banner(mb, new Vector3(x, 0.9f, -1.32f), H("#8E6CE0"));
+                    break;
+            }
+            if (IsHouseLike(id)) mb.Box(new Vector3(0, 1.12f, -0.94f), new Vector3(2.05f, 0.06f, 0.06f), Gold);
+        }
+
+        /// <summary>Levels 8+: marble terrace, columns, domes and spires, a statue and banners.</summary>
+        private static void Grand(MeshBuilder mb, string id)
+        {
+            if (id != "park") mb.Box(new Vector3(0, -0.06f, 0), new Vector3(2.9f, 0.1f, 2.9f), Marble);
+            switch (id)
+            {
+                case "house":
+                case "bakery":
+                    foreach (var x in new[] { -0.75f, -0.25f, 0.25f, 0.75f }) mb.Cylinder(new Vector3(x, 0.15f, -1.12f), 0.08f, 1.1f, Marble, 8);
+                    mb.Box(new Vector3(0, 1.25f, -1.12f), new Vector3(1.8f, 0.12f, 0.25f), Marble);
+                    mb.Sphere(new Vector3(0, id == "house" ? 4.2f : 3.0f, 0), 0.35f, Gold, 4, 8);
+                    break;
+                case "sawmill":
+                case "brickworks":
+                    Banner(mb, new Vector3(-1.1f, 0, -1.1f), H("#FF6F91"));
+                    Banner(mb, new Vector3(1.1f, 0, -1.1f), H("#FFC93C"));
+                    break;
+                case "park":
+                    mb.Cylinder(new Vector3(0, 0.1f, 0), 0.65f, 0.3f, Marble, 14);
+                    mb.Cylinder(new Vector3(0, 0.38f, 0), 0.56f, 0.05f, Water, 14);
+                    mb.Box(new Vector3(0, 0.4f, 0), new Vector3(0.2f, 0.9f, 0.2f), Marble);
+                    mb.Sphere(new Vector3(0, 1.4f, 0), 0.2f, Gold, 3, 6);
+                    break;
+                case "windmill":
+                    mb.Cylinder(new Vector3(0, 0, 0), 1.15f, 0.35f, Marble, 12);
+                    Banner(mb, new Vector3(0.9f, 0.3f, -0.9f), H("#FF6F91"));
+                    break;
+                case "glassworks":
+                    mb.Cone(new Vector3(0, 1.9f, 0), 0.25f, 1.2f, Glass, 8);
+                    mb.Sphere(new Vector3(0, 3.15f, 0), 0.14f, Gold, 3, 6);
+                    break;
+                case "market":
+                    foreach (var x in new[] { -1.2f, 1.2f }) foreach (var z in new[] { -1.2f, 1.2f }) mb.Cylinder(new Vector3(x, 0, z), 0.08f, 1.4f, Marble, 8);
+                    mb.Roof(new Vector3(0, 1.4f, 0), new Vector3(2.8f, 0.4f, 2.8f), H("#2ED3A0"));
+                    break;
+                case "tower":
+                    mb.Cone(new Vector3(0, 6.25f, 0), 0.3f, 0.8f, Gold, 8);
+                    break;
+                case "castle":
+                    mb.Cone(new Vector3(0, 4.9f, 0.1f), 0.3f, 0.8f, Gold, 8);
+                    break;
+            }
+            if (id != "park")
+            {
+                mb.Box(new Vector3(1.15f, 0, -1.2f), new Vector3(0.3f, 0.35f, 0.3f), Marble);
+                mb.Sphere(new Vector3(1.15f, 0.52f, -1.2f), 0.15f, Gold, 3, 6);
+            }
+        }
+
+        /// <summary>Same base colour, ignoring the brightness change from face shading.</summary>
+        private static bool Same(Color a, Color b)
+        {
+            float ma = Mathf.Max(a.r, Mathf.Max(a.g, a.b)), mbb = Mathf.Max(b.r, Mathf.Max(b.g, b.b));
+            if (ma <= 0.001f || mbb <= 0.001f) return false;
+            return Mathf.Abs(a.r / ma - b.r / mbb) < 0.03f && Mathf.Abs(a.g / ma - b.g / mbb) < 0.03f && Mathf.Abs(a.b / ma - b.b / mbb) < 0.03f;
+        }
+
+        /// <summary>Swaps the base colour but keeps how much the face was shaded.</summary>
+        private static Color Tint(Color c, Color from, Color to)
+        {
+            float k = Mathf.Max(c.r, Mathf.Max(c.g, c.b)) / Mathf.Max(0.001f, Mathf.Max(from.r, Mathf.Max(from.g, from.b)));
+            return new Color(Mathf.Clamp01(to.r * k), Mathf.Clamp01(to.g * k), Mathf.Clamp01(to.b * k), 1f);
+        }
+
+        private static void Lantern(MeshBuilder mb, Vector3 at)
+        {
+            mb.Box(at, new Vector3(0.05f, 0.7f, 0.05f), H("#2B2F5E"));
+            mb.Box(at + new Vector3(0, 0.75f, 0), new Vector3(0.14f, 0.16f, 0.14f), Window);
+        }
+
+        private static void Banner(MeshBuilder mb, Vector3 at, Color color)
+        {
+            mb.Box(at, new Vector3(0.05f, 1.2f, 0.05f), H("#2B2F5E"));
+            mb.Box(at + new Vector3(0.14f, 0.85f, 0), new Vector3(0.24f, 0.45f, 0.03f), color);
+            mb.Sphere(at + new Vector3(0, 1.22f, 0), 0.05f, Gold, 2, 4);
         }
 
         /// <summary>Windmill blades are a separate object so they can spin. Hub height for the given level.</summary>
-        public static float WindmillHubHeight(int level) => 2.6f + 0.5f * (Mathf.Clamp(level, 1, 3) - 1);
+        public static float WindmillHubHeight(int level) => 2.6f + 0.5f * (Mathf.Min(3, Tier(Mathf.Max(1, level))) - 1);
 
         public static void WindmillBlades(MeshBuilder mb)
         {

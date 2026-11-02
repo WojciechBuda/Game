@@ -447,6 +447,11 @@ namespace JellyDrop.Core
             Add("privacy.deleted_title", "Data deleted", "Dane usunięte", "Daten gelöscht", "Datos borrados", "Données supprimées", "Dados apagados");
             Add("privacy.deleted_body", "Everything was deleted. The game will now close and start fresh next time.", "Wszystko zostało usunięte. Gra się teraz zamknie i następnym razem zacznie od nowa.", "Alles wurde gelöscht. Das Spiel wird jetzt beendet und startet beim nächsten Mal neu.", "Se ha borrado todo. El juego se cerrará y empezará de cero la próxima vez.", "Tout a été supprimé. Le jeu va se fermer et repartira de zéro.", "Tudo foi apagado. O jogo vai fechar e recomeçar da próxima vez.");
 
+            Add("city.look.1", "Look: simple", "Wygląd: prosty", "Aussehen: schlicht", "Aspecto: sencillo", "Style : simple", "Aspeto: simples");
+            Add("city.look.2", "Look: cosy", "Wygląd: przytulny", "Aussehen: gemütlich", "Aspecto: acogedor", "Style : douillet", "Aspeto: acolhedor");
+            Add("city.look.3", "Look: elegant", "Wygląd: elegancki", "Aussehen: elegant", "Aspecto: elegante", "Style : élégant", "Aspeto: elegante");
+            Add("city.look.4", "Look: grand", "Wygląd: okazały", "Aussehen: prachtvoll", "Aspecto: majestuoso", "Style : grandiose", "Aspeto: grandioso");
+            Add("city.next_look", "{0} from level {1}", "{0} od poziomu {1}", "{0} ab Stufe {1}", "{0} desde el nivel {1}", "{0} dès le niveau {1}", "{0} a partir do nível {1}");
             // Islands & forest
             Add("island.city", "VILLAGE", "MIASTO", "DORF", "PUEBLO", "VILLAGE", "VILA");
             Add("island.forest", "FOREST", "LAS", "WALD", "BOSQUE", "FORÊT", "FLORESTA");

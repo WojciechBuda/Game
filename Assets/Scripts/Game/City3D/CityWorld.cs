@@ -455,6 +455,65 @@ namespace JellyDrop.City3D
             }
         }
 
+        private static Mesh _smokeMesh, _sparkMesh;
+
+        /// <summary>A soft grey puff rising from a chimney.</summary>
+        private void Smoke(Vector3 at)
+        {
+            if (_smokeMesh == null)
+            {
+                var mb = new MeshBuilder();
+                mb.Sphere(Vector3.zero, 0.16f, ColorUtil.Hex("#D9DCE8"), 3, 6);
+                _smokeMesh = mb.ToMesh("Smoke");
+            }
+            var go = new GameObject("Smoke");
+            go.transform.SetParent(_root, false);
+            go.transform.position = at;
+            go.AddComponent<MeshFilter>().sharedMesh = _smokeMesh;
+            var r = go.AddComponent<MeshRenderer>();
+            r.sharedMaterial = MeshBuilder.SharedMaterial;
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var p = go.AddComponent<Puff>();
+            p.Velocity = new Vector3(0.15f + (float)_rng.NextDouble() * 0.1f, 0.7f, 0.05f);
+        }
+
+        /// <summary>Gold sparks shooting up when a building finishes an upgrade.</summary>
+        private void GoldBurst(Vector3 at)
+        {
+            if (_sparkMesh == null)
+            {
+                var mb = new MeshBuilder();
+                mb.Box(Vector3.zero, new Vector3(0.14f, 0.14f, 0.14f), ColorUtil.Gold);
+                _sparkMesh = mb.ToMesh("Spark");
+            }
+            for (int k = 0; k < 18; k++)
+            {
+                var go = new GameObject("Spark");
+                go.transform.SetParent(_root, false);
+                go.transform.position = at + Vector3.up * 1.5f;
+                go.AddComponent<MeshFilter>().sharedMesh = _sparkMesh;
+                go.AddComponent<MeshRenderer>().sharedMaterial = MeshBuilder.SharedMaterial;
+                var p = go.AddComponent<Puff>();
+                float a = k * Mathf.PI * 2f / 18f;
+                p.Velocity = new Vector3(Mathf.Cos(a) * 2.2f, 3.5f + (float)_rng.NextDouble() * 1.5f, Mathf.Sin(a) * 2.2f);
+            }
+        }
+
+        private float _smokeTimer;
+
+        /// <summary>Chimney tops (relative to the plot) for buildings that smoke.</summary>
+        private static bool ChimneyOf(string id, int level, out Vector3 top)
+        {
+            int t = Mathf.Min(3, BuildingModels.Tier(Mathf.Max(1, level)));
+            switch (id)
+            {
+                case "house": top = new Vector3(0.55f, 0.15f + t * 1.0f + 0.6f, 0.35f); return true;
+                case "bakery": top = new Vector3(-0.6f, 0.15f + 1.0f + 0.45f * (t - 1) + 1.0f, 0.3f); return true;
+                case "brickworks": top = new Vector3(0.75f, 0.12f + 1.6f + 0.6f * t + 0.15f, 0.6f); return true;
+                default: top = Vector3.zero; return false;
+            }
+        }
+
         // ------------------------------------------------------------------ villagers
 
         private void UpdateVillagerCount()
@@ -521,9 +580,22 @@ namespace JellyDrop.City3D
                     {
                         v.Anim = -1f;
                         v.Building.localScale = Vector3.one;
+                        GoldBurst(v.Anchor.position);
                         if (v.Scaffold != null) Destroy(v.Scaffold);
                         UpdateIcons();
                     }
+                }
+            }
+
+            _smokeTimer += dt;
+            if (_smokeTimer > 0.9f)
+            {
+                _smokeTimer = 0f;
+                for (int i = 0; i < _plots.Length; i++)
+                {
+                    var v = _plots[i];
+                    if (v.Building == null || v.ShownLevel <= 0 || v.Anim >= 0f || !v.Anchor.gameObject.activeSelf) continue;
+                    if (ChimneyOf(v.ShownId, v.ShownLevel, out var top)) Smoke(v.Anchor.position + top);
                 }
             }
 

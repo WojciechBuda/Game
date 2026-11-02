@@ -20,6 +20,12 @@ namespace JellyDrop.City3D
         public int VertexCount => _v.Count;
         public IReadOnlyList<Vector3> Vertices => _v;
         public IReadOnlyList<Color> Colors => _c;
+
+        /// <summary>Changes the colours of everything added since <paramref name="first"/> (keeps the face shading).</summary>
+        public void Recolor(int first, System.Func<Color, Color> map)
+        {
+            for (int i = first; i < _c.Count; i++) _c[i] = map(_c[i]);
+        }
         public IReadOnlyList<int> Triangles => _t;
 
         public void Clear()

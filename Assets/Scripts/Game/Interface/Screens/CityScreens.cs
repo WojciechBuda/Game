@@ -482,6 +482,12 @@ namespace JellyDrop.Interface
 
             var lvText = UIKit.Text(_content, Loc.T("city.level_of", p.level, def.MaxLevel), 44, ColorUtil.Gold);
             lvText.rectTransform.At(UIKit.Top, new Vector2(0, -560), new Vector2(500, 70));
+            // Which look the building has now and when it changes next.
+            int tier = JellyDrop.City3D.BuildingModels.Tier(Mathf.Max(1, p.level));
+            int nextLook = JellyDrop.City3D.BuildingModels.NextTierLevel(Mathf.Max(1, p.level));
+            string look = Loc.T("city.look." + tier) + (nextLook > 0 && nextLook <= def.MaxLevel ? "  ·  " + Loc.T("city.next_look", Loc.T("city.look." + (tier + 1)), nextLook) : "");
+            var lookText = UIKit.Text(_content, look, 28, ColorUtil.Hex("#B48CFF"), TextAnchor.MiddleCenter, false).Fit(16);
+            lookText.rectTransform.At(UIKit.Top, new Vector2(0, -605), new Vector2(860, 40));
 
             if (city.IsUnderConstruction(_plot))
             {
