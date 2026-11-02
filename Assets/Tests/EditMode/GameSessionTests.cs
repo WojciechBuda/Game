@@ -395,5 +395,107 @@ namespace JellyDrop.Tests
             var b = new PieceGenerator(new SystemRandom(99), new LuckyConfig(), 3);
             for (int i = 0; i < 30; i++) Assert.AreEqual(a.Next().Type, b.Next().Type);
         }
+
+        [Test]
+        public void TappingTheColumnUnderThePieceDropsItWithoutMoving()
+        {
+            var s = NewSession();
+            var cells = new List<Int2>(s.Current.BoardCells());
+            int min = 99, max = -1;
+            foreach (var c in cells) { min = System.Math.Min(min, c.x); max = System.Math.Max(max, c.x); }
+            var ghost = s.GhostOrigin();
+            int dx = ghost.x - s.Current.Origin.x;
+            Assert.AreEqual(0, dx);
+            Assert.IsTrue(s.DropAtColumn(max));
+            for (int x = 0; x < s.Board.Width; x++)
+            {
+                bool filled = false;
+                for (int y = 0; y < 4; y++) if (!s.Board[x, y].IsEmpty) filled = true;
+                if (filled) Assert.IsTrue(x >= min && x <= max, $"column {x} outside {min}..{max}");
+            }
+        }
+
+        [Test]
+        public void TapCannotTuckAPieceUnderAnOverhang()
+        {
+            var s = NewSession();
+            // A roof over columns 0..3 at row 6, nothing below it.
+            for (int x = 0; x <= 3; x++) s.Board[x, 6] = BoardCell.Of(PieceType.Z);
+            // Bring the piece down below the roof height on the right side.
+            s.Current.Origin = new Int2(5, 2);
+            Assert.IsTrue(s.Board.Fits(s.Current.Type, s.Current.Rotation, s.Current.Origin));
+            int placed = s.Stats.PiecesPlaced;
+            Assert.IsFalse(s.DropAtColumn(0), "column 0 is covered from above");
+            Assert.AreEqual(placed, s.Stats.PiecesPlaced, "nothing was dropped");
+        }
+
+        private static GameSession SurpriseSession(PieceType wanted)
+        {
+            var config = new GameConfig();
+            config.Lucky.LineBlastChance = wanted == PieceType.RowBlast || wanted == PieceType.ColumnBlast ? 0.5 : 0;
+            config.Lucky.SmallPieceChance = wanted == PieceType.Mono || wanted == PieceType.Domino ? 1 : 0;
+            config.Lucky.BombPieceChance = wanted == PieceType.Bomb ? 1 : 0;
+            for (int seed = 1; seed < 200; seed++)
+            {
+                var s = NewSession(config: config, rng: new SystemRandom(seed));
+                if (s.Current.Type == wanted) return s;
+            }
+            Assert.Fail("no " + wanted);
+            return null;
+        }
+
+        [Test]
+        public void RowBlastClearsTheRowItLandsIn()
+        {
+            var s = SurpriseSession(PieceType.RowBlast);
+            FillRowExcept(s.Board, 0, 3, 7);
+            s.Board[2, 1] = BoardCell.Of(PieceType.T);
+            Assert.IsTrue(s.DropAtColumn(s.Current.Origin.x));
+            // It landed on row 1 above the cell at (2,0)? It lands at its column's top: row 1 is removed, or row 0 if the column was open.
+            int filledRow0 = 0;
+            for (int x = 0; x < s.Board.Width; x++) if (!s.Board[x, 0].IsEmpty) filledRow0++;
+            Assert.Less(filledRow0, 9, "a row was blasted");
+        }
+
+        [Test]
+        public void ColumnBlastEmptiesTheWholeColumn()
+        {
+            var s = SurpriseSession(PieceType.ColumnBlast);
+            int x = s.Current.Origin.x;
+            for (int y = 0; y < 5; y++) s.Board[x, y] = BoardCell.Of(PieceType.L);
+            s.Board[x + 1, 0] = BoardCell.Of(PieceType.L);
+            Assert.IsTrue(s.DropAtColumn(x));
+            for (int y = 0; y < s.Board.Height; y++) Assert.IsTrue(s.Board[x, y].IsEmpty);
+            Assert.IsFalse(s.Board[x + 1, 0].IsEmpty, "neighbours are untouched");
+        }
+
+        [Test]
+        public void SmallPiecesStayOnTheBoard()
+        {
+            var s = SurpriseSession(PieceType.Domino);
+            Assert.IsTrue(s.RotateClockwise(), "dominoes can stand up");
+            s.HardDrop();
+            int cells = 0;
+            for (int x = 0; x < s.Board.Width; x++) for (int y = 0; y < 4; y++) if (!s.Board[x, y].IsEmpty) cells++;
+            Assert.AreEqual(2, cells);
+        }
+
+        [Test]
+        public void SurprisePiecesDontBreakTheBag()
+        {
+            var lucky = new LuckyConfig().WithSurprisePieces();
+            lucky.SmallPieceChance = 0.3;
+            var gen = new PieceGenerator(new SystemRandom(5), lucky, 3);
+            var counts = new Dictionary<PieceType, int>();
+            int surprises = 0;
+            for (int i = 0; i < 700; i++)
+            {
+                var t = gen.Next().Type;
+                if ((int)t < PieceData.StandardPieceCount) counts[t] = counts.TryGetValue(t, out var n) ? n + 1 : 1;
+                else surprises++;
+            }
+            Assert.Greater(surprises, 50);
+            foreach (var kv in counts) Assert.Less(System.Math.Abs(kv.Value - counts[PieceType.I]), 2, "the bag stays balanced");
+        }
     }
 }

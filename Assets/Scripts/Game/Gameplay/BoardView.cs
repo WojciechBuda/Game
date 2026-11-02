@@ -143,12 +143,16 @@ namespace JellyDrop.Gameplay
         public Color ColorOf(PieceType type)
         {
             if (type == PieceType.Garbage) return ColorUtil.Junk;
+            if (type == PieceType.Mono) type = PieceType.T;     // small pieces borrow colours from the skin
+            if (type == PieceType.Domino) type = PieceType.S;
             return _palette == null || (int)type >= _palette.Length ? ColorUtil.Pink : _palette[(int)type];
         }
 
         public Sprite SpriteFor(PieceType type, bool golden)
         {
             if (type == PieceType.Bomb) return SpriteFactory.PowerUpIcon(PowerUpType.Bomb);
+            if (type == PieceType.RowBlast) return SpriteFactory.BlastBlock(true);
+            if (type == PieceType.ColumnBlast) return SpriteFactory.BlastBlock(false);
             if (type == PieceType.Garbage) return SpriteFactory.JunkBlock();
             if (golden) return SpriteFactory.GoldenBlock();
             return SpriteFactory.Block(_skin?.BlockStyle ?? BlockStyle.Jelly, ColorOf(type));
@@ -304,7 +308,7 @@ namespace JellyDrop.Gameplay
                 r.enabled = visible;
                 r.sprite = sprite;
                 r.transform.localPosition = CellLocal(p.x, p.y) + _activeVisualOffset + fallOffset;
-                float pulse = piece.Type == PieceType.Bomb ? 1f + Mathf.Sin(t * 12f) * 0.08f : 1f;
+                float pulse = PieceData.IsSpecial(piece.Type) ? 1f + Mathf.Sin(t * 12f) * 0.08f : 1f;
                 pulse *= 1f + Mathf.Sin(_rotatePop * Mathf.PI) * 0.08f;
                 r.transform.localScale = Vector3.one * pulse;
                 r.color = Color.white;

@@ -32,6 +32,7 @@ namespace JellyDrop.Interface
             // The HUD must not block touches on the board, so the root has no raycast target.
             var pause = UIKit.IconButton(Root, SpriteFactory.PauseIcon(), ColorUtil.Purple, App.PauseGame, 110);
             pause.GetComponent<RectTransform>().At(UIKit.TopLeft, new Vector2(80, -70), new Vector2(110, 110));
+            AddHomeButton(Root, UIKit.TopLeft, new Vector2(195, -70), () => App.Game.IsPlaying, 96, () => App.Game.Pause(), () => App.Game.Resume());
 
             _score = UIKit.Text(Root, "0", 88, ColorUtil.Ink);
             _score.rectTransform.At(UIKit.Top, new Vector2(0, -60), new Vector2(600, 110));

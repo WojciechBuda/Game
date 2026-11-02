@@ -22,10 +22,15 @@ namespace JellyDrop.Core
             /* J */ new[] { new Int2(0, 2), new Int2(0, 1), new Int2(1, 1), new Int2(2, 1) },
             /* L */ new[] { new Int2(2, 2), new Int2(0, 1), new Int2(1, 1), new Int2(2, 1) },
             /* Bomb */ new[] { new Int2(0, 0) },
+            /* Garbage (never falls) */ new[] { new Int2(0, 0) },
+            /* Mono */ new[] { new Int2(0, 0) },
+            /* Domino */ new[] { new Int2(0, 0), new Int2(1, 0) },
+            /* RowBlast */ new[] { new Int2(0, 0) },
+            /* ColumnBlast */ new[] { new Int2(0, 0) },
         };
 
         // Bounding box size: rotation centre is (size - 1) / 2.
-        private static readonly int[] BoxSize = { 4, 2, 3, 3, 3, 3, 3, 1 };
+        private static readonly int[] BoxSize = { 4, 2, 3, 3, 3, 3, 3, 1, 1, 1, 2, 1, 1 };
 
         // [type][rotation] -> cells
         private static readonly Int2[][][] Cells = BuildAllRotations();
@@ -58,7 +63,11 @@ namespace JellyDrop.Core
 
         public static Int2[] GetCells(PieceType type, int rotation) => Cells[(int)type][Mod4(rotation)];
 
-        public static bool CanRotate(PieceType type) => type != PieceType.O && type != PieceType.Bomb;
+        public static bool CanRotate(PieceType type) => type != PieceType.O && BoxSize[(int)type] > 1;
+
+        /// <summary>Bombs and row / column blasts: they don't stay on the board, they clear it.</summary>
+        public static bool IsSpecial(PieceType type) =>
+            type == PieceType.Bomb || type == PieceType.RowBlast || type == PieceType.ColumnBlast;
 
         public static Int2[] GetKicks(PieceType type, int fromRotation, int toRotation)
         {
@@ -99,7 +108,7 @@ namespace JellyDrop.Core
                 all[t][0] = SpawnCells[t];
                 for (int r = 1; r < 4; r++)
                 {
-                    all[t][r] = (t == (int)PieceType.O || t == (int)PieceType.Bomb)
+                    all[t][r] = (t == (int)PieceType.O || BoxSize[t] == 1)
                         ? SpawnCells[t]
                         : RotateCW(all[t][r - 1], BoxSize[t]);
                 }

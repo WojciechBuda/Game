@@ -39,6 +39,26 @@ namespace JellyDrop.Interface
         /// <summary>Android back button. Return true if handled.</summary>
         public virtual bool OnBack() => false;
 
+        /// <summary>
+        /// A home button (back to the main menu). When <paramref name="inProgress"/> says a game is running,
+        /// it asks first, since leaving ends that game.
+        /// </summary>
+        protected CandyButton AddHomeButton(Transform parent, Vector2 anchor, Vector2 position, System.Func<bool> inProgress = null,
+            float size = 110f, System.Action pause = null, System.Action resume = null)
+        {
+            var b = UIKit.IconButton(parent, JellyDrop.Visuals.SpriteFactory.HomeIcon(), ColorUtil.Purple, () =>
+            {
+                if (inProgress != null && inProgress())
+                {
+                    pause?.Invoke();
+                    App.Popup.ShowConfirm(JellyDrop.Core.Loc.T("common.leave_title"), JellyDrop.Core.Loc.T("common.leave_body"), JellyDrop.Core.Loc.T("common.leave"), App.GoHome, resume);
+                }
+                else App.GoHome();
+            }, size);
+            b.GetComponent<RectTransform>().At(anchor, position, new Vector2(size, size));
+            return b;
+        }
+
         public void Show()
         {
             gameObject.SetActive(true);

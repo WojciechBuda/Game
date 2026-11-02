@@ -28,7 +28,15 @@ namespace JellyDrop.Core
         /// <summary>Single-cell power-up piece that explodes a 3x3 area when it lands.</summary>
         Bomb = 7,
         /// <summary>Junk block from difficulty rows. Only ever appears as a board cell, never as a falling piece.</summary>
-        Garbage = 8
+        Garbage = 8,
+        /// <summary>Small one-cell block.</summary>
+        Mono = 9,
+        /// <summary>Small two-cell block (rotates between flat and upright).</summary>
+        Domino = 10,
+        /// <summary>Special one-cell piece: when it lands, the whole row it lands in disappears.</summary>
+        RowBlast = 11,
+        /// <summary>Special one-cell piece: when it lands, the whole column it lands in disappears.</summary>
+        ColumnBlast = 12
     }
 
     public enum GameMode

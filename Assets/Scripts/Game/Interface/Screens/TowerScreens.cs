@@ -88,7 +88,7 @@ namespace JellyDrop.Interface
 
         protected override void Build()
         {
-            var back = UIKit.IconButton(Root, SpriteFactory.HomeIcon(), ColorUtil.Purple, App.OpenArcade, 120);
+            var back = UIKit.IconButton(Root, SpriteFactory.HomeIcon(), ColorUtil.Purple, App.GoHome, 120);
             back.GetComponent<RectTransform>().At(UIKit.TopLeft, new Vector2(84, -84), new Vector2(120, 120));
             var title = UIKit.Text(Root, Loc.T("tower.title"), 88, ColorUtil.Blue).Fit(40);
             title.rectTransform.At(UIKit.Top, new Vector2(-30, -84), new Vector2(520, 120));
@@ -322,6 +322,7 @@ namespace JellyDrop.Interface
             // HUD
             _pause = UIKit.IconButton(Root, SpriteFactory.PauseIcon(), ColorUtil.Purple, TogglePause, 110);
             _pause.GetComponent<RectTransform>().At(UIKit.TopLeft, new Vector2(90, -80), new Vector2(110, 110));
+            AddHomeButton(Root, UIKit.TopLeft, new Vector2(215, -80), () => _session != null && !_finished, 110f, () => { if (!_paused) TogglePause(); }, () => { if (_paused) TogglePause(); });
             _floor = UIKit.Text(Root, "", 72, Color.white).Fit(30);
             _floor.rectTransform.At(UIKit.Top, new Vector2(0, -72), new Vector2(520, 100));
             _score = UIKit.Text(Root, "", 36, ColorUtil.Gold, TextAnchor.MiddleRight, true).Fit(20);
@@ -349,6 +350,7 @@ namespace JellyDrop.Interface
             _resultInfo.rectTransform.At(UIKit.Top, new Vector2(0, -470), new Vector2(780, 240));
             var again = UIKit.Button(_results, Loc.T("tower.again"), ColorUtil.Pink, Again, new Vector2(620, 150), 52, SpriteFactory.PlayIcon());
             again.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 250), new Vector2(620, 150));
+            AddHomeButton(_results, UIKit.TopLeft, new Vector2(80, -80), null, 100);
             var back = UIKit.Button(_results, Loc.T("run.back"), ColorUtil.Purple, App.OpenTowerMenu, new Vector2(620, 130), 46);
             back.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 90), new Vector2(620, 130));
         }

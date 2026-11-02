@@ -14,6 +14,9 @@ namespace JellyDrop.Core
             Add("common.yay", "YAY!", "HURA!", "JUHU!", "¡BIEN!", "YOUPI !", "OBA!");
             Add("common.awesome", "AWESOME!", "SUPER!", "KLASSE!", "¡GENIAL!", "GÉNIAL !", "DEMAIS!");
             Add("common.done", "DONE", "GOTOWE", "FERTIG", "HECHO", "FAIT", "FEITO");
+            Add("common.leave_title", "Back to the main menu?", "Wrócić do menu głównego?", "Zurück zum Hauptmenü?", "¿Volver al menú principal?", "Retour au menu principal ?", "Voltar ao menu principal?");
+            Add("common.leave_body", "This game will end and its progress will be lost.", "Ta gra się zakończy, a jej postęp przepadnie.", "Dieses Spiel endet und der Fortschritt geht verloren.", "Esta partida terminará y se perderá su progreso.", "Cette partie se termine et sa progression sera perdue.", "Este jogo vai terminar e o progresso perde-se.");
+            Add("common.leave", "MENU", "MENU", "MENÜ", "MENÚ", "MENU", "MENU");
             Add("common.close", "CLOSE", "ZAMKNIJ", "SCHLIESSEN", "CERRAR", "FERMER", "FECHAR");
             Add("common.claim", "CLAIM {0}", "ODBIERZ {0}", "ABHOLEN {0}", "RECLAMAR {0}", "RÉCUPÉRER {0}", "RESGATAR {0}");
             Add("common.tomorrow", "TOMORROW", "JUTRO", "MORGEN", "MAÑANA", "DEMAIN", "AMANHÃ");

@@ -109,6 +109,7 @@ namespace JellyDrop
 #endif
 
             GameConfig = new GameConfig();
+            GameConfig.Lucky.WithSurprisePieces();
             Save = new SaveService();
             Economy = new EconomyService(Save.Load(), Catalog.CreateDefault(), new EconomyConfig(), new SystemClock());
             City = new CityService(Economy);

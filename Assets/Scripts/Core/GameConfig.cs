@@ -15,6 +15,22 @@ namespace JellyDrop.Core
         /// <summary>Chance any line clear triggers the jackpot.</summary>
         public double JackpotChancePerClear = 0.004;
 
+        /// <summary>Chance a piece is a small one (single or double block) instead of the next one from the bag.</summary>
+        public double SmallPieceChance = 0;
+        /// <summary>Chance a falling bomb shows up (explodes a 3x3 area where it lands).</summary>
+        public double BombPieceChance = 0;
+        /// <summary>Chance of a row blast and of a column blast (each).</summary>
+        public double LineBlastChance = 0;
+
+        /// <summary>The surprise pieces used in the real game (tests keep them off for exact piece orders).</summary>
+        public LuckyConfig WithSurprisePieces()
+        {
+            SmallPieceChance = 0.06;
+            BombPieceChance = 0.02;
+            LineBlastChance = 0.015;
+            return this;
+        }
+
         public int GoldenCoinMultiplier = 5;
         public int RainbowCoins = 20;
         public int RainbowScore = 500;

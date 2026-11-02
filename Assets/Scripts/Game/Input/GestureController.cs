@@ -30,6 +30,10 @@ namespace JellyDrop.GameInput
         private bool _movedSideways;
         private bool _softDropping;
         private bool _consumed;
+        // Each touch picks one direction early on: 1 = sideways (moving), 2 = up/down (drops / hold).
+        // A flick down can then never nudge the piece sideways first.
+        private int _axis;
+        public float AxisLockCells = 0.45f;
 
         // Velocity estimate (cells per second, vertical), smoothed.
         private float _velocityY;
@@ -74,6 +78,7 @@ namespace JellyDrop.GameInput
                 _movedSideways = false;
                 _softDropping = false;
                 _consumed = false;
+                _axis = 0;
                 _velocityY = 0f;
                 return;
             }
@@ -92,15 +97,25 @@ namespace JellyDrop.GameInput
                 _last = pos;
                 if (_consumed) return;
 
-                // Sideways moves: one cell per step of finger travel.
+                if (_axis == 0)
+                {
+                    float ax = Mathf.Abs(pos.x - _start.x) / cellPx, ay = Mathf.Abs(pos.y - _start.y) / cellPx;
+                    if (Mathf.Max(ax, ay) >= AxisLockCells)
+                    {
+                        _axis = ax > ay * 1.15f ? 1 : 2;
+                        _anchorX = _start.x;
+                    }
+                }
+
+                // Sideways moves: one cell per step of finger travel (only for sideways drags).
                 float step = cellPx * CellsPerMoveStep;
-                while (pos.x - _anchorX >= step)
+                while (_axis == 1 && pos.x - _anchorX >= step)
                 {
                     _anchorX += step;
                     if (session.MoveRight()) OnMove?.Invoke();
                     _movedSideways = true;
                 }
-                while (_anchorX - pos.x >= step)
+                while (_axis == 1 && _anchorX - pos.x >= step)
                 {
                     _anchorX -= step;
                     if (session.MoveLeft()) OnMove?.Invoke();
@@ -110,7 +125,7 @@ namespace JellyDrop.GameInput
                 // Soft drop while dragging down (mostly vertical drag).
                 float dy = (pos.y - _start.y) / cellPx;
                 float dx = Mathf.Abs(pos.x - _start.x) / cellPx;
-                bool wantSoft = dy < -SoftDropStartCells && -dy > dx * 1.2f;
+                bool wantSoft = _axis == 2 && dy < -SoftDropStartCells && -dy > dx * 1.2f;
                 if (wantSoft != _softDropping)
                 {
                     _softDropping = wantSoft;
@@ -128,11 +143,11 @@ namespace JellyDrop.GameInput
             float totalDx = (_last.x - _start.x) / cellPx;
             float duration = Time.unscaledTime - _startTime;
 
-            if (totalDy < -FlickMinCells && _velocityY < -FlickMinCellsPerSecond && -totalDy > Mathf.Abs(totalDx))
+            if (_axis == 2 && totalDy < -FlickMinCells && _velocityY < -FlickMinCellsPerSecond && -totalDy > Mathf.Abs(totalDx))
             {
                 OnHardDrop?.Invoke();
             }
-            else if (totalDy > HoldSwipeCells && totalDy > Mathf.Abs(totalDx) * 1.5f)
+            else if (_axis == 2 && totalDy > HoldSwipeCells && totalDy > Mathf.Abs(totalDx) * 1.5f)
             {
                 OnHold?.Invoke();
             }

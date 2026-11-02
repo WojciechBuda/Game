@@ -28,6 +28,7 @@ namespace JellyDrop.Interface
         {
             _pause = UIKit.IconButton(Root, SpriteFactory.PauseIcon(), ColorUtil.Purple, TogglePause, 110);
             _pause.GetComponent<RectTransform>().At(UIKit.TopLeft, new Vector2(80, -80), new Vector2(110, 110));
+            AddHomeButton(Root, UIKit.TopLeft, new Vector2(205, -80), () => !_finished, 110f, () => { if (!_pausedState) TogglePause(); }, () => { if (_pausedState) TogglePause(); });
 
             _coins = UIKit.CurrencyPill(Root, SpriteFactory.Coin(), ColorUtil.Ink, out var pill, 260);
             pill.At(UIKit.TopRight, new Vector2(-150, -80), pill.sizeDelta);
@@ -56,6 +57,7 @@ namespace JellyDrop.Interface
             _resultInfo.rectTransform.At(UIKit.Top, new Vector2(0, -440), new Vector2(780, 160));
             _again = UIKit.Button(_results, "", ColorUtil.Pink, () => App.StartRun(), new Vector2(620, 150), 52, SpriteFactory.PlayIcon());
             _again.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 250), new Vector2(620, 150));
+            AddHomeButton(_results, UIKit.TopLeft, new Vector2(80, -80), null, 100);
             var back = UIKit.Button(_results, Loc.T("run.back"), ColorUtil.Purple, App.OpenArcade, new Vector2(620, 130), 46);
             back.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 90), new Vector2(620, 130));
         }

@@ -49,7 +49,24 @@ namespace JellyDrop.Core
 
         private void Fill()
         {
-            while (_queue.Count < System.Math.Max(1, PreviewCount)) _queue.Add(Roll(DrawFromBag()));
+            while (_queue.Count < System.Math.Max(1, PreviewCount))
+            {
+                // Now and then a surprise piece slips in between the bag pieces (the bag itself is not touched).
+                var surprise = RollSurprise();
+                _queue.Add(surprise.HasValue ? QueuedPiece.Plain(surprise.Value) : Roll(DrawFromBag()));
+            }
+        }
+
+        private PieceType? RollSurprise()
+        {
+            double total = _lucky.SmallPieceChance + _lucky.BombPieceChance + 2 * _lucky.LineBlastChance;
+            if (total <= 0) return null;
+            double r = _rng.NextDouble();
+            if ((r -= _lucky.SmallPieceChance) < 0) return _rng.NextDouble() < 0.5 ? PieceType.Mono : PieceType.Domino;
+            if ((r -= _lucky.BombPieceChance) < 0) return PieceType.Bomb;
+            if ((r -= _lucky.LineBlastChance) < 0) return PieceType.RowBlast;
+            if ((r -= _lucky.LineBlastChance) < 0) return PieceType.ColumnBlast;
+            return null;
         }
 
         private PieceType DrawFromBag()

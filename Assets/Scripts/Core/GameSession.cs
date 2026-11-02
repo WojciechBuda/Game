@@ -263,21 +263,37 @@ namespace JellyDrop.Core
         }
 
         /// <summary>
-        /// Tap-to-place: slides the current piece so it is centred on <paramref name="column"/> (as far as it can go)
-        /// and hard-drops it. Returns false when there is no piece to drop.
+        /// Tap-to-place. Tapping a column the piece already covers just drops it straight down (it never moves).
+        /// Tapping another column slides the piece there and drops it, but only if it can really get there: the
+        /// path sideways must be free and the target column must be open from the top down to where it lands,
+        /// so a tap can't tuck a piece under an overhang. Returns false (and does nothing) otherwise.
         /// </summary>
         public bool DropAtColumn(int column)
         {
-            if (Current == null || IsOver) return false;
+            if (!CanAct()) return false;
             int min = int.MaxValue, max = int.MinValue;
             foreach (var c in Current.BoardCells())
             {
                 if (c.x < min) min = c.x;
                 if (c.x > max) max = c.x;
             }
-            int shift = column - (min + (max - min) / 2);
+            if (column >= min && column <= max)
+            {
+                HardDrop();
+                return true;
+            }
+            int shift = column < min ? column - min : column - max;
+            var target = Current.Origin + new Int2(shift, 0);
+            // Sideways path at the current height.
+            int step = Math.Sign(shift);
+            for (int i = 1; i <= Math.Abs(shift); i++)
+                if (!Board.Fits(Current.Type, Current.Rotation, Current.Origin + new Int2(step * i, 0))) return false;
+            // Open from the top of the board down to the current height in the target column.
+            int top = PieceData.SpawnOrigin(Current.Type, Board.Width, _config.SpawnRow).y;
+            for (int y = Math.Max(top, Current.Origin.y); y >= Current.Origin.y; y--)
+                if (!Board.Fits(Current.Type, Current.Rotation, new Int2(target.x, y))) return false;
             for (int i = 0; i < Math.Abs(shift); i++)
-                if (!(shift > 0 ? MoveRight() : MoveLeft())) break;
+                if (!(shift > 0 ? MoveRight() : MoveLeft())) return false;
             HardDrop();
             return true;
         }
@@ -296,7 +312,7 @@ namespace JellyDrop.Core
 
         public bool Hold()
         {
-            if (!CanAct() || !_config.HoldEnabled || HoldUsedThisTurn || Current.Type == PieceType.Bomb) return false;
+            if (!CanAct() || !_config.HoldEnabled || HoldUsedThisTurn || PieceData.IsSpecial(Current.Type)) return false;
             var previous = Held;
             Held = Current.Type;
             HoldUsedThisTurn = true;
@@ -322,10 +338,10 @@ namespace JellyDrop.Core
             if (!CanAct() || PowerUpsLeft <= 0) return false;
             switch (type)
             {
-                case PowerUpType.Bomb: return Current.Type != PieceType.Bomb;
+                case PowerUpType.Bomb: return !PieceData.IsSpecial(Current.Type);
                 case PowerUpType.LineZap: return Board.StackHeight() > 0;
                 case PowerUpType.SlowMo: return _slowMoRemaining <= 0f;
-                case PowerUpType.Swap: return Current.Type != PieceType.I && Current.Type != PieceType.Bomb;
+                case PowerUpType.Swap: return Current.Type != PieceType.I && !PieceData.IsSpecial(Current.Type);
                 default: return false;
             }
         }
@@ -500,6 +516,10 @@ namespace JellyDrop.Core
             {
                 ExplodeBomb(piece);
             }
+            else if (piece.Type == PieceType.RowBlast || piece.Type == PieceType.ColumnBlast)
+            {
+                BlastLine(piece);
+            }
             else
             {
                 bool allAboveVisible = true;
@@ -522,7 +542,7 @@ namespace JellyDrop.Core
                 }
             }
 
-            ResolveLineClears(countsForBackToBack: piece.Type != PieceType.Bomb);
+            ResolveLineClears(countsForBackToBack: !PieceData.IsSpecial(piece.Type));
             if (IsOver) return;
             CheckTarget();
 
@@ -545,6 +565,30 @@ namespace JellyDrop.Core
             Score += Points(destroyed.Count * 10 * Level);
             BombExploded?.Invoke(destroyed);
         }
+
+        /// <summary>Row blast: the row it lands in disappears (everything above drops). Column blast: the whole column empties.</summary>
+        private void BlastLine(ActivePiece piece)
+        {
+            var destroyed = new List<Int2>();
+            var at = piece.Origin;
+            if (piece.Type == PieceType.RowBlast)
+            {
+                for (int x = 0; x < Board.Width; x++)
+                    if (!Board[x, at.y].IsEmpty) destroyed.Add(new Int2(x, at.y));
+                Board.RemoveRow(at.y);
+            }
+            else
+            {
+                for (int y = 0; y < Board.Height; y++)
+                    if (!Board[at.x, y].IsEmpty) { destroyed.Add(new Int2(at.x, y)); Board[at.x, y] = BoardCell.Empty; }
+            }
+            Score += Points(destroyed.Count * 15 * Level);
+            BombExploded?.Invoke(destroyed);
+            LineBlasted?.Invoke(piece.Type, piece.Type == PieceType.RowBlast ? at.y : at.x);
+        }
+
+        /// <summary>A row or column blast went off (type, row or column index).</summary>
+        public event Action<PieceType, int> LineBlasted;
 
         private void ResolveLineClears(bool countsForBackToBack)
         {

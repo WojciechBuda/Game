@@ -109,7 +109,13 @@ namespace JellyDrop.Gameplay
                 if (Session.RotateClockwise()) { _audio.Play(Sfx.Rotate, 0.7f); Haptics.Tap(); }
                 return;
             }
-            Session.DropAtColumn(col);
+            if (!Session.DropAtColumn(col))
+            {
+                // Can't get there from here: tell the player instead of dropping somewhere else.
+                _audio.Play(Sfx.Error, 0.6f);
+                Haptics.Tap();
+                _shake.Shake(0.15f, 0.15f);
+            }
         }
 
         private PieceSlot MakeSlot(string name, Vector3 pos, float box, float cellScale)
@@ -278,6 +284,7 @@ namespace JellyDrop.Gameplay
             s.Lucky += OnLucky;
             s.LevelUp += OnLevelUp;
             s.BombExploded += OnBomb;
+            s.LineBlasted += OnLineBlast;
             s.PowerUpActivated += OnPowerUp;
             s.GameEnded += OnGameEnded;
             s.GarbageRose += OnGarbageRose;
@@ -294,6 +301,7 @@ namespace JellyDrop.Gameplay
             s.Lucky -= OnLucky;
             s.LevelUp -= OnLevelUp;
             s.BombExploded -= OnBomb;
+            s.LineBlasted -= OnLineBlast;
             s.PowerUpActivated -= OnPowerUp;
             s.GameEnded -= OnGameEnded;
             s.GarbageRose -= OnGarbageRose;
@@ -440,6 +448,20 @@ namespace JellyDrop.Gameplay
             foreach (var p in destroyed)
                 Particles.Burst(Board.CellWorld(p.x, p.y), 6, new[] { ColorUtil.Orange, ColorUtil.Yellow, Color.white }, 10f, 0.9f, 0.5f);
             Avatar.React(AvatarMood.Shocked, 1f);
+        }
+
+        private void OnLineBlast(PieceType type, int index)
+        {
+            _audio.Play(Sfx.Zap);
+            bool row = type == PieceType.RowBlast;
+            // A streak of light along the cleared row / column.
+            var col = row ? ColorUtil.Hex("#3DE0FF") : ColorUtil.Hex("#FF4FA3");
+            int n = row ? _config.BoardWidth : _config.BoardVisibleHeight;
+            for (int i = 0; i < n; i++)
+            {
+                var p = row ? Board.CellWorld(i, index) : Board.CellWorld(index, i);
+                Particles.Burst(p, 3, new[] { col, Color.white }, 8f, 0.7f, 0.4f);
+            }
         }
 
         private void OnPowerUp(PowerUpType type)

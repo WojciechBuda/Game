@@ -342,6 +342,7 @@ namespace JellyDrop.Interface
     /// <summary>After a level: stars, score, rewards and what to do next.</summary>
     public sealed class LevelResultScreen : UIScreen
     {
+        private CandyButton _home;
         private RectTransform _content;
         private GameResult _result;
         private GameRewards _rewards;
@@ -359,6 +360,7 @@ namespace JellyDrop.Interface
 
         protected override void Build()
         {
+            _home = AddHomeButton(Root, UIKit.TopLeft, new Vector2(84, -84), null, 110f);
             var card = UIKit.NeonCard(Root, ColorUtil.Pink, ColorUtil.Panel, 0.8f, true, "Card");
             card.rectTransform.Fill(40, 60, 40, 60);
             _content = UIKit.Node("Content", card.transform).Fill(30, 30, 30, 30);
@@ -366,6 +368,7 @@ namespace JellyDrop.Interface
 
         protected override void OnShow()
         {
+            _home.transform.SetAsLastSibling();
             UIKit.ClearChildren(_content);
             if (_outcome == null) return;
             var def = _outcome.Level;

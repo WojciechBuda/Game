@@ -360,6 +360,34 @@ namespace JellyDrop.Visuals
             return c.ToSprite(96);
         });
 
+        /// <summary>Row blast (horizontal arrows) or column blast (vertical arrows): a glowing block.</summary>
+        public static Sprite BlastBlock(bool row) => Cached("blast_" + row, () =>
+        {
+            var c = new PixelCanvas(128, 128);
+            var a = row ? ColorUtil.Hex("#3DE0FF") : ColorUtil.Hex("#FF4FA3");
+            var b = row ? ColorUtil.Hex("#2A6BFF") : ColorUtil.Hex("#B02CFF");
+            c.Paint((x, y) => PixelCanvas.RoundedBox(x, y, 64, 64, 58, 58, 20), (x, y, d) => Color.Lerp(b, a, y / 128f));
+            c.Paint((x, y) => Mathf.Abs(PixelCanvas.RoundedBox(x, y, 64, 64, 56, 56, 18)) - 3f, new Color(1, 1, 1, 0.7f));
+            System.Func<float, float, float, float, List<Vector2>> arrow = (cx, cy, dx, dy) =>
+            {
+                float px = -dy, py = dx;
+                return new List<Vector2> { new Vector2(cx + dx * 34, cy + dy * 34), new Vector2(cx + dx * 12 + px * 20, cy + dy * 12 + py * 20), new Vector2(cx + dx * 12 - px * 20, cy + dy * 12 - py * 20) };
+            };
+            if (row)
+            {
+                c.Paint((x, y) => PixelCanvas.Segment(x, y, 30, 64, 98, 64, 7), Color.white);
+                c.Paint((x, y) => PixelCanvas.Polygon(x, y, arrow(64, 64, 1, 0)), Color.white);
+                c.Paint((x, y) => PixelCanvas.Polygon(x, y, arrow(64, 64, -1, 0)), Color.white);
+            }
+            else
+            {
+                c.Paint((x, y) => PixelCanvas.Segment(x, y, 64, 30, 64, 98, 7), Color.white);
+                c.Paint((x, y) => PixelCanvas.Polygon(x, y, arrow(64, 64, 0, 1)), Color.white);
+                c.Paint((x, y) => PixelCanvas.Polygon(x, y, arrow(64, 64, 0, -1)), Color.white);
+            }
+            return c.ToSprite(128);
+        });
+
         public static Sprite PowerUpIcon(PowerUpType type) => Cached("pu_" + type, () =>
         {
             var c = new PixelCanvas(128, 128);
