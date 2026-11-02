@@ -98,6 +98,12 @@ namespace JellyDrop.Core.Economy
         public List<int> seasonFreeClaimed = new List<int>();
         public List<int> seasonPremiumClaimed = new List<int>();
 
+        // Avatar wardrobe (bought with coins) and what is worn
+        public List<string> wardrobe = new List<string>();
+        public string wearColor = "";
+        public string wearHat = "";
+        public string wearGlasses = "";
+
         /// <summary>(int)Difficulty last picked on the home screen.</summary>
         public int selectedDifficulty = 1;
 

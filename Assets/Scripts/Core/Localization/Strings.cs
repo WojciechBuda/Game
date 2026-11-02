@@ -524,6 +524,32 @@ namespace JellyDrop.Core
                 "No se puede comprar. Vuelve en el pase de su temporada.",
                 "Impossible à acheter. Il revient dans le pass de sa saison.",
                 "Não dá para comprar. Ele volta no passe da sua temporada.");
+            // ---------------------------------------------------------------- wardrobe
+            Add("home.style", "STYLE", "STYL", "STYLE", "ESTILO", "STYLE", "ESTILO");
+            Add("wardrobe.title", "STYLE", "STYL", "STYLE", "ESTILO", "STYLE", "ESTILO");
+            Add("wardrobe.colors", "COLOURS", "KOLORY", "FARBEN", "COLORES", "COULEURS", "CORES");
+            Add("wardrobe.hats", "HATS", "CZAPKI", "HÜTE", "GORROS", "CHAPEAUX", "CHAPÉUS");
+            Add("wardrobe.glasses", "GLASSES", "OKULARY", "BRILLEN", "GAFAS", "LUNETTES", "ÓCULOS");
+            Add("wardrobe.wear", "WEAR", "ZAŁÓŻ", "TRAGEN", "PONER", "PORTER", "USAR");
+            Add("wardrobe.worn", "ON", "ZAŁOŻONE", "AN", "PUESTO", "PORTÉ", "USANDO");
+            Add("wardrobe.original", "Original", "Oryginalny", "Original", "Original", "Original", "Original");
+            Add("wardrobe.color_coral", "Coral", "Koralowy", "Koralle", "Coral", "Corail", "Coral");
+            Add("wardrobe.color_mint", "Mint", "Miętowy", "Minze", "Menta", "Menthe", "Menta");
+            Add("wardrobe.color_sky", "Sky", "Błękitny", "Himmel", "Cielo", "Ciel", "Céu");
+            Add("wardrobe.color_lilac", "Lilac", "Liliowy", "Flieder", "Lila", "Lilas", "Lilás");
+            Add("wardrobe.color_lemon", "Lemon", "Cytrynowy", "Zitrone", "Limón", "Citron", "Limão");
+            Add("wardrobe.color_midnight", "Midnight", "Północ", "Mitternacht", "Medianoche", "Minuit", "Meia-noite");
+            Add("wardrobe.color_gold", "Gold", "Złoty", "Gold", "Oro", "Or", "Ouro");
+            Add("wardrobe.hat_cap", "Cap", "Czapka z daszkiem", "Kappe", "Gorra", "Casquette", "Boné");
+            Add("wardrobe.hat_beanie", "Beanie", "Czapka zimowa", "Mütze", "Gorro", "Bonnet", "Gorro");
+            Add("wardrobe.hat_party", "Party hat", "Czapeczka imprezowa", "Partyhut", "Gorro de fiesta", "Chapeau de fête", "Chapéu de festa");
+            Add("wardrobe.hat_headphones", "Headphones", "Słuchawki", "Kopfhörer", "Auriculares", "Casque", "Fones");
+            Add("wardrobe.hat_cowboy", "Cowboy hat", "Kapelusz kowbojski", "Cowboyhut", "Sombrero vaquero", "Chapeau de cowboy", "Chapéu de caubói");
+            Add("wardrobe.hat_crown", "Crown", "Korona", "Krone", "Corona", "Couronne", "Coroa");
+            Add("wardrobe.glasses_sun", "Sunglasses", "Okulary przeciwsłoneczne", "Sonnenbrille", "Gafas de sol", "Lunettes de soleil", "Óculos de sol");
+            Add("wardrobe.glasses_round", "Round glasses", "Okrągłe okulary", "Runde Brille", "Gafas redondas", "Lunettes rondes", "Óculos redondos");
+            Add("wardrobe.glasses_star", "Star glasses", "Okulary gwiazdki", "Sternbrille", "Gafas de estrella", "Lunettes étoiles", "Óculos de estrela");
+            Add("wardrobe.glasses_visor", "Visor", "Wizjer", "Visier", "Visor", "Visière", "Viseira");
             Add("reward.shards", "{0} shards", "{0} kryształów", "{0} Splitter", "{0} fragmentos", "{0} éclats", "{0} fragmentos");
         }
     }

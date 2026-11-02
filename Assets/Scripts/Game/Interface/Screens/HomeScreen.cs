@@ -53,6 +53,11 @@ namespace JellyDrop.Interface
             var mascotBob = _avatar.gameObject.AddComponent<Bobber>();
             mascotBob.Amplitude = 16f;
             mascotBob.Speed = 2f;
+            // Tap the mascot (or the STYLE chip) to dress it up.
+            _avatar.raycastTarget = true;
+            _avatar.gameObject.AddComponent<TapTarget>().OnTap = App.OpenWardrobe;
+            var style = UIKit.Button(Root, Loc.T("home.style"), ColorUtil.Pink, App.OpenWardrobe, new Vector2(170, 66), 28);
+            style.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(120, 232), new Vector2(170, 66));
 
             // Player level on the left of the mascot, the season pass on the right.
             _level = LevelBadge.Create(Root, ShowLevelInfo);

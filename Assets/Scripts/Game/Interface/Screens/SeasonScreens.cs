@@ -19,7 +19,7 @@ namespace JellyDrop.Interface
             switch (item.Category)
             {
                 case ItemCategory.Skin: return SpriteFactory.Block(item.BlockStyle, ColorUtil.Hex(item.Palette[2]));
-                case ItemCategory.Avatar: return SpriteFactory.Avatar(item, AvatarMood.Happy);
+                case ItemCategory.Avatar: return SpriteFactory.Avatar(item, AvatarMood.Happy, AvatarLook.None);
                 default: return SpriteFactory.Gradient(ColorUtil.Hex(item.BackgroundTop), ColorUtil.Hex(item.Accent));
             }
         }

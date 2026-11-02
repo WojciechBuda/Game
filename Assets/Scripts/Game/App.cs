@@ -63,6 +63,7 @@ namespace JellyDrop
         public BuildMenu BuildMenu { get; private set; }
         public MarketPopup Market { get; private set; }
         public SeasonScreen Season { get; private set; }
+        public WardrobeScreen WardrobeView { get; private set; }
 
         /// <summary>The level being played, or 0 for endless modes.</summary>
         public int CurrentLevel { get; private set; }
@@ -106,6 +107,7 @@ namespace JellyDrop
             Online = new OfflineService();
             Online.SignIn(_ => { });
             Economy.Changed += OnEconomyChanged;
+            SpriteFactory.PlayerLook = Economy.Look;
             Haptics.Enabled = Economy.Data.hapticsOn;
             ApplyLanguage();
 
@@ -215,6 +217,7 @@ namespace JellyDrop
             Path = AddScreen<PathScreen>("Path");
             CityView = AddScreen<CityScreen>("City");
             Season = AddScreen<SeasonScreen>("Season");
+            WardrobeView = AddScreen<WardrobeScreen>("Wardrobe");
             LevelResult = AddScreen<LevelResultScreen>("LevelResult");
             Hud = AddScreen<HudScreen>("Hud");
             GameOver = AddScreen<GameOverScreen>("GameOver");
@@ -383,6 +386,14 @@ namespace JellyDrop
         public void OpenMissions() => Screens.Show(Missions);
         public void OpenArcade() => Screens.Show(Arcade);
         public void OpenSeason() => Screens.Show(Season);
+        public void OpenWardrobe() => Screens.Show(WardrobeView);
+
+        /// <summary>Applies the wardrobe (colour, hat, glasses) to the avatar everywhere.</summary>
+        public void ApplyLook()
+        {
+            SpriteFactory.PlayerLook = Economy.Look;
+            Game.ApplyCosmetics(Economy.EquippedSkin, Economy.EquippedAvatar, Economy.EquippedTheme);
+        }
 
         public void BuySeasonPass()
         {

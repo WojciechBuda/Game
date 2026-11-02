@@ -479,10 +479,17 @@ namespace JellyDrop.Visuals
 
         // ================================================================== avatars
 
-        public static Sprite Avatar(ShopItem avatar, AvatarMood mood) =>
-            Cached($"avatar_{avatar.Id}_{mood}", () => DrawAvatar(ColorUtil.Hex(avatar.BodyColor), avatar.AvatarShape, mood));
+        /// <summary>How the player's own avatar is dressed (set by the app from the wardrobe).</summary>
+        public static AvatarLook PlayerLook;
 
-        private static Sprite DrawAvatar(Color body, int shape, AvatarMood mood)
+        /// <summary>The avatar wearing the player's wardrobe items.</summary>
+        public static Sprite Avatar(ShopItem avatar, AvatarMood mood) => Avatar(avatar, mood, PlayerLook);
+
+        public static Sprite Avatar(ShopItem avatar, AvatarMood mood, AvatarLook look) =>
+            Cached($"avatar_{avatar.Id}_{mood}_{look.Key}", () => DrawAvatar(
+                ColorUtil.Hex(string.IsNullOrEmpty(look.BodyColor) ? avatar.BodyColor : look.BodyColor), avatar.AvatarShape, mood, look));
+
+        private static Sprite DrawAvatar(Color body, int shape, AvatarMood mood, AvatarLook look)
         {
             const int s = 256;
             var c = new PixelCanvas(s, s);
@@ -517,10 +524,98 @@ namespace JellyDrop.Visuals
             });
             c.Paint((x, y) => PixelCanvas.Ellipse(x, y, cx - 44, cy + 50, 26, 14), new Color(1, 1, 1, 0.6f));
 
-            if (shape == 4) DrawCrown(c, cx, cy + 74);
+            bool hat = !string.IsNullOrEmpty(look.Hat);
+            if (shape == 4 && !hat) DrawCrown(c, cx, cy + 74);
 
             DrawAvatarFace(c, cx, cy - 4, mood);
+            if (!string.IsNullOrEmpty(look.Glasses)) DrawGlasses(c, cx, cy + 14, look.Glasses, ColorUtil.Hex(look.GlassesColor ?? "#1F1A33"));
+            if (hat) DrawHat(c, cx, cy, 194f, look.Hat, ColorUtil.Hex(look.HatColor ?? "#FF5A6E"));
             return c.ToSprite(s);
+        }
+
+        // ------------------------------------------------------------------ wardrobe accessories
+
+        /// <summary>Hats sit on the head; <paramref name="by"/> is the brim line (fits in the 256 px canvas).</summary>
+        private static void DrawHat(PixelCanvas c, float cx, float cy, float by, string style, Color col)
+        {
+            var dark = PixelCanvas.Darken(col, 0.25f);
+            var light = PixelCanvas.Lighten(col, 0.25f);
+            System.Func<float, float, float, Color> shade = (x, y, d) => Color.Lerp(col, light, Mathf.Clamp01((y - by) / 50f));
+            switch (style)
+            {
+                case "cap":
+                    c.Paint((x, y) => PixelCanvas.RoundedBox(x, y, cx + 62, by + 2, 50, 9, 8), dark);
+                    c.Paint((x, y) => Mathf.Max(PixelCanvas.Ellipse(x, y, cx, by, 80, 46), by - y), shade);
+                    c.Paint((x, y) => PixelCanvas.Circle(x, y, cx, by + 46, 7), dark);
+                    break;
+                case "beanie":
+                    c.Paint((x, y) => Mathf.Max(PixelCanvas.Ellipse(x, y, cx, by, 84, 44), by - y), shade);
+                    c.Paint((x, y) => PixelCanvas.RoundedBox(x, y, cx, by + 4, 88, 12, 10), dark);
+                    c.Paint((x, y) => PixelCanvas.Circle(x, y, cx, by + 46, 12), Color.white);
+                    break;
+                case "party":
+                {
+                    var cone = new List<Vector2> { new Vector2(cx - 46, by - 4), new Vector2(cx + 46, by - 4), new Vector2(cx, by + 52) };
+                    c.Paint((x, y) => PixelCanvas.Polygon(x, y, cone),
+                        (x, y, d) => Mathf.Repeat((y - by) / 14f + x / 40f, 1f) < 0.5f ? col : ColorUtil.Yellow);
+                    c.Paint((x, y) => PixelCanvas.Circle(x, y, cx, by + 52, 9), Color.white);
+                    break;
+                }
+                case "headphones":
+                    c.Paint((x, y) => Mathf.Max(Mathf.Abs(PixelCanvas.Circle(x, y, cx, cy + 10, 108)) - 8f, (cy + 10) - y), col);
+                    foreach (var sx in new[] { -1f, 1f })
+                    {
+                        c.Paint((x, y) => PixelCanvas.RoundedBox(x, y, cx + sx * 104, cy + 6, 20, 34, 14), col);
+                        c.Paint((x, y) => PixelCanvas.RoundedBox(x, y, cx + sx * 104, cy + 6, 10, 24, 8), ColorUtil.Pink);
+                    }
+                    break;
+                case "cowboy":
+                    c.Paint((x, y) => PixelCanvas.Ellipse(x, y, cx, by + 4, 118, 16), dark);
+                    c.Paint((x, y) => PixelCanvas.RoundedBox(x, y, cx, by + 28, 58, 26, 20), shade);
+                    c.Paint((x, y) => PixelCanvas.RoundedBox(x, y, cx, by + 12, 58, 6, 4), PixelCanvas.Darken(col, 0.45f));
+                    break;
+                case "crown":
+                    DrawCrown(c, cx, by - 6);
+                    break;
+            }
+        }
+
+        /// <summary>Glasses over the eyes; <paramref name="ey"/> is the eye line.</summary>
+        private static void DrawGlasses(PixelCanvas c, float cx, float ey, string style, Color col)
+        {
+            const float dx = 36f;
+            switch (style)
+            {
+                case "sun":
+                    c.Paint((x, y) => PixelCanvas.Segment(x, y, cx - 12, ey + 6, cx + 12, ey + 6, 4f), col);
+                    foreach (var sx in new[] { -1f, 1f })
+                    {
+                        float ex = cx + sx * dx;
+                        c.Paint((x, y) => PixelCanvas.RoundedBox(x, y, ex, ey, 30, 20, 12),
+                            (x, y, d) => Color.Lerp(col, PixelCanvas.Lighten(col, 0.25f), Mathf.Clamp01((y - ey + 20) / 40f)));
+                        c.Paint((x, y) => Mathf.Max(PixelCanvas.Segment(x, y, ex - 14, ey - 8, ex + 2, ey + 12, 3f), PixelCanvas.RoundedBox(x, y, ex, ey, 26, 16, 10)),
+                            new Color(1f, 1f, 1f, 0.35f));
+                    }
+                    break;
+                case "round":
+                    c.Paint((x, y) => PixelCanvas.Segment(x, y, cx - 14, ey + 2, cx + 14, ey + 2, 3.5f), col);
+                    foreach (var sx in new[] { -1f, 1f })
+                        c.Paint((x, y) => Mathf.Abs(PixelCanvas.Circle(x, y, cx + sx * dx, ey, 23)) - 4.5f, col);
+                    break;
+                case "star":
+                    c.Paint((x, y) => PixelCanvas.Segment(x, y, cx - 12, ey + 4, cx + 12, ey + 4, 4f), col);
+                    foreach (var sx in new[] { -1f, 1f })
+                    {
+                        var st = PixelCanvas.StarPoints(cx + sx * dx, ey, 30, 15, 5);
+                        c.Paint((x, y) => PixelCanvas.Polygon(x, y, st) - 2f, col);
+                        c.Paint((x, y) => PixelCanvas.Polygon(x, y, st) + 4f, new Color(1f, 0.85f, 0.9f, 0.55f));
+                    }
+                    break;
+                case "visor":
+                    c.Paint((x, y) => PixelCanvas.RoundedBox(x, y, cx, ey, 84, 18, 16), PixelCanvas.WithAlpha(col, 0.8f));
+                    c.Paint((x, y) => PixelCanvas.RoundedBox(x, y, cx - 20, ey + 8, 50, 4, 3), new Color(1f, 1f, 1f, 0.6f));
+                    break;
+            }
         }
 
         private static void DrawCrown(PixelCanvas c, float cx, float baseY)

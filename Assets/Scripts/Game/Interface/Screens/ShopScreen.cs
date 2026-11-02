@@ -202,7 +202,7 @@ namespace JellyDrop.Interface
                     note.rectTransform.At(UIKit.Bottom, new Vector2(0, 36), new Vector2(340, 50));
                     break;
                 case ItemCategory.Avatar:
-                    var av = UIKit.Image(area, SpriteFactory.Avatar(item, AvatarMood.Happy), Color.white);
+                    var av = UIKit.Image(area, SpriteFactory.Avatar(item, AvatarMood.Happy, AvatarLook.None), Color.white);
                     av.rectTransform.At(UIKit.Center, Vector2.zero, new Vector2(270, 270));
                     av.gameObject.AddComponent<Bobber>().Amplitude = 6f;
                     break;
@@ -237,7 +237,7 @@ namespace JellyDrop.Interface
                     App.ApplyCosmetics();
                     Rebuild();
                     App.Popup.ShowReward(Loc.T("shop.unlocked"), Loc.T("shop.is_yours", Loc.ItemName(item)),
-                        item.Category == ItemCategory.Avatar ? SpriteFactory.Avatar(item, AvatarMood.Excited)
+                        item.Category == ItemCategory.Avatar ? SpriteFactory.Avatar(item, AvatarMood.Excited, AvatarLook.None)
                         : item.Category == ItemCategory.Skin ? SpriteFactory.Block(item.BlockStyle, ColorUtil.Hex(item.Palette[2]))
                         : SpriteFactory.Star());
                     break;

@@ -200,6 +200,79 @@ namespace JellyDrop.Core.Economy
             Notify();
         }
 
+        // ------------------------------------------------------------ wardrobe
+
+        public bool OwnsWardrobe(string id) => id != null && Data.wardrobe.Contains(id);
+
+        public PurchaseResult CanBuyWardrobe(string id)
+        {
+            var w = Wardrobe.Get(id);
+            if (w == null) return PurchaseResult.UnknownItem;
+            if (OwnsWardrobe(id)) return PurchaseResult.AlreadyOwned;
+            return Data.coins >= w.CoinPrice ? PurchaseResult.Success : PurchaseResult.NotEnoughCoins;
+        }
+
+        /// <summary>Buys a wardrobe item with coins and puts it on.</summary>
+        public PurchaseResult BuyWardrobe(string id)
+        {
+            var check = CanBuyWardrobe(id);
+            if (check != PurchaseResult.Success) return check;
+            Data.coins -= Wardrobe.Get(id).CoinPrice;
+            Data.wardrobe.Add(id);
+            SetWorn(Wardrobe.Get(id));
+            Notify();
+            return PurchaseResult.Success;
+        }
+
+        public bool IsWearing(string id)
+        {
+            var w = Wardrobe.Get(id);
+            if (w == null) return false;
+            return w.Slot == WardrobeSlot.Color ? Data.wearColor == id : w.Slot == WardrobeSlot.Hat ? Data.wearHat == id : Data.wearGlasses == id;
+        }
+
+        /// <summary>Puts an owned item on, or takes it off if it is already worn.</summary>
+        public bool ToggleWear(string id)
+        {
+            var w = Wardrobe.Get(id);
+            if (w == null || !OwnsWardrobe(id)) return false;
+            if (IsWearing(id)) ClearSlot(w.Slot);
+            else SetWorn(w);
+            Notify();
+            return true;
+        }
+
+        public void ClearSlot(WardrobeSlot slot)
+        {
+            if (slot == WardrobeSlot.Color) Data.wearColor = "";
+            else if (slot == WardrobeSlot.Hat) Data.wearHat = "";
+            else Data.wearGlasses = "";
+        }
+
+        private void SetWorn(WardrobeItem w)
+        {
+            if (w.Slot == WardrobeSlot.Color) Data.wearColor = w.Id;
+            else if (w.Slot == WardrobeSlot.Hat) Data.wearHat = w.Id;
+            else Data.wearGlasses = w.Id;
+        }
+
+        /// <summary>How the player's avatar looks right now.</summary>
+        public AvatarLook Look
+        {
+            get
+            {
+                var color = Wardrobe.Get(Data.wearColor);
+                var hat = Wardrobe.Get(Data.wearHat);
+                var glasses = Wardrobe.Get(Data.wearGlasses);
+                return new AvatarLook
+                {
+                    BodyColor = color?.Color,
+                    Hat = hat?.Style, HatColor = hat?.Color,
+                    Glasses = glasses?.Style, GlassesColor = glasses?.Color,
+                };
+            }
+        }
+
         public bool Equip(string itemId)
         {
             var item = Catalog.Get(itemId);
