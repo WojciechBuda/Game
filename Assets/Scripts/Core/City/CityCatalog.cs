@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace JellyDrop.Core.City
@@ -36,8 +37,47 @@ namespace JellyDrop.Core.City
         public int[] PerHour = { 0, 0, 0 };
         /// <summary>Extra % coins after every game (stacks across buildings).</summary>
         public int[] CoinBonusPercent = { 0, 0, 0 };
+        /// <summary>Seconds to build level 1; every level takes longer (see BuildSeconds).</summary>
+        public int BaseBuildSeconds = 30;
 
-        public int MaxLevel => Costs.Length;
+        /// <summary>Buildings go up to level 10. Levels past the hand-made data are extrapolated.</summary>
+        public int MaxLevel => CityCatalog.MaxBuildingLevel;
+
+        /// <summary>Cost to reach <paramref name="level"/> (1 = build).</summary>
+        public BuildingCost CostFor(int level)
+        {
+            int i = level - 1;
+            if (i < Costs.Length) return Costs[Math.Max(0, i)];
+            var last = Costs[Costs.Length - 1];
+            double k = Math.Pow(1.7, i - (Costs.Length - 1));
+            return new BuildingCost(Round10(last.Coins * k), (int)Math.Ceiling(last.Wood * k), (int)Math.Ceiling(last.Brick * k), (int)Math.Ceiling(last.Glass * k));
+        }
+
+        public int PopulationAt(int level) => Extrapolate(Population, level, 1.0);
+        public int PerHourAt(int level)
+        {
+            if (level <= 0) return 0;
+            if (level <= PerHour.Length) return PerHour[level - 1];
+            return (int)Math.Round(PerHour[PerHour.Length - 1] * Math.Pow(1.4, level - PerHour.Length));
+        }
+        public int CoinBonusAt(int level) => level <= 0 ? 0 : level <= CoinBonusPercent.Length
+            ? CoinBonusPercent[level - 1]
+            : CoinBonusPercent[CoinBonusPercent.Length - 1] + (CoinBonusPercent[CoinBonusPercent.Length - 1] > 0 ? 2 * (level - CoinBonusPercent.Length) : 0);
+
+        /// <summary>Construction time for reaching <paramref name="level"/>: grows ~1.9x per level, capped at 12 hours.</summary>
+        public long BuildSeconds(int level) =>
+            (long)Math.Min(CityCatalog.MaxBuildSeconds, BaseBuildSeconds * Math.Pow(1.9, Math.Max(0, level - 1)));
+
+        private static int Extrapolate(int[] values, int level, double stepScale)
+        {
+            if (level <= 0) return 0;
+            if (level <= values.Length) return values[level - 1];
+            int n = values.Length;
+            int step = Math.Max(1, values[n - 1] - (n >= 2 ? values[n - 2] : 0));
+            return values[n - 1] + (int)Math.Round(step * stepScale * (level - n));
+        }
+
+        private static int Round10(double v) => (int)Math.Round(v / 10.0) * 10;
     }
 
     /// <summary>
@@ -47,11 +87,26 @@ namespace JellyDrop.Core.City
     {
         /// <summary>Hours of production a building stores before it stops (come back and collect!).</summary>
         public const float StorageHours = 8f;
-        public const int MaxPlots = 12;
+        /// <summary>The island grows a row of three plots at a time, up to this many.</summary>
+        public const int MaxPlots = 30;
         public const int StartingPlots = 4;
+        public const int MaxBuildingLevel = 10;
+        public const long MaxBuildSeconds = 12 * 3600;
+        /// <summary>How many buildings can be under construction at once.</summary>
+        public const int Builders = 2;
+        public const int MaxCityLevel = 25;
 
-        /// <summary>Population needed for each city level (index 0 = level 1).</summary>
+        /// <summary>Population needed for the first city levels (index 0 = level 1); later levels follow PopulationForLevel.</summary>
         public static readonly int[] LevelPopulation = { 0, 10, 25, 50, 90, 140, 200, 280, 380, 500 };
+
+        /// <summary>Population needed to reach a city level (level 1 needs 0). Keeps growing after level 10.</summary>
+        public static int PopulationForLevel(int level)
+        {
+            if (level <= 1) return 0;
+            if (level <= LevelPopulation.Length) return LevelPopulation[level - 1];
+            int extra = level - LevelPopulation.Length;
+            return LevelPopulation[LevelPopulation.Length - 1] + 140 * extra + 15 * extra * extra;
+        }
 
         /// <summary>Market prices in coins per unit.</summary>
         public static int Price(Supply s) => s == Supply.Wood ? 25 : s == Supply.Brick ? 40 : 60;
@@ -60,61 +115,61 @@ namespace JellyDrop.Core.City
         {
             new BuildingDef
             {
-                Id = "house", UnlockCityLevel = 1,
+                Id = "house", BaseBuildSeconds = 20, UnlockCityLevel = 1,
                 Costs = new[] { new BuildingCost(50, 3, 1, 0), new BuildingCost(150, 4, 4, 0), new BuildingCost(400, 6, 8, 2) },
                 Population = new[] { 5, 12, 22 }, Produces = Product.Coins, PerHour = new[] { 20, 45, 90 }
             },
             new BuildingDef
             {
-                Id = "sawmill", UnlockCityLevel = 1,
+                Id = "sawmill", BaseBuildSeconds = 40, UnlockCityLevel = 1,
                 Costs = new[] { new BuildingCost(80, 2, 2, 0), new BuildingCost(200, 3, 5, 0), new BuildingCost(500, 4, 8, 3) },
                 Population = new[] { 2, 4, 6 }, Produces = Product.Wood, PerHour = new[] { 1, 2, 4 }
             },
             new BuildingDef
             {
-                Id = "bakery", UnlockCityLevel = 2,
+                Id = "bakery", BaseBuildSeconds = 60, UnlockCityLevel = 2,
                 Costs = new[] { new BuildingCost(120, 4, 3, 0), new BuildingCost(300, 5, 6, 1), new BuildingCost(700, 8, 10, 4) },
                 Population = new[] { 3, 6, 10 }, Produces = Product.Coins, PerHour = new[] { 35, 80, 160 }
             },
             new BuildingDef
             {
-                Id = "brickworks", UnlockCityLevel = 2,
+                Id = "brickworks", BaseBuildSeconds = 80, UnlockCityLevel = 2,
                 Costs = new[] { new BuildingCost(150, 4, 2, 0), new BuildingCost(350, 6, 4, 1), new BuildingCost(800, 8, 6, 4) },
                 Population = new[] { 2, 4, 6 }, Produces = Product.Brick, PerHour = new[] { 1, 2, 4 }
             },
             new BuildingDef
             {
-                Id = "park", UnlockCityLevel = 3,
+                Id = "park", BaseBuildSeconds = 50, UnlockCityLevel = 3,
                 Costs = new[] { new BuildingCost(100, 3, 2, 0), new BuildingCost(250, 5, 5, 0), new BuildingCost(600, 6, 8, 3) },
                 Population = new[] { 0, 0, 0 }, CoinBonusPercent = new[] { 3, 6, 10 }
             },
             new BuildingDef
             {
-                Id = "windmill", UnlockCityLevel = 3,
+                Id = "windmill", BaseBuildSeconds = 120, UnlockCityLevel = 3,
                 Costs = new[] { new BuildingCost(200, 8, 4, 1), new BuildingCost(450, 10, 8, 2), new BuildingCost(1000, 12, 12, 5) },
                 Population = new[] { 4, 8, 12 }, Produces = Product.Coins, PerHour = new[] { 50, 110, 220 }
             },
             new BuildingDef
             {
-                Id = "glassworks", UnlockCityLevel = 4,
+                Id = "glassworks", BaseBuildSeconds = 160, UnlockCityLevel = 4,
                 Costs = new[] { new BuildingCost(250, 6, 6, 0), new BuildingCost(600, 8, 10, 2), new BuildingCost(1200, 10, 14, 6) },
                 Population = new[] { 3, 6, 9 }, Produces = Product.Glass, PerHour = new[] { 1, 2, 3 }
             },
             new BuildingDef
             {
-                Id = "market", UnlockCityLevel = 4,
+                Id = "market", BaseBuildSeconds = 240, UnlockCityLevel = 4,
                 Costs = new[] { new BuildingCost(300, 8, 8, 2), new BuildingCost(700, 10, 12, 4), new BuildingCost(1500, 14, 16, 8) },
                 Population = new[] { 6, 12, 20 }, Produces = Product.Coins, PerHour = new[] { 70, 150, 300 }
             },
             new BuildingDef
             {
-                Id = "tower", UnlockCityLevel = 5, Unique = true,
+                Id = "tower", BaseBuildSeconds = 300, UnlockCityLevel = 5, Unique = true,
                 Costs = new[] { new BuildingCost(400, 6, 14, 4), new BuildingCost(900, 8, 18, 8), new BuildingCost(2000, 12, 24, 12) },
                 Population = new[] { 2, 4, 6 }, CoinBonusPercent = new[] { 5, 10, 15 }
             },
             new BuildingDef
             {
-                Id = "castle", UnlockCityLevel = 7, Unique = true,
+                Id = "castle", BaseBuildSeconds = 600, UnlockCityLevel = 7, Unique = true,
                 Costs = new[] { new BuildingCost(1500, 20, 30, 15), new BuildingCost(3000, 30, 45, 25), new BuildingCost(6000, 40, 60, 40) },
                 Population = new[] { 40, 80, 150 }, Produces = Product.Coins, PerHour = new[] { 150, 300, 600 },
                 CoinBonusPercent = new[] { 5, 10, 20 }

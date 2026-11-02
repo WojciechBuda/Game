@@ -14,6 +14,10 @@ namespace JellyDrop.Core.City
         CityLevelTooLow,
         AlreadyBuilt,
         MaxLevel,
+        /// <summary>This plot is already being built or upgraded.</summary>
+        UnderConstruction,
+        /// <summary>All builders are busy; wait for one to finish or speed it up.</summary>
+        NoFreeBuilder,
         NotEnoughCoins,
         NotEnoughSupplies
     }
@@ -98,11 +102,12 @@ namespace JellyDrop.Core.City
         {
             get
             {
+                CheckConstruction();
                 int pop = 0;
                 foreach (var p in Data.plots)
                 {
                     var def = CityCatalog.Get(p.building);
-                    if (def != null && p.level > 0) pop += def.Population[p.level - 1];
+                    if (def != null && p.level > 0) pop += def.PopulationAt(p.level);
                 }
                 return pop;
             }
@@ -112,9 +117,9 @@ namespace JellyDrop.Core.City
         {
             get
             {
-                int pop = Population, level = 0;
-                foreach (int need in CityCatalog.LevelPopulation) if (pop >= need) level++;
-                return Math.Max(1, level);
+                int pop = Population, level = 1;
+                while (level < CityCatalog.MaxCityLevel && pop >= CityCatalog.PopulationForLevel(level + 1)) level++;
+                return level;
             }
         }
 
@@ -124,7 +129,7 @@ namespace JellyDrop.Core.City
             get
             {
                 int lvl = CityLevel;
-                return lvl < CityCatalog.LevelPopulation.Length ? CityCatalog.LevelPopulation[lvl] : -1;
+                return lvl < CityCatalog.MaxCityLevel ? CityCatalog.PopulationForLevel(lvl + 1) : -1;
             }
         }
 
@@ -144,7 +149,7 @@ namespace JellyDrop.Core.City
                 foreach (var p in Data.plots)
                 {
                     var def = CityCatalog.Get(p.building);
-                    if (def != null && p.level > 0) sum += def.CoinBonusPercent[p.level - 1];
+                    if (def != null && p.level > 0) sum += def.CoinBonusAt(p.level);
                 }
                 return sum;
             }
@@ -152,7 +157,11 @@ namespace JellyDrop.Core.City
 
         // ------------------------------------------------------------ plots
 
-        public PlotData Plot(int index) => Data.plots[index];
+        public PlotData Plot(int index)
+        {
+            CheckConstruction();
+            return Data.plots[index];
+        }
 
         public BuildingDef BuildingAt(int index) => CityCatalog.Get(Data.plots[index].building);
 
@@ -180,7 +189,8 @@ namespace JellyDrop.Core.City
             if (def == null) return BuildResult.UnknownBuilding;
             if (CityLevel < def.UnlockCityLevel) return BuildResult.CityLevelTooLow;
             if (def.Unique && HasBuilding(def.Id)) return BuildResult.AlreadyBuilt;
-            return CheckCost(def.Costs[0]);
+            if (BusyBuilders >= CityCatalog.Builders) return BuildResult.NoFreeBuilder;
+            return CheckCost(def.CostFor(1));
         }
 
         public BuildResult Build(int plot, string buildingId)
@@ -188,10 +198,12 @@ namespace JellyDrop.Core.City
             var check = CanBuild(plot, buildingId);
             if (check != BuildResult.Success) return check;
             var def = CityCatalog.Get(buildingId);
-            Pay(def.Costs[0]);
+            Pay(def.CostFor(1));
             var p = Data.plots[plot];
             p.building = buildingId;
-            p.level = 1;
+            p.level = 0;               // under construction: no people, no production yet
+            p.targetLevel = 1;
+            p.buildEnds = Now + def.BuildSeconds(1);
             p.lastCollect = Now;
             _economy.NotifyChanged();
             return BuildResult.Success;
@@ -203,7 +215,7 @@ namespace JellyDrop.Core.City
             var p = Data.plots[plot];
             var def = CityCatalog.Get(p.building);
             if (def == null || p.level >= def.MaxLevel) return null;
-            return def.Costs[p.level];
+            return def.CostFor(p.level + 1);
         }
 
         public BuildResult CanUpgrade(int plot)
@@ -211,21 +223,122 @@ namespace JellyDrop.Core.City
             var p = Data.plots[plot];
             var def = CityCatalog.Get(p.building);
             if (def == null) return BuildResult.PlotEmpty;
+            if (IsUnderConstruction(plot)) return BuildResult.UnderConstruction;
             if (p.level >= def.MaxLevel) return BuildResult.MaxLevel;
-            return CheckCost(def.Costs[p.level]);
+            if (BusyBuilders >= CityCatalog.Builders) return BuildResult.NoFreeBuilder;
+            return CheckCost(def.CostFor(p.level + 1));
         }
 
         public BuildResult Upgrade(int plot)
         {
             var check = CanUpgrade(plot);
             if (check != BuildResult.Success) return check;
-            // Collect first so the stored amount isn't recalculated at the new rate.
-            CollectPlot(plot, notify: false);
             var p = Data.plots[plot];
-            Pay(CityCatalog.Get(p.building).Costs[p.level]);
-            p.level++;
+            var def = CityCatalog.Get(p.building);
+            Pay(def.CostFor(p.level + 1));
+            // The building keeps working at its current level while the upgrade is built.
+            p.targetLevel = p.level + 1;
+            p.buildEnds = Now + def.BuildSeconds(p.targetLevel);
             _economy.NotifyChanged();
             return BuildResult.Success;
+        }
+
+        // ------------------------------------------------------------ construction
+
+        public bool IsUnderConstruction(int plot)
+        {
+            CheckConstruction();
+            return Data.plots[plot].buildEnds > 0;
+        }
+
+        public int BusyBuilders
+        {
+            get
+            {
+                int n = 0;
+                foreach (var p in Data.plots) if (p.buildEnds > 0 && p.buildEnds > Now) n++;
+                return n;
+            }
+        }
+
+        public long ConstructionSecondsLeft(int plot)
+        {
+            var p = Data.plots[plot];
+            return p.buildEnds > 0 ? Math.Max(0, p.buildEnds - Now) : 0;
+        }
+
+        /// <summary>0..1 progress of the current construction.</summary>
+        public float ConstructionProgress(int plot)
+        {
+            var p = Data.plots[plot];
+            var def = CityCatalog.Get(p.building);
+            if (p.buildEnds <= 0 || def == null) return 1f;
+            long total = Math.Max(1, def.BuildSeconds(p.targetLevel));
+            return (float)Math.Min(1.0, Math.Max(0.0, 1.0 - (p.buildEnds - Now) / (double)total));
+        }
+
+        /// <summary>Coins to finish the current construction right now (2 per started minute, at least 5).</summary>
+        public int SpeedUpCost(int plot)
+        {
+            long left = ConstructionSecondsLeft(plot);
+            return left <= 0 ? 0 : Math.Max(5, (int)Math.Ceiling(left / 60.0) * 2);
+        }
+
+        public bool SpeedUp(int plot)
+        {
+            if (!IsUnderConstruction(plot)) return false;
+            int cost = SpeedUpCost(plot);
+            if (_economy.Coins < cost) return false;
+            Data.coins -= cost;
+            CompleteConstruction(plot);
+            return true;
+        }
+
+        /// <summary>Finishes a construction now (after a speed-up, or when its time is up).</summary>
+        public void CompleteConstruction(int plot, bool notify = true)
+        {
+            var p = Data.plots[plot];
+            if (p.buildEnds <= 0) return;
+            // Collect at the old rate first so stored goods aren't recalculated at the new one.
+            if (p.level > 0) CollectPlot(plot, notify: false);
+            else p.lastCollect = Now;
+            p.level = Math.Max(p.level, p.targetLevel);
+            p.buildEnds = 0;
+            p.targetLevel = 0;
+            if (notify) _economy.NotifyChanged();
+        }
+
+        /// <summary>Completes every construction whose time is up. Returns how many finished.</summary>
+        public int CheckConstruction()
+        {
+            if (_checking) return 0;
+            _checking = true;
+            try { return FinishDue(); }
+            finally { _checking = false; }
+        }
+
+        private bool _checking;
+
+        private int FinishDue()
+        {
+            int done = 0;
+            for (int i = 0; i < Data.plots.Count; i++)
+            {
+                var p = Data.plots[i];
+                if (p.buildEnds > 0 && p.buildEnds <= Now)
+                {
+                    // Production after an upgrade starts at the moment it finished, not now.
+                    long finishedAt = p.buildEnds;
+                    if (p.level > 0) CollectPlot(i, notify: false);
+                    p.level = Math.Max(p.level, p.targetLevel);
+                    p.buildEnds = 0;
+                    p.targetLevel = 0;
+                    if (p.lastCollect < finishedAt) p.lastCollect = finishedAt;
+                    done++;
+                }
+            }
+            if (done > 0) _economy.NotifyChanged();
+            return done;
         }
 
         private BuildResult CheckCost(BuildingCost c)
@@ -248,12 +361,13 @@ namespace JellyDrop.Core.City
         /// <summary>How much a plot has produced and stored so far (capped at StorageHours).</summary>
         public int Pending(int plot)
         {
+            CheckConstruction();
             var p = Data.plots[plot];
             var def = CityCatalog.Get(p.building);
             if (def == null || p.level <= 0 || def.Produces == Product.None) return 0;
             double hours = Math.Max(0, Now - p.lastCollect) / 3600.0;
             hours = Math.Min(hours, CityCatalog.StorageHours);
-            return (int)Math.Floor(hours * def.PerHour[p.level - 1]);
+            return (int)Math.Floor(hours * def.PerHourAt(p.level));
         }
 
         /// <summary>0..1, how full the plot's storage is (for the UI).</summary>
@@ -287,7 +401,7 @@ namespace JellyDrop.Core.City
             if (amount > 0)
             {
                 // Keep the leftover fraction of an hour so nothing is lost to rounding.
-                long secondsPerUnit = Math.Max(1, 3600 / Math.Max(1, def.PerHour[p.level - 1]));
+                long secondsPerUnit = Math.Max(1, 3600 / Math.Max(1, def.PerHourAt(p.level)));
                 bool capped = StorageFill(plot) >= 1f;
                 p.lastCollect = capped ? Now : p.lastCollect + amount * secondsPerUnit;
                 if (p.lastCollect > Now) p.lastCollect = Now;

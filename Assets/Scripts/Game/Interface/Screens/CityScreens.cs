@@ -2,6 +2,7 @@ using System;
 using JellyDrop.Audio;
 using JellyDrop.Core;
 using JellyDrop.Core.City;
+using JellyDrop.Core.Economy;
 using JellyDrop.Services;
 using JellyDrop.Visuals;
 using UnityEngine;
@@ -54,23 +55,33 @@ namespace JellyDrop.Interface
         /// <summary>One line describing what a building does at a level (1-based).</summary>
         public static string Describe(BuildingDef def, int level)
         {
-            int i = Mathf.Clamp(level, 1, def.MaxLevel) - 1;
+            int lv = Mathf.Clamp(level, 1, def.MaxLevel);
             var parts = new System.Collections.Generic.List<string>();
             if (def.Produces != Product.None)
             {
-                string what = def.Produces == Product.Coins ? Loc.Coins(def.PerHour[i])
-                    : def.PerHour[i] + " " + Loc.SupplyName((Supply)((int)def.Produces - 2));
+                string what = def.Produces == Product.Coins ? Loc.Coins(def.PerHourAt(lv))
+                    : def.PerHourAt(lv) + " " + Loc.SupplyName((Supply)((int)def.Produces - 2));
                 parts.Add(Loc.T("city.produces", what));
             }
-            if (def.Population[i] > 0) parts.Add(Loc.T("city.people", def.Population[i]));
-            if (def.CoinBonusPercent[i] > 0) parts.Add(Loc.T("city.bonus_short", def.CoinBonusPercent[i]));
+            if (def.PopulationAt(lv) > 0) parts.Add(Loc.T("city.people", def.PopulationAt(lv)));
+            if (def.CoinBonusAt(lv) > 0) parts.Add(Loc.T("city.bonus_short", def.CoinBonusAt(lv)));
             return string.Join("  ·  ", parts);
         }
 
         public static string ResultMessage(BuildResult r) =>
             r == BuildResult.NotEnoughCoins ? Loc.T("city.not_enough_coins")
             : r == BuildResult.NotEnoughSupplies ? Loc.T("city.not_enough_supplies")
+            : r == BuildResult.NoFreeBuilder ? Loc.T("city.no_builder", CityCatalog.Builders)
+            : r == BuildResult.UnderConstruction ? Loc.T("city.busy")
             : r.ToString();
+
+        /// <summary>"2h 05m", "4m 30s", "45s".</summary>
+        public static string Duration(long seconds)
+        {
+            if (seconds >= 3600) return $"{seconds / 3600}h {seconds % 3600 / 60:00}m";
+            if (seconds >= 60) return $"{seconds / 60}m {seconds % 60:00}s";
+            return $"{Math.Max(0, seconds)}s";
+        }
     }
 
     /// <summary>
@@ -84,6 +95,7 @@ namespace JellyDrop.Interface
         private Text _population;
         private Image _populationBar;
         private Text _bonus;
+        private Text _builders;
         private CandyButton _collect;
         private float _refreshTimer;
 
@@ -116,7 +128,9 @@ namespace JellyDrop.Interface
             _populationBar = UIKit.ProgressBar(Root, ColorUtil.Mint, new Vector2(560, 34));
             _populationBar.transform.parent.GetComponent<RectTransform>().At(UIKit.Top, new Vector2(-170, -330), new Vector2(560, 34));
             _bonus = UIKit.Text(Root, "", 34, ColorUtil.Orange, TextAnchor.MiddleRight, false).Fit(20);
-            _bonus.rectTransform.At(UIKit.Top, new Vector2(300, -305), new Vector2(360, 60));
+            _bonus.rectTransform.At(UIKit.Top, new Vector2(300, -290), new Vector2(360, 50));
+            _builders = UIKit.Text(Root, "", 30, ColorUtil.InkDim, TextAnchor.MiddleRight, false).Fit(18);
+            _builders.rectTransform.At(UIKit.Top, new Vector2(300, -338), new Vector2(360, 44));
 
             _collect = UIKit.Button(Root, Loc.T("city.collect"), ColorUtil.Gold, CollectAll, new Vector2(470, 150), 54, SpriteFactory.Coin());
             _collect.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(-255, 105), new Vector2(470, 150));
@@ -142,7 +156,7 @@ namespace JellyDrop.Interface
             int next = city.NextLevelPopulation;
             if (next > 0)
             {
-                int prev = CityCatalog.LevelPopulation[city.CityLevel - 1];
+                int prev = CityCatalog.PopulationForLevel(city.CityLevel);
                 _population.text = Loc.T("city.population", city.Population, next);
                 _populationBar.fillAmount = Mathf.Clamp01((city.Population - prev) / (float)Mathf.Max(1, next - prev));
             }
@@ -153,6 +167,7 @@ namespace JellyDrop.Interface
             }
             int bonus = city.CoinBonusPercent;
             _bonus.text = bonus > 0 ? Loc.T("city.bonus_short", bonus) : "";
+            _builders.text = Loc.T("city.builders", city.BusyBuilders, CityCatalog.Builders);
             _collect.Interactable = !city.PendingTotal().IsEmpty;
             if (IsVisible) App.CityWorld.Sync();
         }
@@ -186,7 +201,7 @@ namespace JellyDrop.Interface
                 App.BuildMenu.OpenBuild(index);
                 return;
             }
-            if (city.Pending(index) > 0)
+            if (city.Pending(index) > 0 && !city.IsUnderConstruction(index))
             {
                 var h = city.CollectPlot(index);
                 App.CityWorld.PopPlot(index);
@@ -311,7 +326,7 @@ namespace JellyDrop.Interface
             var desc = UIKit.Text(row.transform, CityUi.Describe(def, 1), 28, ColorUtil.InkDim, TextAnchor.MiddleLeft, false).Fit(16);
             desc.rectTransform.At(UIKit.TopLeft, new Vector2(420, -110), new Vector2(400, 70));
 
-            var cost = CityUi.CostRow(row.transform, def.Costs[0], city, App.Economy.Coins, 44);
+            var cost = CityUi.CostRow(row.transform, def.CostFor(1), city, App.Economy.Coins, 44);
             cost.anchorMin = cost.anchorMax = new Vector2(0f, 0f);
             cost.pivot = new Vector2(0f, 0.5f);
             cost.anchoredPosition = new Vector2(220, 45);
@@ -321,7 +336,7 @@ namespace JellyDrop.Interface
             {
                 var b = UIKit.Button(row.transform, Loc.T("city.build"), ColorUtil.Mint, () => DoBuild(id), new Vector2(210, 110), 36);
                 b.GetComponent<RectTransform>().At(new Vector2(1f, 0.5f), new Vector2(-120, 20), new Vector2(210, 110));
-                b.Interactable = city.CanAfford(def.Costs[0]);
+                b.Interactable = city.CanAfford(def.CostFor(1));
                 b.ClickWhenDisabled = true;
             }
             else
@@ -344,8 +359,8 @@ namespace JellyDrop.Interface
             App.Audio.Play(Sfx.Purchase);
             Haptics.Big();
             App.Screens.PopModal(this);
-            App.Popup.ShowReward(Loc.T("city.built", Loc.BuildingName(id)), CityUi.Describe(CityCatalog.Get(id), 1), CitySprites.Building(id),
-                () => CheckLevelUp(before));
+            App.Popup.ShowReward(Loc.T("city.started", Loc.BuildingName(id)),
+                Loc.T("city.ready_in", CityUi.Duration(city.ConstructionSecondsLeft(_plot))), CitySprites.Building(id));
         }
 
         private void ShowUpgrade()
@@ -359,9 +374,14 @@ namespace JellyDrop.Interface
             img.rectTransform.At(UIKit.Top, new Vector2(0, -330), new Vector2(380, 380));
             img.gameObject.AddComponent<Bobber>().Amplitude = 6f;
 
-            var stars = StarRow.Create(_content, 70, 10);
-            stars.Set(p.level);
-            ((RectTransform)stars.transform).At(UIKit.Top, new Vector2(0, -560), new Vector2(240, 70));
+            var lvText = UIKit.Text(_content, Loc.T("city.level_of", p.level, def.MaxLevel), 44, ColorUtil.Gold);
+            lvText.rectTransform.At(UIKit.Top, new Vector2(0, -560), new Vector2(500, 70));
+
+            if (city.IsUnderConstruction(_plot))
+            {
+                ShowConstruction(def, p);
+                return;
+            }
 
             var now = UIKit.Text(_content, Loc.T("city.level_short", p.level) + ":  " + CityUi.Describe(def, p.level), 34, ColorUtil.Ink, TextAnchor.MiddleCenter, false).Fit(20);
             now.rectTransform.At(UIKit.Top, new Vector2(0, -650), new Vector2(860, 90));
@@ -384,10 +404,48 @@ namespace JellyDrop.Interface
             costRow.pivot = new Vector2(0.5f, 0.5f);
             costRow.anchoredPosition = new Vector2(0, 330);
 
+            var time = UIKit.Text(_content, Loc.T("city.build_time", CityUi.Duration(def.BuildSeconds(p.level + 1))), 32, ColorUtil.InkDim, TextAnchor.MiddleCenter, false);
+            time.rectTransform.At(UIKit.Bottom, new Vector2(0, 255), new Vector2(800, 50));
+
             var b = UIKit.Button(_content, Loc.T("city.upgrade"), ColorUtil.Mint, DoUpgrade, new Vector2(560, 160), 60);
-            b.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 150), new Vector2(560, 160));
+            b.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 110), new Vector2(560, 160));
             b.Interactable = city.CanAfford(cost);
             b.ClickWhenDisabled = true;
+        }
+
+        /// <summary>Plot being built or upgraded: time left, progress and a coin speed-up.</summary>
+        private void ShowConstruction(BuildingDef def, PlotData p)
+        {
+            var city = App.City;
+            var label = UIKit.Text(_content, Loc.T("city.building_to", p.targetLevel), 40, ColorUtil.Mint, TextAnchor.MiddleCenter, false).Fit(22);
+            label.rectTransform.At(UIKit.Top, new Vector2(0, -660), new Vector2(860, 70));
+            var bar = UIKit.ProgressBar(_content, ColorUtil.Orange, new Vector2(700, 50));
+            ((RectTransform)bar.transform.parent).At(UIKit.Top, new Vector2(0, -760), new Vector2(700, 50));
+            bar.fillAmount = city.ConstructionProgress(_plot);
+            var left = UIKit.Text(_content, Loc.T("city.ready_in", CityUi.Duration(city.ConstructionSecondsLeft(_plot))), 38, ColorUtil.Ink, TextAnchor.MiddleCenter, false);
+            left.rectTransform.At(UIKit.Top, new Vector2(0, -840), new Vector2(800, 60));
+            int cost = city.SpeedUpCost(_plot);
+            var b = UIKit.Button(_content, Loc.T("city.speed_up", cost), ColorUtil.Gold, DoSpeedUp, new Vector2(620, 160), 52, SpriteFactory.Coin());
+            b.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 110), new Vector2(620, 160));
+            b.Interactable = App.Economy.Coins >= cost;
+            b.ClickWhenDisabled = true;
+        }
+
+        private void DoSpeedUp()
+        {
+            var city = App.City;
+            int before = city.CityLevel;
+            var def = city.BuildingAt(_plot);
+            if (!city.SpeedUp(_plot))
+            {
+                Fail(BuildResult.NotEnoughCoins);
+                return;
+            }
+            App.Audio.Play(Sfx.LevelUp);
+            Haptics.Big();
+            App.Screens.PopModal(this);
+            App.Popup.ShowReward(Loc.T("city.upgraded", Loc.BuildingName(def.Id), city.Plot(_plot).level), CityUi.Describe(def, city.Plot(_plot).level),
+                CitySprites.Building(def.Id), () => CheckLevelUp(before));
         }
 
         private void DoUpgrade()
@@ -401,11 +459,11 @@ namespace JellyDrop.Interface
                 Fail(r);
                 return;
             }
-            App.Audio.Play(Sfx.LevelUp);
+            App.Audio.Play(Sfx.Purchase);
             Haptics.Big();
             App.Screens.PopModal(this);
-            App.Popup.ShowReward(Loc.T("city.upgraded", Loc.BuildingName(def.Id), city.Plot(_plot).level), CityUi.Describe(def, city.Plot(_plot).level),
-                CitySprites.Building(def.Id), () => CheckLevelUp(before));
+            App.Popup.ShowReward(Loc.T("city.started", Loc.BuildingName(def.Id)),
+                Loc.T("city.ready_in", CityUi.Duration(city.ConstructionSecondsLeft(_plot))), CitySprites.Building(def.Id));
         }
 
         private void Fail(BuildResult r)

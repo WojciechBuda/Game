@@ -39,6 +39,10 @@ namespace JellyDrop.Core.Economy
         public int level;
         /// <summary>Unix seconds of the last collection; production accrues from here.</summary>
         public long lastCollect;
+        /// <summary>Unix seconds when the current construction finishes (0 = nothing being built).</summary>
+        public long buildEnds;
+        /// <summary>Level the building will have when the construction finishes.</summary>
+        public int targetLevel;
     }
 
     [Serializable]

@@ -16,7 +16,9 @@ namespace JellyDrop.City3D
     /// </summary>
     public sealed class CityWorld : MonoBehaviour
     {
-        public const int Cols = 3, Rows = 4;
+        public const int Cols = 3;
+        /// <summary>Rows of plots the island can grow to.</summary>
+        public static int MaxRows => (CityCatalog.MaxPlots + Cols - 1) / Cols;
         public const float PlotSize = 3f, Gap = 1.2f, Step = PlotSize + Gap;
         private static readonly Vector3 Origin = new Vector3(0f, 0f, 2000f);
 
@@ -29,7 +31,10 @@ namespace JellyDrop.City3D
         private Camera _mainCamera;
         private Camera _cam;
         private Transform _root;
-        private readonly PlotView[] _plots = new PlotView[Cols * Rows];
+        private readonly PlotView[] _plots = new PlotView[CityCatalog.MaxPlots];
+        /// <summary>Rows currently on the island (unlocked rows plus one locked row to look forward to).</summary>
+        private int _rows;
+        private GameObject _terrain;
         private readonly List<Villager> _villagers = new List<Villager>();
         private readonly List<Vector3> _nodes = new List<Vector3>();
         private readonly List<List<int>> _links = new List<List<int>>();
@@ -61,6 +66,8 @@ namespace JellyDrop.City3D
             public string ShownId = "?";
             public int ShownLevel = -1;
             public bool ShownLocked;
+            public int ShownTarget = -1;
+            public GameObject Gear;
             public float Anim = -1f;
         }
 
@@ -97,8 +104,6 @@ namespace JellyDrop.City3D
             sunGo.SetActive(false);
             _sun = sunGo;
 
-            BuildIsland();
-            BuildPaths();
             for (int i = 0; i < _plots.Length; i++)
             {
                 var anchor = new GameObject("Plot" + i).transform;
@@ -111,10 +116,17 @@ namespace JellyDrop.City3D
 
         private GameObject _sun;
 
+        /// <summary>Row 0 is nearest the camera; the island grows away from it.</summary>
         public static Vector3 PlotCenter(int index)
         {
             int c = index % Cols, r = index / Cols;
-            return new Vector3((c - (Cols - 1) / 2f) * Step, 0f, (r - (Rows - 1) / 2f) * Step);
+            return new Vector3((c - (Cols - 1) / 2f) * Step, 0f, (r - 1.5f) * Step);
+        }
+
+        private int WantedRows()
+        {
+            int unlockedRows = (_city.UnlockedPlots + Cols - 1) / Cols;
+            return Mathf.Clamp(unlockedRows + 1, 2, MaxRows);
         }
 
         public void Show()
@@ -155,22 +167,41 @@ namespace JellyDrop.City3D
 
         // ------------------------------------------------------------------ static scenery
 
-        private void BuildIsland()
+        /// <summary>(Re)builds the island, paths and scenery for the current number of rows.</summary>
+        private void BuildTerrain(int rows)
         {
+            if (_terrain != null) Destroy(_terrain);
+            _terrain = new GameObject("Terrain");
+            _terrain.transform.SetParent(_root, false);
+            BuildIsland(rows);
+            BuildPaths(rows);
+        }
+
+        private float GridFront => -2f * Step;
+        private float GridBack(int rows) => (rows - 2f) * Step;
+
+        private void BuildIsland(int rows)
+        {
+            // A long rounded island (stadium shape) that grows with the rows of plots.
+            float zFront = GridFront - 2.6f, zBack = GridBack(rows) + 2.6f;
+            float halfW = 8.6f, zc = (zFront + zBack) / 2f, len = Mathf.Max(0.1f, (zBack - zFront) - 2f * halfW);
             var mb = new MeshBuilder();
-            mb.Disc(new Vector3(0, -0.45f, 0), 90f, ColorUtil.Hex("#2F78C2"), 48);           // sea
-            mb.Cylinder(new Vector3(0, -0.6f, 0), 13.6f, 0.45f, ColorUtil.Hex("#F2D59B"), 32);  // beach
-            mb.Cylinder(new Vector3(0, -0.6f, 0), 12.4f, 0.6f, ColorUtil.Hex("#6CC56F"), 32, 12.2f); // grass
-            mb.ToObject("Island", _root, castShadows: false);
+            mb.Disc(new Vector3(0, -0.45f, zc), 140f, ColorUtil.Hex("#2F78C2"), 48);
+            Stadium(mb, zc, len, halfW + 1.3f, -0.6f, 0.45f, ColorUtil.Hex("#F2D59B"));   // beach
+            Stadium(mb, zc, len, halfW, -0.6f, 0.6f, ColorUtil.Hex("#6CC56F"));          // grass
+            mb.ToObject("Island", _terrain.transform, castShadows: false);
 
             // Trees and rocks around the edge (outside the plot grid)
             var deco = new MeshBuilder();
-            for (int i = 0; i < 46; i++)
+            int trees = 30 + rows * 6;
+            for (int i = 0; i < trees * 2; i++)
             {
-                float a = (float)(_rng.NextDouble() * Math.PI * 2);
-                float r = 9.6f + (float)_rng.NextDouble() * 2.4f;
-                var p = new Vector3(Mathf.Cos(a) * r, 0f, Mathf.Sin(a) * r);
-                if (Mathf.Abs(p.x) < 7.2f && Mathf.Abs(p.z) < 9.4f) continue;
+                var p = new Vector3(((float)_rng.NextDouble() * 2f - 1f) * (halfW - 0.6f), 0f,
+                    zFront + 0.6f + (float)_rng.NextDouble() * (zBack - zFront - 1.2f));
+                // Inside the stadium?
+                float dz = p.z < zc - len / 2f ? p.z - (zc - len / 2f) : p.z > zc + len / 2f ? p.z - (zc + len / 2f) : 0f;
+                if (p.x * p.x + dz * dz > (halfW - 0.6f) * (halfW - 0.6f)) continue;
+                if (Mathf.Abs(p.x) < 7.0f && p.z > GridFront - 0.6f && p.z < GridBack(rows) + 0.6f) continue;
                 float s = 0.8f + (float)_rng.NextDouble() * 0.6f;
                 if (_rng.NextDouble() < 0.55) BuildingModels.Tree(deco, p, s);
                 else if (_rng.NextDouble() < 0.7) BuildingModels.RoundTree(deco, p, s);
@@ -184,40 +215,51 @@ namespace JellyDrop.City3D
                 deco.Triangle(p + new Vector3(0.05f, 1.5f, 0), p + new Vector3(0.75f, 0.45f, 0), p + new Vector3(0.05f, 0.45f, 0), Color.white);
                 deco.Triangle(p + new Vector3(0.05f, 1.5f, 0), p + new Vector3(0.05f, 0.45f, 0), p + new Vector3(0.75f, 0.45f, 0), Color.white);
             }
-            deco.ToObject("Scenery", _root);
+            deco.ToObject("Scenery", _terrain.transform);
         }
 
-        private void BuildPaths()
+        /// <summary>Flat-topped stadium (rectangle with round ends along z).</summary>
+        private static void Stadium(MeshBuilder mb, float zc, float len, float r, float y, float h, Color col)
+        {
+            mb.Box(new Vector3(0, y, zc), new Vector3(r * 2f, h, len), col, col);
+            mb.Cylinder(new Vector3(0, y, zc - len / 2f), r, h, col, 28);
+            mb.Cylinder(new Vector3(0, y, zc + len / 2f), r, h, col, 28);
+        }
+
+        private void BuildPaths(int rows)
         {
             // Path network on the lines between plots; nodes at the crossings are where villagers walk.
             var mb = new MeshBuilder();
             var stone = ColorUtil.Hex("#E6D7B5");
-            float halfX = Cols / 2f * Step, halfZ = Rows / 2f * Step;
+            float halfX = Cols / 2f * Step;
+            float zFront = GridFront, zBack = GridBack(rows);
             for (int k = 0; k <= Cols; k++)
             {
                 float x = (k - Cols / 2f) * Step;
-                mb.Box(new Vector3(x, -0.02f, 0), new Vector3(1.0f, 0.05f, halfZ * 2f + 1f), stone);
+                mb.Box(new Vector3(x, -0.02f, (zFront + zBack) / 2f), new Vector3(1.0f, 0.05f, zBack - zFront + 1f), stone);
             }
-            for (int m = 0; m <= Rows; m++)
+            for (int m = 0; m <= rows; m++)
             {
-                float z = (m - Rows / 2f) * Step;
+                float z = zFront + m * Step;
                 mb.Box(new Vector3(0, -0.02f, z), new Vector3(halfX * 2f + 1f, 0.05f, 1.0f), stone);
             }
-            mb.ToObject("Paths", _root, castShadows: false);
+            mb.ToObject("Paths", _terrain.transform, castShadows: false);
 
-            for (int m = 0; m <= Rows; m++)
+            _nodes.Clear();
+            _links.Clear();
+            for (int m = 0; m <= rows; m++)
                 for (int k = 0; k <= Cols; k++)
                 {
-                    _nodes.Add(new Vector3((k - Cols / 2f) * Step, 0f, (m - Rows / 2f) * Step));
+                    _nodes.Add(new Vector3((k - Cols / 2f) * Step, 0f, zFront + m * Step));
                     _links.Add(new List<int>());
                 }
             int W = Cols + 1;
-            for (int m = 0; m <= Rows; m++)
+            for (int m = 0; m <= rows; m++)
                 for (int k = 0; k <= Cols; k++)
                 {
                     int i = m * W + k;
                     if (k < Cols) { _links[i].Add(i + 1); _links[i + 1].Add(i); }
-                    if (m < Rows) { _links[i].Add(i + W); _links[i + W].Add(i); }
+                    if (m < rows) { _links[i].Add(i + W); _links[i + W].Add(i); }
                 }
         }
 
@@ -227,26 +269,42 @@ namespace JellyDrop.City3D
         public void Sync(bool animate = true)
         {
             if (_city == null) return;
+            _city.CheckConstruction();
+            int rows = WantedRows();
+            if (rows != _rows)
+            {
+                _rows = rows;
+                BuildTerrain(rows);
+                // The path network changed: send everyone out again.
+                foreach (var v in _villagers) if (v != null) Destroy(v.gameObject);
+                _villagers.Clear();
+            }
             for (int i = 0; i < _plots.Length; i++)
             {
                 var view = _plots[i];
+                bool visible = i / Cols < _rows;
+                view.Anchor.gameObject.SetActive(visible);
+                if (!visible) continue;
                 bool locked = !_city.IsPlotUnlocked(i);
                 var def = locked ? null : _city.BuildingAt(i);
                 string id = def?.Id ?? "";
-                int level = def != null ? _city.Plot(i).level : 0;
-                if (view.ShownLocked == locked && view.ShownId == id && view.ShownLevel == level) continue;
-                bool grew = _synced && animate && def != null && (view.ShownId != id || level > view.ShownLevel);
+                var plot = _city.Plot(i);
+                int level = def != null ? plot.level : 0;
+                int target = def != null && plot.buildEnds > 0 ? plot.targetLevel : 0;
+                if (view.ShownLocked == locked && view.ShownId == id && view.ShownLevel == level && view.ShownTarget == target) continue;
+                bool grew = _synced && animate && def != null && level > 0 && (view.ShownId != id || level > view.ShownLevel) && target == 0;
                 view.ShownLocked = locked;
                 view.ShownId = id;
                 view.ShownLevel = level;
-                BuildPlot(i, view, locked, def, level, grew);
+                view.ShownTarget = target;
+                BuildPlot(i, view, locked, def, level, grew, target);
             }
             _synced = true;
             UpdateVillagerCount();
             UpdateIcons();
         }
 
-        private void BuildPlot(int index, PlotView view, bool locked, BuildingDef def, int level, bool grew)
+        private void BuildPlot(int index, PlotView view, bool locked, BuildingDef def, int level, bool grew, int target = 0)
         {
             if (view.Content != null) Destroy(view.Content);
             view.Content = new GameObject("Content");
@@ -295,9 +353,20 @@ namespace JellyDrop.City3D
                 return;
             }
 
-            BuildingModels.Build(mb, def.Id, level);
+            BuildingModels.Build(mb, def.Id, Mathf.Max(1, target > 0 ? target : level));
             var building = mb.ToObject(def.Id, view.Content.transform);
             view.Building = building.transform;
+            view.Gear = null;
+            if (target > 0)
+            {
+                // Under construction: scaffolding stays up, the building grows with the progress, a gear spins above.
+                var sc = new MeshBuilder();
+                BuildingModels.Scaffold(sc, 2.4f + Mathf.Min(3, target) * 0.4f);
+                view.Scaffold = sc.ToObject("Scaffold", view.Content.transform);
+                view.Gear = MakeIcon(view.Content.transform, SpriteFactory.GearIcon(), 0.8f, 3.8f).gameObject;
+                view.Gear.GetComponent<Hover>().Spin = false;
+                UpdateConstruction(index, view);
+            }
             if (def.Id == "windmill")
             {
                 var blades = new MeshBuilder();
@@ -321,6 +390,15 @@ namespace JellyDrop.City3D
             else view.Anim = -1f;
         }
 
+        private void UpdateConstruction(int index, PlotView view)
+        {
+            if (view.Building == null || view.ShownTarget <= 0) return;
+            float p = _city.ConstructionProgress(index);
+            // New buildings rise from the ground; upgrades stay full size.
+            float y = view.ShownLevel == 0 ? Mathf.Lerp(0.15f, 0.9f, p) : 1f;
+            view.Building.localScale = new Vector3(1f, y, 1f);
+        }
+
         private SpriteRenderer MakeIcon(Transform parent, Sprite sprite, float scale, float height)
         {
             var go = new GameObject("Icon");
@@ -339,6 +417,7 @@ namespace JellyDrop.City3D
             for (int i = 0; i < _plots.Length; i++)
             {
                 var v = _plots[i];
+                if (v.ShownTarget > 0) UpdateConstruction(i, v);
                 if (v.Icon == null || v.ShownLocked || string.IsNullOrEmpty(v.ShownId)) continue;
                 int pending = _city.Pending(i);
                 bool full = _city.StorageFill(i) >= 1f;
@@ -437,7 +516,13 @@ namespace JellyDrop.City3D
             }
 
             _iconTimer += dt;
-            if (_iconTimer > 1f) { _iconTimer = 0f; UpdateIcons(); }
+            if (_iconTimer > 1f)
+            {
+                _iconTimer = 0f;
+                // Constructions that finished while watching pop up right away.
+                if (_city.CheckConstruction() > 0) Sync();
+                else UpdateIcons();
+            }
 
             HandleInput();
             UpdateCamera();
@@ -500,7 +585,7 @@ namespace JellyDrop.City3D
                     float unitsPerPixel = 2f * Vector3.Distance(_cam.transform.position, Origin + _target) * Mathf.Tan(Fov * 0.5f * Mathf.Deg2Rad) / Mathf.Max(1, Screen.height);
                     _target -= new Vector3(delta.x, 0f, delta.y * 1.3f) * unitsPerPixel;
                     _target.x = Mathf.Clamp(_target.x, -5f, 5f);
-                    _target.z = Mathf.Clamp(_target.z, -8f, 7f);
+                    _target.z = Mathf.Clamp(_target.z, GridFront - 1f, GridBack(_rows) - 2f);
                 }
                 _lastPos = pos;
                 return;
@@ -521,8 +606,8 @@ namespace JellyDrop.City3D
             if (t < 0f) return -1;
             var p = ray.origin + ray.direction * t - Origin;
             int c = Mathf.RoundToInt(p.x / Step + (Cols - 1) / 2f);
-            int r = Mathf.RoundToInt(p.z / Step + (Rows - 1) / 2f);
-            if (c < 0 || c >= Cols || r < 0 || r >= Rows) return -1;
+            int r = Mathf.RoundToInt(p.z / Step + 1.5f);
+            if (c < 0 || c >= Cols || r < 0 || r >= _rows) return -1;
             var center = PlotCenter(r * Cols + c);
             if (Mathf.Abs(p.x - center.x) > PlotSize * 0.5f + 0.3f || Mathf.Abs(p.z - center.z) > PlotSize * 0.5f + 0.3f) return -1;
             return r * Cols + c;

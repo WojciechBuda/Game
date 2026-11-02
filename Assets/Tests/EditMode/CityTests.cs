@@ -19,6 +19,21 @@ namespace JellyDrop.Tests
             return new CityService(_economy);
         }
 
+        // Builds / upgrades and finishes the construction straight away (most tests don't care about timers).
+        private static BuildResult Build(CityService c, int plot, string id)
+        {
+            var r = c.Build(plot, id);
+            if (r == BuildResult.Success) c.CompleteConstruction(plot);
+            return r;
+        }
+
+        private static BuildResult Upgrade(CityService c, int plot)
+        {
+            var r = c.Upgrade(plot);
+            if (r == BuildResult.Success) c.CompleteConstruction(plot);
+            return r;
+        }
+
         [Test]
         public void NewCityHasFourOpenPlotsAtLevelOne()
         {
@@ -36,34 +51,34 @@ namespace JellyDrop.Tests
         {
             var c = NewCity(coins: 1000, wood: 10, brick: 10, glass: 0);
             var cost = CityCatalog.Get("house").Costs[0];
-            Assert.AreEqual(BuildResult.Success, c.Build(0, "house"));
+            Assert.AreEqual(BuildResult.Success, Build(c, 0, "house"));
             Assert.AreEqual(1000 - cost.Coins, _economy.Coins);
             Assert.AreEqual(10 - cost.Wood, c.Amount(Supply.Wood));
             Assert.AreEqual(10 - cost.Brick, c.Amount(Supply.Brick));
             Assert.AreEqual(5, c.Population);
-            Assert.AreEqual(BuildResult.PlotOccupied, c.Build(0, "house"));
+            Assert.AreEqual(BuildResult.PlotOccupied, Build(c, 0, "house"));
         }
 
         [Test]
         public void CannotBuildWithoutSuppliesOrOnLockedPlots()
         {
             var c = NewCity(coins: 1000, wood: 0, brick: 0, glass: 0);
-            Assert.AreEqual(BuildResult.NotEnoughSupplies, c.Build(0, "house"));
-            Assert.AreEqual(BuildResult.PlotLocked, c.Build(8, "house"));
+            Assert.AreEqual(BuildResult.NotEnoughSupplies, Build(c, 0, "house"));
+            Assert.AreEqual(BuildResult.PlotLocked, Build(c, 8, "house"));
             var poor = NewCity(coins: 0);
-            Assert.AreEqual(BuildResult.NotEnoughCoins, poor.Build(0, "house"));
+            Assert.AreEqual(BuildResult.NotEnoughCoins, Build(poor, 0, "house"));
         }
 
         [Test]
         public void BuildingsUnlockWithCityLevel()
         {
             var c = NewCity();
-            Assert.AreEqual(BuildResult.CityLevelTooLow, c.Build(0, "bakery"));
-            c.Build(0, "house");
-            c.Build(1, "house");
+            Assert.AreEqual(BuildResult.CityLevelTooLow, Build(c, 0, "bakery"));
+            Build(c, 0, "house");
+            Build(c, 1, "house");
             Assert.AreEqual(2, c.CityLevel, "10 population reaches level 2");
             Assert.AreEqual(6, c.UnlockedPlots);
-            Assert.AreEqual(BuildResult.Success, c.Build(2, "bakery"));
+            Assert.AreEqual(BuildResult.Success, Build(c, 2, "bakery"));
         }
 
         [Test]
@@ -71,13 +86,13 @@ namespace JellyDrop.Tests
         {
             var c = NewCity();
             // Reach city level 7 with upgraded houses.
-            for (int i = 0; i < 4; i++) { c.Build(i, "house"); c.Upgrade(i); c.Upgrade(i); }
-            for (int i = 4; i < c.UnlockedPlots && c.CityLevel < 7; i++) { c.Build(i, "house"); c.Upgrade(i); c.Upgrade(i); }
+            for (int i = 0; i < 4; i++) { Build(c, i, "house"); Upgrade(c, i); Upgrade(c, i); }
+            for (int i = 4; i < c.UnlockedPlots && c.CityLevel < 7; i++) { Build(c, i, "house"); Upgrade(c, i); Upgrade(c, i); }
             Assert.GreaterOrEqual(c.CityLevel, 7);
             int free = -1;
             for (int i = 0; i < c.UnlockedPlots; i++) if (string.IsNullOrEmpty(c.Plot(i).building)) { free = i; break; }
             if (free < 0) { Assert.Pass("no free plot to test with"); return; }
-            Assert.AreEqual(BuildResult.Success, c.Build(free, "castle"));
+            Assert.AreEqual(BuildResult.Success, Build(c, free, "castle"));
             Assert.IsTrue(c.HasBuilding("castle"));
             foreach (var b in c.BuildOptions()) Assert.AreNotEqual("castle", b.Id);
         }
@@ -85,22 +100,91 @@ namespace JellyDrop.Tests
         [Test]
         public void UpgradesRaisePopulationUpToMaxLevel()
         {
-            var c = NewCity();
-            c.Build(0, "house");
-            Assert.AreEqual(BuildResult.Success, c.Upgrade(0));
+            var c = NewCity(coins: 50_000_000, wood: 100_000, brick: 100_000, glass: 100_000);
+            Build(c, 0, "house");
+            Assert.AreEqual(BuildResult.Success, Upgrade(c, 0));
             Assert.AreEqual(12, c.Population);
-            Assert.AreEqual(BuildResult.Success, c.Upgrade(0));
+            Assert.AreEqual(BuildResult.Success, Upgrade(c, 0));
             Assert.AreEqual(22, c.Population);
-            Assert.AreEqual(BuildResult.MaxLevel, c.Upgrade(0));
+            int previous = c.Population;
+            for (int level = 4; level <= CityCatalog.MaxBuildingLevel; level++)
+            {
+                Assert.AreEqual(BuildResult.Success, Upgrade(c, 0), "level " + level);
+                Assert.Greater(c.Population, previous);
+                previous = c.Population;
+            }
+            Assert.AreEqual(BuildResult.MaxLevel, Upgrade(c, 0));
             Assert.IsNull(c.UpgradeCost(0));
+        }
+
+        [Test]
+        public void ConstructionTakesTimeAndLongerEachLevel()
+        {
+            var c = NewCity(coins: 1_000_000, wood: 10_000, brick: 10_000, glass: 10_000);
+            var house = CityCatalog.Get("house");
+            Assert.AreEqual(BuildResult.Success, c.Build(0, "house"));
+            Assert.IsTrue(c.IsUnderConstruction(0));
+            Assert.AreEqual(0, c.Population, "no people until it is finished");
+            Assert.AreEqual(house.BuildSeconds(1), c.ConstructionSecondsLeft(0));
+            _clock.UnixSeconds += house.BuildSeconds(1);
+            Assert.AreEqual(5, c.Population);
+            Assert.IsFalse(c.IsUnderConstruction(0));
+            for (int l = 2; l <= CityCatalog.MaxBuildingLevel; l++)
+                Assert.GreaterOrEqual((int)house.BuildSeconds(l), (int)house.BuildSeconds(l - 1));
+            Assert.Greater((int)house.BuildSeconds(5), (int)house.BuildSeconds(2) * 3);
+            Assert.LessOrEqual((int)CityCatalog.Get("castle").BuildSeconds(10), (int)CityCatalog.MaxBuildSeconds);
+        }
+
+        [Test]
+        public void UpgradingKeepsProducingAndOnlyTwoBuildersWork()
+        {
+            var c = NewCity(coins: 1_000_000, wood: 10_000, brick: 10_000, glass: 10_000);
+            Build(c, 0, "house");
+            Build(c, 1, "house");
+            Build(c, 2, "house");
+            Assert.AreEqual(BuildResult.Success, c.Upgrade(0));
+            Assert.AreEqual(BuildResult.Success, c.Upgrade(1));
+            Assert.AreEqual(BuildResult.NoFreeBuilder, c.Upgrade(2));
+            Assert.AreEqual(BuildResult.UnderConstruction, c.Upgrade(0));
+            Assert.AreEqual(1, c.Plot(0).level, "still level 1 while upgrading");
+            _clock.UnixSeconds += 3600;
+            Assert.Greater(c.Pending(2), 0);
+            Assert.AreEqual(2, c.Plot(0).level, "upgrade finished after its time");
+            Assert.AreEqual(0, c.BusyBuilders);
+        }
+
+        [Test]
+        public void SpeedUpCostsCoinsAndFinishesNow()
+        {
+            var c = NewCity(coins: 1_000_000, wood: 10_000, brick: 10_000, glass: 10_000);
+            Build(c, 0, "house");
+            c.Upgrade(0);
+            int cost = c.SpeedUpCost(0);
+            Assert.Greater(cost, 0);
+            int coins = _economy.Coins;
+            Assert.IsTrue(c.SpeedUp(0));
+            Assert.AreEqual(coins - cost, _economy.Coins);
+            Assert.AreEqual(2, c.Plot(0).level);
+            Assert.IsFalse(c.IsUnderConstruction(0));
+        }
+
+        [Test]
+        public void TheCityKeepsGrowingPastLevelTen()
+        {
+            Assert.AreEqual(0, CityCatalog.PopulationForLevel(1));
+            for (int l = 2; l <= CityCatalog.MaxCityLevel; l++)
+                Assert.Greater(CityCatalog.PopulationForLevel(l), CityCatalog.PopulationForLevel(l - 1));
+            var c = NewCity();
+            Assert.AreEqual(CityCatalog.MaxPlots, _economy.Data.plots.Count);
+            Assert.LessOrEqual(c.PlotUnlockLevel(CityCatalog.MaxPlots - 1), CityCatalog.MaxCityLevel, "every plot can be opened");
         }
 
         [Test]
         public void ProductionAccruesAndIsCappedAtStorage()
         {
             var c = NewCity();
-            c.Build(0, "house");   // 20 coins/hour
-            c.Build(1, "sawmill"); // 1 wood/hour
+            Build(c, 0, "house");   // 20 coins/hour
+            Build(c, 1, "sawmill"); // 1 wood/hour
             Assert.AreEqual(0, c.Pending(0));
             _clock.UnixSeconds += 3600 * 3;
             Assert.AreEqual(60, c.Pending(0));
@@ -114,8 +198,8 @@ namespace JellyDrop.Tests
         public void CollectingPaysAndResetsTheTimer()
         {
             var c = NewCity();
-            c.Build(0, "house");
-            c.Build(1, "sawmill");
+            Build(c, 0, "house");
+            Build(c, 1, "sawmill");
             int coins = _economy.Coins, wood = c.Amount(Supply.Wood);
             _clock.UnixSeconds += 3600 * 2;
             var h = c.CollectAll();
@@ -131,7 +215,7 @@ namespace JellyDrop.Tests
         public void PartialHoursAreNotLost()
         {
             var c = NewCity();
-            c.Build(1, "sawmill"); // 1 wood per hour
+            Build(c, 1, "sawmill"); // 1 wood per hour
             _clock.UnixSeconds += 5400; // 1.5 hours
             Assert.AreEqual(1, c.CollectAll().Wood);
             _clock.UnixSeconds += 1800; // another half hour completes the second unit
@@ -153,11 +237,11 @@ namespace JellyDrop.Tests
         {
             var c = NewCity();
             _economy.CoinBonusPercent = () => c.CoinBonusPercent;
-            c.Build(0, "house"); c.Build(1, "house"); c.Build(2, "house"); c.Build(3, "house");
-            c.Upgrade(0); c.Upgrade(1);
+            Build(c, 0, "house"); Build(c, 1, "house"); Build(c, 2, "house"); Build(c, 3, "house");
+            Upgrade(c, 0); Upgrade(c, 1);
             Assert.GreaterOrEqual(c.CityLevel, 3);
             int free = 4;
-            Assert.AreEqual(BuildResult.Success, c.Build(free, "park"));
+            Assert.AreEqual(BuildResult.Success, Build(c, free, "park"));
             Assert.AreEqual(3, c.CoinBonusPercent);
             var rewards = _economy.ApplyGameResult(new GameResult { Mode = GameMode.Classic, Score = 10000, Stats = new SessionStats() });
             int baseTotal = rewards.ScoreCoins + rewards.CollectedCoins + rewards.PersonalBestBonus + rewards.SprintBonus;
@@ -169,7 +253,13 @@ namespace JellyDrop.Tests
         {
             foreach (var b in CityCatalog.All)
             {
-                Assert.AreEqual(3, b.MaxLevel, b.Id);
+                Assert.AreEqual(CityCatalog.MaxBuildingLevel, b.MaxLevel, b.Id);
+                for (int l = 2; l <= b.MaxLevel; l++)
+                {
+                    Assert.GreaterOrEqual(b.CostFor(l).Coins, b.CostFor(l - 1).Coins, b.Id);
+                    Assert.GreaterOrEqual(b.PopulationAt(l), b.PopulationAt(l - 1), b.Id);
+                    Assert.GreaterOrEqual(b.PerHourAt(l), b.PerHourAt(l - 1), b.Id);
+                }
                 Assert.AreEqual(3, b.Population.Length, b.Id);
                 Assert.AreEqual(3, b.PerHour.Length, b.Id);
                 Assert.AreEqual(3, b.CoinBonusPercent.Length, b.Id);

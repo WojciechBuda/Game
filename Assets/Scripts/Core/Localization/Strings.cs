@@ -391,6 +391,18 @@ namespace JellyDrop.Core
             Add("city.level_up", "CITY LEVEL {0}!", "MIASTO: POZIOM {0}!", "STADTSTUFE {0}!", "¡CIUDAD NIVEL {0}!", "VILLE NIVEAU {0} !", "CIDADE NÍVEL {0}!");
             Add("city.level_up_body", "New plots and buildings are open.", "Nowe działki i budynki są dostępne.", "Neue Grundstücke und Gebäude sind frei.",
                 "Hay nuevas parcelas y edificios.", "De nouveaux terrains et bâtiments sont ouverts.", "Novos terrenos e prédios liberados.");
+            Add("city.no_builder", "All {0} builders are busy. Wait for one to finish or speed it up.", "Wszyscy budowniczowie ({0}) są zajęci. Poczekaj albo przyspiesz budowę.",
+                "Alle {0} Bauarbeiter sind beschäftigt. Warte oder beschleunige den Bau.", "Los {0} constructores están ocupados. Espera o acelera una obra.",
+                "Les {0} ouvriers sont occupés. Attends ou accélère un chantier.", "Os {0} construtores estão ocupados. Espere ou acelere uma obra.");
+            Add("city.busy", "This building is already under construction.", "Ten budynek jest już w budowie.", "Dieses Gebäude wird schon gebaut.",
+                "Este edificio ya está en obras.", "Ce bâtiment est déjà en travaux.", "Este prédio já está em obras.");
+            Add("city.started", "Construction started!", "Budowa ruszyła!", "Bau gestartet!", "¡Obra iniciada!", "Travaux lancés !", "Obra iniciada!");
+            Add("city.ready_in", "Ready in {0}", "Gotowe za {0}", "Fertig in {0}", "Listo en {0}", "Prêt dans {0}", "Pronto em {0}");
+            Add("city.build_time", "Build time: {0}", "Czas budowy: {0}", "Bauzeit: {0}", "Tiempo de obra: {0}", "Durée des travaux : {0}", "Tempo de obra: {0}");
+            Add("city.building_to", "Building level {0}...", "Budowa poziomu {0}...", "Baue Stufe {0}...", "Construyendo nivel {0}...", "Construction du niveau {0}...", "Construindo nível {0}...");
+            Add("city.speed_up", "FINISH NOW  {0}", "SKOŃCZ TERAZ  {0}", "SOFORT FERTIG  {0}", "TERMINAR YA  {0}", "TERMINER  {0}", "TERMINAR JÁ  {0}");
+            Add("city.level_of", "LEVEL {0} / {1}", "POZIOM {0} / {1}", "STUFE {0} / {1}", "NIVEL {0} / {1}", "NIVEAU {0} / {1}", "NÍVEL {0} / {1}");
+            Add("city.builders", "Builders {0} / {1}", "Budowniczowie {0} / {1}", "Bauarbeiter {0} / {1}", "Constructores {0} / {1}", "Ouvriers {0} / {1}", "Construtores {0} / {1}");
             Add("city.full", "FULL", "PEŁNE", "VOLL", "LLENO", "PLEIN", "CHEIO");
             Add("city.intro",
                 "Win levels to earn coins and supplies, then build and upgrade your city. Buildings keep producing while you're away.",
