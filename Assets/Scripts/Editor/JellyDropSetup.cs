@@ -64,8 +64,33 @@ namespace JellyDrop.EditorTools
 
             CreateMainScene();
             GenerateIcon();
+            IncludeShaders();
 
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>
+        /// The 3D city and Block Run build their materials in code, so make sure their shaders are always in the build.
+        /// </summary>
+        private static void IncludeShaders()
+        {
+            var assets = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/GraphicsSettings.asset");
+            if (assets == null || assets.Length == 0) return;
+            var so = new SerializedObject(assets[0]);
+            var list = so.FindProperty("m_AlwaysIncludedShaders");
+            if (list == null) return;
+            foreach (var name in new[] { "Stackville/VertexColorLit", "Standard", "Sprites/Default" })
+            {
+                var shader = Shader.Find(name);
+                if (shader == null) continue;
+                bool present = false;
+                for (int i = 0; i < list.arraySize; i++)
+                    if (list.GetArrayElementAtIndex(i).objectReferenceValue == shader) present = true;
+                if (present) continue;
+                list.InsertArrayElementAtIndex(list.arraySize);
+                list.GetArrayElementAtIndex(list.arraySize - 1).objectReferenceValue = shader;
+            }
+            so.ApplyModifiedProperties();
         }
 
         private static void CreateMainScene()

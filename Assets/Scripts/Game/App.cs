@@ -1,5 +1,6 @@
 using System;
 using JellyDrop.Audio;
+using JellyDrop.City3D;
 using JellyDrop.Core;
 using JellyDrop.Core.City;
 using JellyDrop.Core.Economy;
@@ -35,6 +36,8 @@ namespace JellyDrop
         public IIapService Iap { get; private set; }
         public GameController Game { get; private set; }
         public CityService City { get; private set; }
+        /// <summary>The 3D village shown behind the city screen.</summary>
+        public CityWorld CityWorld { get; private set; }
         public ProgressService Progress { get; private set; }
         /// <summary>Player level and season pass.</summary>
         public LoyaltyService Loyalty { get; private set; }
@@ -117,6 +120,9 @@ namespace JellyDrop
             UIKit.ClickSound = () => Audio.Play(Sfx.Button, 0.8f);
 
             SetupCamera();
+            CityWorld = new GameObject("CityWorld").AddComponent<CityWorld>();
+            CityWorld.transform.SetParent(transform, false);
+            CityWorld.Init(City, Camera);
             SetupUi();
 
             Game = new GameObject("Game").AddComponent<GameController>();

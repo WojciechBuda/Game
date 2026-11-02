@@ -79,21 +79,31 @@ namespace JellyDrop.Interface
     /// </summary>
     public sealed class CityScreen : UIScreen
     {
-        private const int Columns = 3;
-        private const float Cell = 310f;
-        private const float Gap = 18f;
-
         private ResourceBar _resources;
         private Text _title;
         private Text _population;
         private Image _populationBar;
         private Text _bonus;
         private CandyButton _collect;
-        private RectTransform _grid;
         private float _refreshTimer;
 
         protected override void Build()
         {
+            // The middle of the screen is see-through: the 3D village (CityWorld) renders behind the UI.
+            // Glass bars keep the header and buttons readable over it.
+            var topBar = UIKit.Panel(Root, ColorUtil.Glass, 0.6f, true, "TopBar");
+            topBar.rectTransform.anchorMin = new Vector2(0, 1);
+            topBar.rectTransform.anchorMax = new Vector2(1, 1);
+            topBar.rectTransform.pivot = new Vector2(0.5f, 1f);
+            topBar.rectTransform.offsetMin = new Vector2(12, -380);
+            topBar.rectTransform.offsetMax = new Vector2(-12, -8);
+            var bottomBar = UIKit.Panel(Root, ColorUtil.Glass, 0.6f, true, "BottomBar");
+            bottomBar.rectTransform.anchorMin = new Vector2(0, 0);
+            bottomBar.rectTransform.anchorMax = new Vector2(1, 0);
+            bottomBar.rectTransform.pivot = new Vector2(0.5f, 0f);
+            bottomBar.rectTransform.offsetMin = new Vector2(12, 8);
+            bottomBar.rectTransform.offsetMax = new Vector2(-12, 210);
+
             var back = UIKit.IconButton(Root, SpriteFactory.HomeIcon(), ColorUtil.Purple, App.GoHome, 110);
             back.GetComponent<RectTransform>().At(UIKit.TopLeft, new Vector2(80, -80), new Vector2(110, 110));
             _title = UIKit.Text(Root, "", 70, ColorUtil.Mint).Fit(34);
@@ -108,23 +118,6 @@ namespace JellyDrop.Interface
             _bonus = UIKit.Text(Root, "", 34, ColorUtil.Orange, TextAnchor.MiddleRight, false).Fit(20);
             _bonus.rectTransform.At(UIKit.Top, new Vector2(300, -305), new Vector2(360, 60));
 
-            // Grassy field holding the plots; scrolls on short screens.
-            var field = UIKit.Panel(Root, PixelCanvas.WithAlpha(ColorUtil.Grass, 0.55f), 0.8f, true, "Field");
-            field.rectTransform.Fill(24, 230, 24, 380);
-            field.gameObject.AddComponent<RectMask2D>();
-            _grid = UIKit.Node("Plots", field.transform);
-            _grid.anchorMin = new Vector2(0, 1);
-            _grid.anchorMax = new Vector2(1, 1);
-            _grid.pivot = new Vector2(0.5f, 1f);
-            int rows = Mathf.CeilToInt(CityCatalog.MaxPlots / (float)Columns);
-            _grid.offsetMin = _grid.offsetMax = Vector2.zero;
-            _grid.sizeDelta = new Vector2(0, rows * (Cell + Gap) + Gap);
-            var scroll = field.gameObject.AddComponent<ScrollRect>();
-            scroll.viewport = field.rectTransform;
-            scroll.content = _grid;
-            scroll.horizontal = false;
-            scroll.movementType = ScrollRect.MovementType.Elastic;
-
             _collect = UIKit.Button(Root, Loc.T("city.collect"), ColorUtil.Gold, CollectAll, new Vector2(470, 150), 54, SpriteFactory.Coin());
             _collect.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(-255, 105), new Vector2(470, 150));
             _collect.ClickWhenDisabled = true;
@@ -135,6 +128,8 @@ namespace JellyDrop.Interface
         protected override void OnShow()
         {
             _refreshTimer = 0f;
+            App.CityWorld.PlotTapped += OnPlot;
+            App.CityWorld.Show();
             if (App.City.Population == 0 && !App.Screens.HasModal)
                 App.Popup.ShowMessage(Loc.T("home.city"), Loc.T("city.intro"), CitySprites.Building("house"));
         }
@@ -159,7 +154,13 @@ namespace JellyDrop.Interface
             int bonus = city.CoinBonusPercent;
             _bonus.text = bonus > 0 ? Loc.T("city.bonus_short", bonus) : "";
             _collect.Interactable = !city.PendingTotal().IsEmpty;
-            BuildPlots();
+            if (IsVisible) App.CityWorld.Sync();
+        }
+
+        protected override void OnHide()
+        {
+            App.CityWorld.PlotTapped -= OnPlot;
+            App.CityWorld.Hide();
         }
 
         private void Update()
@@ -169,80 +170,6 @@ namespace JellyDrop.Interface
             if (_refreshTimer < 5f) return;
             _refreshTimer = 0f;
             if (!App.Screens.HasModal) Refresh();
-        }
-
-        private void BuildPlots()
-        {
-            UIKit.ClearChildren(_grid);
-            var city = App.City;
-            float width = Columns * Cell + (Columns - 1) * Gap;
-            for (int i = 0; i < CityCatalog.MaxPlots; i++)
-            {
-                int col = i % Columns, row = i / Columns;
-                var pos = new Vector2(-width / 2f + Cell / 2f + col * (Cell + Gap), -(Gap + Cell / 2f + row * (Cell + Gap)));
-                BuildPlot(i, pos, city);
-            }
-        }
-
-        private void BuildPlot(int index, Vector2 pos, CityService city)
-        {
-            bool unlocked = city.IsPlotUnlocked(index);
-            var def = city.BuildingAt(index);
-            Color color = !unlocked ? ColorUtil.Muted : def == null ? ColorUtil.Hex("#2F5E4A") : ColorUtil.Hex("#3A6E57");
-            int plot = index;
-            var tile = UIKit.Button(_grid, "", color, () => OnPlot(plot), new Vector2(Cell, Cell), 40, null, "Plot" + index);
-            tile.GetComponent<RectTransform>().At(UIKit.Top, pos, new Vector2(Cell, Cell));
-            var face = tile.Face.transform;
-
-            if (!unlocked)
-            {
-                var lockIcon = UIKit.Image(face, SpriteFactory.LockIcon(), PixelCanvas.WithAlpha(ColorUtil.Ink, 0.45f));
-                lockIcon.rectTransform.At(UIKit.Center, new Vector2(0, 30), new Vector2(100, 100));
-                var t = UIKit.Text(face, Loc.T("city.locked_plot", city.PlotUnlockLevel(index)), 28, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(18);
-                t.rectTransform.At(UIKit.Center, new Vector2(0, -70), new Vector2(Cell - 30, 80));
-                tile.ClickWhenDisabled = true;
-                tile.Interactable = false;
-                return;
-            }
-
-            if (def == null)
-            {
-                var plus = UIKit.Text(face, "+", 140, ColorUtil.Mint);
-                plus.rectTransform.At(UIKit.Center, new Vector2(0, 30), new Vector2(160, 160));
-                var t = UIKit.Text(face, Loc.T("city.build"), 36, ColorUtil.Ink, TextAnchor.MiddleCenter, false).Fit(20);
-                t.rectTransform.At(UIKit.Center, new Vector2(0, -90), new Vector2(Cell - 30, 56));
-                return;
-            }
-
-            var p = city.Plot(index);
-            var img = UIKit.Image(face, CitySprites.Building(def.Id), Color.white, false, "Building");
-            img.rectTransform.At(UIKit.Center, new Vector2(0, 22), new Vector2(Cell - 50, Cell - 50));
-
-            var lv = UIKit.Text(face, Loc.T("city.level_short", p.level), 30, ColorUtil.Purple, TextAnchor.MiddleLeft, true);
-            lv.rectTransform.At(UIKit.TopLeft, new Vector2(80, -34), new Vector2(140, 48));
-
-            if (def.Produces != Product.None)
-            {
-                int pending = city.Pending(index);
-                float fill = city.StorageFill(index);
-                var bar = UIKit.ProgressBar(face, fill >= 1f ? ColorUtil.Orange : ColorUtil.Mint, new Vector2(Cell - 70, 26));
-                bar.fillAmount = fill;
-                bar.transform.parent.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 32), new Vector2(Cell - 70, 26));
-                if (pending > 0)
-                {
-                    // Bubble with what's ready, like most city games.
-                    var bubble = UIKit.NeonCard(face, fill >= 1f ? ColorUtil.Orange : ColorUtil.Mint, ColorUtil.Panel, 2f, false, "Ready", 0.3f);
-                    bubble.rectTransform.At(UIKit.TopRight, new Vector2(-70, -40), new Vector2(130, 64));
-                    var icon = UIKit.Image(bubble.transform, CityUi.ProductIcon(def.Produces), Color.white);
-                    icon.rectTransform.At(new Vector2(0f, 0.5f), new Vector2(30, 0), new Vector2(46, 46));
-                    var amount = UIKit.Text(bubble.transform, fill >= 1f ? Loc.T("city.full") : Loc.Number(pending), 28, ColorUtil.Ink, TextAnchor.MiddleCenter, false).Fit(14);
-                    amount.rectTransform.Fill(52, 0, 8, 0);
-                    var bob = bubble.gameObject.AddComponent<Bobber>();
-                    bob.Amplitude = 5f;
-                    bob.Speed = 3f;
-                    bob.Phase = index;
-                }
-            }
         }
 
         private void OnPlot(int index)
@@ -262,6 +189,7 @@ namespace JellyDrop.Interface
             if (city.Pending(index) > 0)
             {
                 var h = city.CollectPlot(index);
+                App.CityWorld.PopPlot(index);
                 PlayCollect(h);
                 return;
             }
