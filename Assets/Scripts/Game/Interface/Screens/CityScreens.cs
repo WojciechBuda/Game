@@ -119,7 +119,7 @@ namespace JellyDrop.Interface
             bottomBar.rectTransform.anchorMax = new Vector2(1, 0);
             bottomBar.rectTransform.pivot = new Vector2(0.5f, 0f);
             bottomBar.rectTransform.offsetMin = new Vector2(12, 8);
-            bottomBar.rectTransform.offsetMax = new Vector2(-12, 210);
+            bottomBar.rectTransform.offsetMax = new Vector2(-12, 320);
 
             var back = UIKit.IconButton(Root, SpriteFactory.HomeIcon(), ColorUtil.Purple, App.GoHome, 110);
             back.GetComponent<RectTransform>().At(UIKit.TopLeft, new Vector2(80, -80), new Vector2(110, 110));
@@ -142,10 +142,11 @@ namespace JellyDrop.Interface
             _collect.ClickWhenDisabled = true;
             var market = UIKit.Button(Root, Loc.T("city.market"), ColorUtil.Blue, () => App.Market.Open(), new Vector2(470, 150), 54, CitySprites.SupplyIcon(Supply.Brick));
             market.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(255, 105), new Vector2(470, 150));
+            IslandNav.Add(Root, App, IslandNav.Island.City, 250f);
 
             // Village mission: a chip pops up above the buttons when something happens in town.
             _missionChip = UIKit.Button(Root, "", ColorUtil.Pink, OfferMission, new Vector2(700, 120), 42, SpriteFactory.Star());
-            _missionChip.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 300), new Vector2(700, 120));
+            _missionChip.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 410), new Vector2(700, 120));
             _missionChip.gameObject.SetActive(false);
 
             var banner = UIKit.Panel(Root, ColorUtil.Glass, 0.85f, true, "MissionBanner");

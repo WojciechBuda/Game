@@ -132,6 +132,16 @@ namespace JellyDrop.Core.Economy
         public bool runExtraLife;            // spend mushrooms for a 4th life in Block Run
         public bool towerSpringStart;        // spend mushrooms for a spring start in the tower
 
+        // Forest island
+        public List<long> forestSpotReady = new List<long>();   // when each mushroom spot grows back
+        public List<int> forestSpotGold = new List<int>();      // 1 = the next mushroom there is golden
+        public List<long> forestTreeReady = new List<long>();
+        public List<long> forestBushReady = new List<long>();
+        public List<int> forestBuildings = new List<int>();     // level of each forest building
+        public int forestXp;
+        public long forestHoneyFrom;
+        public long forestFoxNext;
+
         // Block Run bonus: tickets (one free each day, more from Boost levels) and best distance
         public int runTickets;
         public int runTicketDay = -1;

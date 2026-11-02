@@ -47,6 +47,10 @@ namespace JellyDrop
         public TowerScreen TowerView { get; private set; }
         /// <summary>The 3D village shown behind the city screen.</summary>
         public CityWorld CityWorld { get; private set; }
+        public JellyDrop.Core.Islands.ForestService Forest { get; private set; }
+        public ForestWorld ForestWorld { get; private set; }
+        public ForestScreen ForestView { get; private set; }
+        public ActionPopup Actions { get; private set; }
         /// <summary>The 3D Block Run bonus.</summary>
         public RunnerWorld RunnerWorld { get; private set; }
         public ProgressService Progress { get; private set; }
@@ -119,6 +123,7 @@ namespace JellyDrop
             Loyalty = new LoyaltyService(Economy);
             Pet = new JellyDrop.Core.Pet.PetService(Economy);
             Tower = new JellyDrop.Core.Tower.TowerService(Economy);
+            Forest = new JellyDrop.Core.Islands.ForestService(Economy);
             Economy.CoinBonusPercent = () => City.CoinBonusPercent + Loyalty.CoinBonusPercent + Pet.CoinBonusPercent;
 #if PLAY_GAMES && UNITY_ANDROID && !UNITY_EDITOR
             Online = new JellyDrop.Online.PlayGamesService();
@@ -143,6 +148,10 @@ namespace JellyDrop
             CityWorld = new GameObject("CityWorld").AddComponent<CityWorld>();
             CityWorld.transform.SetParent(transform, false);
             CityWorld.Init(City, Camera);
+            ForestWorld = new GameObject("ForestWorld").AddComponent<ForestWorld>();
+            ForestWorld.transform.SetParent(transform, false);
+            ForestWorld.Setup(Forest);
+            ForestWorld.Init(Camera, ForestWorld.WorldOrigin, ColorUtil.Hex("#3E6FA8"));
             RunnerWorld = new GameObject("RunnerWorld").AddComponent<RunnerWorld>();
             RunnerWorld.transform.SetParent(transform, false);
             SetupUi();
@@ -269,6 +278,8 @@ namespace JellyDrop
             Popup = AddScreen<Popup>("Popup");
             PrivacyView = AddScreen<PrivacyScreen>("Privacy");
             WheelView = AddScreen<WheelScreen>("Wheel");
+            ForestView = AddScreen<ForestScreen>("Forest");
+            Actions = AddScreen<ActionPopup>("Actions");
             LanguagePicker = AddScreen<LanguagePicker>("Language");
             AdOverlay = AddScreen<FakeAdOverlay>("FakeAd");
         }
@@ -550,6 +561,18 @@ namespace JellyDrop
             Game.Leave();
             Screens.Show(CityView);
         }
+        public void OpenForest()
+        {
+            Game.Leave();
+            Screens.Show(ForestView);
+        }
+
+        public void OpenGarden()
+        {
+            Audio.Play(Sfx.Error);
+            Popup.ShowMessage(Loc.T("island.garden"), Loc.T("island.soon"), JellyDrop.Visuals.IslandSprites.Crop(4));
+        }
+
         public void OpenSettings() => Screens.Show(Settings);
         public void OpenWheel() => Screens.Show(WheelView);
 
