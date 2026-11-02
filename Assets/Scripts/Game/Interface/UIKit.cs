@@ -369,7 +369,9 @@ namespace JellyDrop.Interface
                 var lift = Label.gameObject.AddComponent<Shadow>();
                 lift.effectColor = new Color(0f, 0f, 0f, 0.18f);
                 lift.effectDistance = new Vector2(0f, -3f);
-                Label.rectTransform.Fill(icon != null ? rt.sizeDelta.y * 0.75f : 16, 4, 16, 0);
+                // With an icon the text starts right after it (icon centre 0.5h + 12, half width 0.31h) plus a gap.
+                float iconH = rt.sizeDelta.y - Depth;
+                Label.rectTransform.Fill(icon != null ? iconH * 0.81f + 26f : 16, 4, icon != null ? 20 : 16, 0);
                 Label.resizeTextForBestFit = true;
                 Label.resizeTextMinSize = 20;
                 Label.resizeTextMaxSize = fontSize;
