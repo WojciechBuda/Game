@@ -102,19 +102,20 @@ namespace JellyDrop.Tests
         }
 
         [Test]
-        public void OneFreeRunPerDayAndBoostTicketsStack()
+        public void RunsAreFreeAndBonusTicketsDoubleThem()
         {
             var clock = new FixedClock(100);
             var e = new EconomyService(new PlayerData(), Catalog.CreateDefault(), new EconomyConfig(), clock);
             Assert.AreEqual(1, e.RunTickets);
-            Assert.IsTrue(e.TryStartRun());
+            Assert.IsTrue(e.StartRun(), "the daily bonus run");
             Assert.AreEqual(0, e.RunTickets);
-            Assert.IsFalse(e.TryStartRun());
+            Assert.IsFalse(e.StartRun(), "still playable, just without the x2 bonus");
+            Assert.AreEqual(2 * e.ApplyRunResult(10, 400f), e.ApplyRunResult(10, 400f, doubled: true));
             e.GrantRunTicket(2);
             Assert.AreEqual(2, e.RunTickets);
             clock.TodayIndex = 101;
             Assert.AreEqual(2, e.RunTickets, "the daily free run does not stack on top of saved tickets");
-            e.TryStartRun(); e.TryStartRun();
+            e.StartRun(); e.StartRun();
             clock.TodayIndex = 102;
             Assert.AreEqual(1, e.RunTickets);
         }

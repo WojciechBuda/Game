@@ -452,7 +452,7 @@ namespace JellyDrop.Core
             Add("tower.hz.spring", "springs", "sprężyny", "Federn", "muelles", "ressorts", "molas");
             Add("tower.hz.fast", "fast rise", "szybkie tempo", "schneller Anstieg", "subida rápida", "montée rapide", "subida rápida");
             Add("tower.hz.narrow", "narrow floors", "wąskie piętra", "schmale Etagen", "pisos estrechos", "étages étroits", "pisos estreitos");
-            Add("tower.hint", "Slide your finger left / right to run. Double-tap to jump. Run fast to jump higher and bounce off the walls!", "Przesuwaj palec w lewo / prawo, żeby biec. Podwójne stuknięcie to skok. Im szybciej biegniesz, tym wyżej skaczesz - odbijaj się od ścian!", "Wische nach links / rechts zum Laufen. Doppeltippen zum Springen. Je schneller, desto höher - prall von den Wänden ab!", "Desliza el dedo a izquierda / derecha para correr. Doble toque para saltar. ¡Cuanto más rápido, más alto!", "Glisse le doigt à gauche / droite pour courir. Double-tape pour sauter. Plus vite = plus haut !", "Desliza o dedo para correr. Toque duplo para saltar. Mais rápido = mais alto!");
+            Add("tower.hint", "Slide your finger left / right to run, tap to jump. Tip: steer with one thumb and tap with the other. Run fast to jump higher!", "Przesuwaj palec w lewo / prawo, żeby biec, stuknij, żeby skoczyć. Rada: steruj jednym kciukiem, a stukaj drugim. Im szybciej biegniesz, tym wyżej skaczesz!", "Wische nach links / rechts zum Laufen, tippe zum Springen. Tipp: mit einem Daumen lenken, mit dem anderen tippen. Je schneller, desto höher!", "Desliza el dedo para correr y toca para saltar. Consejo: dirige con un pulgar y toca con el otro. ¡Cuanto más rápido, más alto!", "Glisse le doigt pour courir, tape pour sauter. Astuce : dirige avec un pouce, tape avec l'autre. Plus vite = plus haut !", "Desliza o dedo para correr, toca para saltar. Dica: dirige com um polegar e toca com o outro. Mais rápido = mais alto!");
             Add("tower.floor", "Floor {0}", "Piętro {0}", "Etage {0}", "Piso {0}", "Étage {0}", "Piso {0}");
             Add("tower.floor_of", "Floor {0} / {1}", "Piętro {0} / {1}", "Etage {0} / {1}", "Piso {0} / {1}", "Étage {0} / {1}", "Piso {0} / {1}");
             Add("tower.combo", "COMBO {0}", "COMBO {0}", "KOMBO {0}", "COMBO {0}", "COMBO {0}", "COMBO {0}");
@@ -701,8 +701,12 @@ namespace JellyDrop.Core
             Add("run.info", "3D bonus run: collect coins!  Best {0} m", "Bonusowy bieg 3D: zbieraj monety!  Rekord {0} m",
                 "3D-Bonuslauf: sammle Münzen!  Bestwert {0} m", "Carrera bonus 3D: ¡recoge monedas!  Récord {0} m",
                 "Course bonus 3D : ramasse des pièces !  Record {0} m", "Corrida bônus 3D: pegue moedas!  Recorde {0} m");
+            Add("run.again_free", "RUN AGAIN", "BIEGNIJ ZNOWU", "NOCHMAL", "OTRA VEZ", "ENCORE", "DE NOVO");
+            Add("run.again_bonus", "RUN AGAIN  x2 ({0})", "BIEGNIJ ZNOWU  x2 ({0})", "NOCHMAL  x2 ({0})", "OTRA VEZ  x2 ({0})", "ENCORE  x2 ({0})", "DE NOVO  x2 ({0})");
+            Add("run.info_bonus", "Bonus runs with x2 coins: {0}", "Biegi bonusowe z x2 monet: {0}", "Bonusläufe mit x2 Münzen: {0}", "Carreras bonus con x2 monedas: {0}", "Courses bonus à x2 pièces : {0}", "Corridas bónus com x2 moedas: {0}");
+            Add("run.doubled", "Bonus run: coins x2!", "Bieg bonusowy: monety x2!", "Bonuslauf: Münzen x2!", "Carrera bonus: ¡monedas x2!", "Course bonus : pièces x2 !", "Corrida bónus: moedas x2!");
             Add("run.back", "BACK", "WRÓĆ", "ZURÜCK", "VOLVER", "RETOUR", "VOLTAR");
-            Add("run.ticket_won", "+1 Block Run bonus!", "+1 bieg Block Run!", "+1 Block-Run-Lauf!", "¡+1 carrera Block Run!", "+1 course Block Run !", "+1 corrida Block Run!");
+            Add("run.ticket_won", "+1 Block Run bonus (x2 coins)!", "+1 bieg bonusowy Block Run (x2 monet)!", "+1 Block-Run-Bonus (x2 Münzen)!", "¡+1 carrera bonus (x2 monedas)!", "+1 course bonus (x2 pièces) !", "+1 corrida bónus (x2 moedas)!");
 
             // ---------------------------------------------------------------- wardrobe
             Add("home.style", "STYLE", "STYL", "STYLE", "ESTILO", "STYLE", "ESTILO");

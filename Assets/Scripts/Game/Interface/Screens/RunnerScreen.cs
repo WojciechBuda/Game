@@ -134,7 +134,7 @@ namespace JellyDrop.Interface
             _pausedState = false;
             ShowLives(0);
             int best = App.Economy.Data.runBest;
-            int earned = App.Economy.ApplyRunResult(s.Coins, s.Distance);
+            int earned = App.Economy.ApplyRunResult(s.Coins, s.Distance, App.RunDoubled);
             App.Pet.OnGamePlayed();
             App.Save.Save(App.Economy.Data);
             bool record = (int)s.Distance > best;
@@ -142,8 +142,9 @@ namespace JellyDrop.Interface
             _resultInfo.text = Loc.T("run.result", Mathf.FloorToInt(s.Distance), s.Coins) + "\n" +
                 (record ? Loc.T("run.record") : Loc.T("run.best", App.Economy.Data.runBest));
             int tickets = App.Economy.RunTickets;
-            _again.SetLabel(tickets > 0 ? Loc.T("run.again", tickets) : Loc.T("run.no_tickets"));
-            _again.Interactable = tickets > 0;
+            _again.SetLabel(tickets > 0 ? Loc.T("run.again_bonus", tickets) : Loc.T("run.again_free"));
+            _again.Interactable = true;
+            if (App.RunDoubled) _resultInfo.text += "\n" + Loc.T("run.doubled");
             _pause.gameObject.SetActive(false);
             _results.gameObject.SetActive(true);
             UIKit.Pop(_results, 0.8f, 0.4f);

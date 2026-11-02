@@ -435,6 +435,9 @@ namespace JellyDrop
         }
         public void OpenPet() => Screens.Show(PetView);
 
+        /// <summary>The current Block Run used a bonus ticket (coins x2).</summary>
+        public bool RunDoubled { get; private set; }
+
         public void OpenTowerMenu()
         {
             Game.Leave();
@@ -483,15 +486,10 @@ namespace JellyDrop
             });
         }
 
-        /// <summary>Starts a Block Run (uses a ticket: one free per day, more from Boost levels).</summary>
+        /// <summary>Starts a Block Run. Always available; a bonus ticket (if any) makes it pay double.</summary>
         public void StartRun()
         {
-            if (!Economy.TryStartRun())
-            {
-                Audio.Play(Sfx.Error);
-                Popup.ShowMessage(Loc.T("run.title"), Loc.T("run.no_tickets_body"), SpriteFactory.Coin());
-                return;
-            }
+            RunDoubled = Economy.StartRun();
             Save.Save(Economy.Data);
             Game.Leave();
             if (Screens.Current == Runner && Runner.IsVisible) Runner.PrepareRun();

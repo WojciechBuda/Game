@@ -214,7 +214,8 @@ namespace JellyDrop.Interface
     /// <summary>
     /// The tower climb itself, drawn with UI images: a painted backdrop per scenery (scrolling with parallax),
     /// textured walls, styled platforms, items to grab, animated critters and the avatar.
-    /// Touch: slide a finger left / right to run (like a joystick that follows the finger), double-tap to jump. Arrow keys and space work in the editor.
+    /// Touch: slide a finger left / right to run (like a joystick that follows the finger), tap to jump;
+    /// while steering, a tap with a second finger jumps instantly. Arrow keys and space work in the editor.
     /// </summary>
     public sealed class TowerScreen : UIScreen
     {
@@ -222,7 +223,6 @@ namespace JellyDrop.Interface
         private const float BottomUi = 150f;
         private const float WallTileH = 88f;
         private const float PlatformH = 46f;
-        private const float DoubleTapTime = 0.32f;
 
         private RectTransform _field;
         private Image _bgTop, _bgBottom;
@@ -254,10 +254,12 @@ namespace JellyDrop.Interface
         private readonly List<TowerItem> _removeItems = new List<TowerItem>();
 
         // Touch state
-        private bool _touching, _touchIgnored, _usedForJump;
-        private float _anchorX, _touchX, _touchStart, _lastTapEnd = -10f, _jumpBuffer;
+        private bool _touching, _touchIgnored;
+        private int _fingerId = -1;
+        private float _maxMove;
+        private Vector2 _lastPos;
+        private float _anchorX, _touchX, _touchStart, _jumpBuffer;
         private Vector2 _touchStartPos;
-        private bool _lastWasTap;
 
         private sealed class Critter
         {
@@ -382,8 +384,6 @@ namespace JellyDrop.Interface
             _comboText.text = "";
             _hint.text = Loc.T("tower.hint");
             _touching = false;
-            _usedForJump = false;
-            _lastWasTap = false;
             _jumpBuffer = 0f;
             _stick.gameObject.SetActive(false);
             _results.gameObject.SetActive(false);
@@ -498,23 +498,29 @@ namespace JellyDrop.Interface
             move = 0f;
             float dt = Time.deltaTime;
             if (_jumpBuffer > 0f) _jumpBuffer -= dt;
-
-            bool down = PointerInput.TryGetPointer(out var pos);
             float now = Time.unscaledTime;
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            // Multi-touch: the first finger steers, any other finger that touches the screen jumps at once.
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                var t = Input.GetTouch(i);
+                // A tap so quick it began and ended between two frames.
+                if (!_touching && t.phase == TouchPhase.Ended && i == 0 && !PointerInput.IsOverUi(t.position)) { Jump(); continue; }
+                if (t.phase != TouchPhase.Began) continue;
+                if (_touching && t.fingerId != _fingerId && !PointerInput.IsOverUi(t.position)) Jump();
+            }
+#endif
+            bool down = TryGetSteeringPointer(out var pos);
             if (down && !_touching)
             {
                 _touching = true;
                 _touchIgnored = PointerInput.IsOverUi(pos);
                 _touchStart = now;
                 _touchStartPos = pos;
+                _maxMove = 0f;
                 _anchorX = pos.x;
                 _touchX = pos.x;
-                // Second tap soon after a first one: jump (on the press itself, so it feels instant).
-                if (!_touchIgnored && _lastWasTap && now - _lastTapEnd < DoubleTapTime)
-                {
-                    _jumpBuffer = 0.3f;
-                    _usedForJump = true;
-                }
                 if (!_touchIgnored)
                 {
                     _stick.gameObject.SetActive(true);
@@ -524,19 +530,16 @@ namespace JellyDrop.Interface
             else if (!down && _touching)
             {
                 _touching = false;
-                bool tap = now - _touchStart < 0.25f && (pos - _touchStartPos).magnitude < Screen.height * 0.02f;
-                // A tap that was itself the second of a double tap doesn't start a new one.
-                // A tap that finished a double tap doesn't count as the first tap of the next one,
-                // so tap-tap, tap-tap gives one jump each time.
-                _lastWasTap = tap && !_usedForJump;
-                _lastTapEnd = now;
-                _usedForJump = false;
                 _stick.gameObject.SetActive(false);
+                // A quick tap (finger barely moved) is a jump. Uses the last position seen while touching.
+                bool tap = now - _touchStart < 0.3f && _maxMove < Screen.height * 0.03f;
+                if (tap && !_touchIgnored) Jump();
             }
 
             if (_touching && !_touchIgnored)
             {
                 _touchX = pos.x;
+                _maxMove = Mathf.Max(_maxMove, (pos - _touchStartPos).magnitude);
                 float range = Screen.width * 0.09f;
                 float dx = _touchX - _anchorX;
                 // The joystick centre follows the finger when it goes past the edge (easy direction changes).
@@ -551,6 +554,44 @@ namespace JellyDrop.Interface
             if (PointerInput.KeyHeld(GameKey.Left)) move = -1f;
             if (PointerInput.KeyHeld(GameKey.Right)) move = 1f;
             jump = _jumpBuffer > 0f || PointerInput.KeyHeld(GameKey.HardDrop);
+        }
+
+        /// <summary>Remembers a jump for a moment, so a tap just before landing still counts.</summary>
+        private void Jump() => _jumpBuffer = 0.3f;
+
+        /// <summary>The steering finger (the first one down), or the mouse in the editor.</summary>
+        private bool TryGetSteeringPointer(out Vector2 pos)
+        {
+#if ENABLE_LEGACY_INPUT_MANAGER
+            if (Input.touchCount > 0)
+            {
+                if (_touching)
+                    for (int i = 0; i < Input.touchCount; i++)
+                    {
+                        var t = Input.GetTouch(i);
+                        if (t.fingerId != _fingerId) continue;
+                        if (t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled) break;
+                        pos = t.position;
+                        return true;
+                    }
+                else
+                {
+                    var t = Input.GetTouch(0);
+                    if (t.phase != TouchPhase.Ended && t.phase != TouchPhase.Canceled)
+                    {
+                        _fingerId = t.fingerId;
+                        pos = t.position;
+                        return true;
+                    }
+                }
+                pos = _lastPos;
+                return false;
+            }
+#endif
+            bool down = PointerInput.TryGetPointer(out pos);
+            if (down) _lastPos = pos;
+            else pos = _lastPos;
+            return down;
         }
 
         private Vector2 ToCanvas(Vector2 screen)
@@ -924,9 +965,19 @@ namespace JellyDrop.Interface
             _stick.gameObject.SetActive(false);
         }
 
+        protected override void OnShow()
+        {
+#if ENABLE_LEGACY_INPUT_MANAGER
+            Input.multiTouchEnabled = true;
+#endif
+        }
+
         protected override void OnHide()
         {
             _session = null;
+#if ENABLE_LEGACY_INPUT_MANAGER
+            Input.multiTouchEnabled = false;
+#endif
         }
 
         public override bool OnBack()

@@ -232,8 +232,8 @@ namespace JellyDrop.Interface
             }
             int tickets = e.RunTickets;
             _run.SetBadge(tickets);
-            _run.Interactable = tickets > 0;
-            _runInfo.text = tickets > 0 ? Loc.T("run.info", e.Data.runBest) : Loc.T("run.no_tickets_body");
+            _run.Interactable = true;
+            _runInfo.text = tickets > 0 ? Loc.T("run.info_bonus", tickets) : Loc.T("run.info", e.Data.runBest);
             _towerInfo.text = Loc.T("tower.arcade_info", App.Tower.Cleared, JellyDrop.Core.Tower.TowerCatalog.Count, App.Tower.Best(JellyDrop.Core.Tower.TowerMode.Classic));
             int dailyBest = e.DailyChallengeBestToday;
             _dailyInfo.text = dailyBest > 0 ? Loc.T("home.daily_today", Loc.Number(dailyBest)) : Loc.T("home.daily_info");

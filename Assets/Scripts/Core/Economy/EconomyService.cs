@@ -205,7 +205,10 @@ namespace JellyDrop.Core.Economy
         /// <summary>Coins per metre run, on top of the coins collected on the track.</summary>
         public const int RunMetresPerCoin = 40;
 
-        /// <summary>Runs available now. Everyone gets one free run per day; Boost levels give more.</summary>
+        /// <summary>
+        /// Block Run is always free to play. Bonus tickets (one per day, more from Boost levels) make a run pay
+        /// double coins; a run uses one automatically when there is one.
+        /// </summary>
         public int RunTickets
         {
             get
@@ -227,8 +230,8 @@ namespace JellyDrop.Core.Economy
             Notify();
         }
 
-        /// <summary>Uses a ticket to start a run. False when none are left.</summary>
-        public bool TryStartRun()
+        /// <summary>Starts a run (always allowed). Returns true when a bonus ticket was used: that run pays x2.</summary>
+        public bool StartRun()
         {
             if (RunTickets <= 0) return false;
             Data.runTickets--;
@@ -237,9 +240,10 @@ namespace JellyDrop.Core.Economy
         }
 
         /// <summary>Pays out a finished run and returns the coins earned.</summary>
-        public int ApplyRunResult(int coinsCollected, float distance)
+        public int ApplyRunResult(int coinsCollected, float distance, bool doubled = false)
         {
             int coins = Math.Max(0, coinsCollected) + (int)(Math.Max(0f, distance) / RunMetresPerCoin);
+            if (doubled) coins *= 2;
             if (Data.premium) coins = (int)Math.Round(coins * Config.PremiumCoinMultiplier);
             Data.coins += coins;
             Data.totalCoinsEarned += coins;
