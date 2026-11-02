@@ -196,7 +196,7 @@ namespace JellyDrop.Tests
             var data = new PlayerData { version = 3, coins = 500 };
             var e = new EconomyService(data, Catalog.CreateDefault(), new EconomyConfig(), new FixedClock(20000));
             Assert.AreEqual(PlayerData.CurrentVersion, e.Data.version);
-            Assert.AreEqual(4, PlayerData.CurrentVersion);
+            Assert.IsTrue(PlayerData.CurrentVersion >= 4);
             Assert.AreEqual(0, e.Data.xp);
         }
     }

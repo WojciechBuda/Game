@@ -118,7 +118,8 @@ namespace JellyDrop.Core.Economy
                 "#FFE27A", "#FFD447", "#F5C542", "#FFE9A3", "#F2B632", "#FFDB6E", "#E8A93A")));
 
             // Themes (background + music) ----------------------------------------
-            c.Add(Theme("theme_daydream", "Daydream", Rarity.Common, 0, "#EAF0FF", "#FDE9F3", "#FF6F91", MusicStyle.Bubbly, 124));
+            c.Add(Theme("theme_dusk", "Dusk", Rarity.Common, 0, "#171A3F", "#3A2461", "#FF8A5C", MusicStyle.Dreamy, 92));
+            c.Add(Theme("theme_daydream", "Daydream", Rarity.Common, 300, "#EAF0FF", "#FDE9F3", "#FF6F91", MusicStyle.Bubbly, 124));
             c.Add(Theme("theme_arcade", "Neon Arcade", Rarity.Common, 400, "#0B1033", "#2A0B4F", "#FF2E88", MusicStyle.Arcade, 132, grid: true));
             c.Add(Theme("theme_cyber", "Cyber Grid", Rarity.Rare, 1200, "#001426", "#003A4D", "#00E5FF", MusicStyle.Space, 140, grid: true));
             c.Add(Theme("theme_candy", "Candy Land", Rarity.Common, 500, "#FFB6D9", "#B38CFF", "#FF5FA2", MusicStyle.Bubbly, 128));

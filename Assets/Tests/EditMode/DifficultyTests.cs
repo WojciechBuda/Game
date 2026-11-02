@@ -185,7 +185,7 @@ namespace JellyDrop.Tests
             data.owned.Add("theme_candy");
             var e = new EconomyService(data, Catalog.CreateDefault(), new EconomyConfig(), new FixedClock(1));
             Assert.AreEqual("skin_soft", data.equippedSkin);
-            Assert.AreEqual("theme_daydream", data.equippedTheme);
+            Assert.AreEqual("theme_dusk", data.equippedTheme);
             Assert.IsTrue(e.IsOwned("skin_jelly"), "old items stay owned");
         }
 

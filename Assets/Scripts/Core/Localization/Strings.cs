@@ -144,6 +144,7 @@ namespace JellyDrop.Core
 
             // ---------------------------------------------------------------- shop items (character names stay as in the catalog)
             Add("item.skin_soft", "Soft Arcade", "Miękki automat", "Soft-Arcade", "Arcade suave", "Arcade douce", "Fliperama suave");
+            Add("item.theme_dusk", "Dusk", "Zmierzch", "Dämmerung", "Atardecer", "Crépuscule", "Crepúsculo");
             Add("item.theme_daydream", "Daydream", "Marzenie", "Tagtraum", "Ensueño", "Rêverie", "Devaneio");
             Add("item.skin_neon", "Neon Arcade", "Neonowy automat", "Neon-Arcade", "Arcade neón", "Arcade néon", "Fliperama neon");
             Add("item.skin_jelly", "Jelly Classic", "Klasyczne żelki", "Gelee Klassik", "Gelatina clásica", "Gelée classique", "Geleia clássica");

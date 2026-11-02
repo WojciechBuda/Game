@@ -24,7 +24,7 @@ namespace JellyDrop.Gameplay
             _box.sprite = SpriteFactory.RoundedRect();
             _box.drawMode = SpriteDrawMode.Sliced;
             _box.size = new Vector2(boxSize, boxSize);
-            _box.color = new Color(1f, 1f, 1f, 0.75f);
+            _box.color = ColorUtil.Well;
             _box.sortingOrder = 5;
             var ringGo = new GameObject("ring");
             ringGo.transform.SetParent(transform, false);

@@ -196,7 +196,7 @@ namespace JellyDrop.Interface
             {
                 bool selected = kv.Key == difficulty;
                 var c = ColorUtil.Hex(DifficultySettings.For(kv.Key).Color);
-                kv.Value.SetColor(selected ? c : Color.Lerp(c, Color.white, 0.55f));
+                kv.Value.SetColor(selected ? c : Color.Lerp(c, ColorUtil.Muted, 0.6f));
                 kv.Value.transform.localScale = Vector3.one * (selected ? 1.08f : 0.92f);
             }
             int dailyBest = e.DailyChallengeBestToday;

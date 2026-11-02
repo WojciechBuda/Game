@@ -179,7 +179,7 @@ namespace JellyDrop.Visuals
             return new Color(r / 255f, g / 255f, b / 255f, alpha);
         }
 
-        // ---- Soft arcade palette: bright candy accents on airy, light surfaces.
+        // ---- Dusk palette: bright candy accents on deep, calm indigo glass.
         public static readonly Color Pink = Hex("#FF6F91");
         public static readonly Color Purple = Hex("#8E7CFF");
         public static readonly Color Blue = Hex("#3FB6FF");
@@ -190,22 +190,30 @@ namespace JellyDrop.Visuals
         public static readonly Color Red = Hex("#FF5A6E");
         public static readonly Color Gold = Hex("#FFC93C");
 
-        /// <summary>Deep ink navy: dimmed backdrops and dark text on bright chips.</summary>
-        public static readonly Color Night = Hex("#2B2D5C");
-        /// <summary>Card / popup background.</summary>
-        public static readonly Color Panel = Hex("#FFFFFF");
-        /// <summary>Tinted card used inside panels (shop items, rows).</summary>
-        public static readonly Color PanelLight = Hex("#F3F5FF");
+        /// <summary>Near-black indigo: shadows and dimmed backdrops.</summary>
+        public static readonly Color Night = Hex("#070816");
+        /// <summary>Card / popup background (dark glass).</summary>
+        public static readonly Color Panel = Hex("#20234A");
+        /// <summary>Slightly lighter card used inside panels (shop items, rows).</summary>
+        public static readonly Color PanelLight = Hex("#2B2F5E");
         /// <summary>Body text.</summary>
-        public static readonly Color Ink = Hex("#2B2D5C");
+        public static readonly Color Ink = Hex("#F2F3FF");
         /// <summary>Secondary / hint text.</summary>
-        public static readonly Color InkDim = Hex("#7C82B3");
+        public static readonly Color InkDim = Hex("#9FA5D8");
+        /// <summary>Disabled buttons, locked tiles.</summary>
+        public static readonly Color Muted = Hex("#464B78");
+        /// <summary>Translucent glass behind scrolling lists.</summary>
+        public static readonly Color Glass = new Color(0.06f, 0.07f, 0.18f, 0.55f);
+        /// <summary>Faint marks: empty stars, untravelled path dots.</summary>
+        public static readonly Color Faint = new Color(1f, 1f, 1f, 0.13f);
+        /// <summary>The playfield well and preview boxes.</summary>
+        public static readonly Color Well = new Color(0.05f, 0.06f, 0.15f, 0.8f);
         /// <summary>Dark colour for faces and details drawn inside sprites (eyes, clock hands).</summary>
         public static readonly Color FaceInk = Hex("#2A1440");
         /// <summary>Junk rows from harder difficulties.</summary>
-        public static readonly Color Junk = Hex("#B8BDD6");
+        public static readonly Color Junk = Hex("#5A5F8C");
         /// <summary>Grass for the city.</summary>
-        public static readonly Color Grass = Hex("#9BE29A");
+        public static readonly Color Grass = Hex("#2E6B4F");
 
         /// <summary>Kept for older code: popups and cards use the panel colour.</summary>
         public static readonly Color Cream = Panel;

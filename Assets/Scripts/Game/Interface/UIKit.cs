@@ -147,12 +147,12 @@ namespace JellyDrop.Interface
             float pad = 30f / roundness; // glow sprite's inset, in canvas units at this roundness
             float drop = Mathf.Min(18f, pad * 0.4f);
             halo.rectTransform.Fill(-pad, -pad - drop, -pad, -pad + drop);
-            var edge = Image(card.transform, SpriteFactory.RoundedRing(), new Color(1f, 1f, 1f, 0.9f), false, "Edge");
+            var edge = Image(card.transform, SpriteFactory.RoundedRing(), new Color(1f, 1f, 1f, 0.22f), false, "Edge");
             edge.type = UnityEngine.UI.Image.Type.Sliced;
             edge.pixelsPerUnitMultiplier = roundness * 1.6f;
             edge.preserveAspect = false;
             edge.rectTransform.Fill();
-            UIGradient.Add(edge, Color.white, new Color(1f, 1f, 1f, 0.25f));
+            UIGradient.Add(edge, Color.white, new Color(1f, 1f, 1f, 0.15f));
             var ring = Image(card.transform, SpriteFactory.RoundedRing(), PixelCanvas.WithAlpha(accent, 0.45f), false, "Ring");
             ring.type = UnityEngine.UI.Image.Type.Sliced;
             ring.pixelsPerUnitMultiplier = roundness;
@@ -384,7 +384,7 @@ namespace JellyDrop.Interface
         {
             // Chunky arcade key: solid candy face, darker base for depth, soft shadow, light inner rim.
             // Modern key: lit gradient face, thin lip, glass edge, and a soft glow in the button's own colour.
-            var c = _interactable ? _color : Color.Lerp(_color, Hex("#C9CDE6"), 0.8f);
+            var c = _interactable ? _color : Color.Lerp(_color, ColorUtil.Muted, 0.8f);
             Face.color = PixelCanvas.Lighten(c, 0.12f);
             Base.color = PixelCanvas.Darken(c, 0.16f);
             _ring.color = new Color(1f, 1f, 1f, _interactable ? 0.38f : 0.2f);

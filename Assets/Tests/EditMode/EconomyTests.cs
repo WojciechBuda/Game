@@ -29,7 +29,7 @@ namespace JellyDrop.Tests
             var e = NewEconomy();
             Assert.AreEqual(100, e.Coins);
             Assert.AreEqual("skin_soft", e.Data.equippedSkin);
-            Assert.AreEqual("theme_daydream", e.Data.equippedTheme);
+            Assert.AreEqual("theme_dusk", e.Data.equippedTheme);
             Assert.AreEqual("avatar_bloop", e.Data.equippedAvatar);
             Assert.AreEqual(1, e.PowerUpCount(PowerUpType.Bomb));
             Assert.AreEqual(3, e.Data.missions.Count);
@@ -230,6 +230,17 @@ namespace JellyDrop.Tests
             Assert.AreEqual(4, e.PowerUpCount(PowerUpType.Bomb));
             Assert.IsTrue(e.ConsumePowerUp(PowerUpType.Bomb));
             Assert.AreEqual(3, e.PowerUpCount(PowerUpType.Bomb));
+        }
+
+        [Test]
+        public void DaydreamPlayersMoveToTheDuskThemeButKeepDaydream()
+        {
+            var data = new PlayerData { version = 4, totalGames = 5, equippedTheme = "theme_daydream" };
+            data.owned.Add("theme_daydream");
+            var e = new EconomyService(data, Catalog.CreateDefault(), new EconomyConfig(), new FixedClock(1));
+            Assert.AreEqual("theme_dusk", data.equippedTheme);
+            Assert.IsTrue(e.IsOwned("theme_daydream"));
+            Assert.IsTrue(e.Equip("theme_daydream"));
         }
     }
 }

@@ -65,7 +65,7 @@ namespace JellyDrop.Gameplay
             well.drawMode = SpriteDrawMode.Sliced;
             well.size = new Vector2(width + 0.15f, visibleHeight + 0.15f);
             well.transform.localPosition = center;
-            well.color = new Color(1f, 1f, 1f, 0.72f);
+            well.color = ColorUtil.Well;
 
             _frame = NewRenderer("Frame", SpriteFactory.RoundedRing(), OrderBackground + 4);
             _frame.drawMode = SpriteDrawMode.Sliced;

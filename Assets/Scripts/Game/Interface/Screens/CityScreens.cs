@@ -188,7 +188,7 @@ namespace JellyDrop.Interface
         {
             bool unlocked = city.IsPlotUnlocked(index);
             var def = city.BuildingAt(index);
-            Color color = !unlocked ? ColorUtil.Hex("#D6DAEC") : def == null ? ColorUtil.Hex("#C8EFC0") : ColorUtil.Hex("#E9F8E4");
+            Color color = !unlocked ? ColorUtil.Muted : def == null ? ColorUtil.Hex("#2F5E4A") : ColorUtil.Hex("#3A6E57");
             int plot = index;
             var tile = UIKit.Button(_grid, "", color, () => OnPlot(plot), new Vector2(Cell, Cell), 40, null, "Plot" + index);
             tile.GetComponent<RectTransform>().At(UIKit.Top, pos, new Vector2(Cell, Cell));
@@ -368,7 +368,7 @@ namespace JellyDrop.Interface
         {
             var city = App.City;
             bool levelOk = city.CityLevel >= def.UnlockCityLevel;
-            var row = UIKit.NeonCard(list, levelOk ? ColorUtil.Mint : ColorUtil.Hex("#C9CDE6"), ColorUtil.Panel, 1.2f, false, "Row", 0.2f);
+            var row = UIKit.NeonCard(list, levelOk ? ColorUtil.Mint : ColorUtil.Muted, ColorUtil.Panel, 1.2f, false, "Row", 0.2f);
             row.rectTransform.anchorMin = new Vector2(0, 1);
             row.rectTransform.anchorMax = new Vector2(1, 1);
             row.rectTransform.pivot = new Vector2(0.5f, 1f);

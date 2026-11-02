@@ -70,7 +70,7 @@ namespace JellyDrop.Interface
         public void Set(int count)
         {
             for (int i = 0; i < 3; i++)
-                _stars[i].color = i < count ? ColorUtil.Gold : new Color(0.17f, 0.18f, 0.36f, 0.15f);
+                _stars[i].color = i < count ? ColorUtil.Gold : ColorUtil.Faint;
         }
 
         /// <summary>Fills the stars one by one with a pop (results screen).</summary>

@@ -46,7 +46,7 @@ namespace JellyDrop.Interface
             }
 
             // Scroll area
-            var viewport = UIKit.Panel(Root, new Color(1f, 1f, 1f, 0.45f), 0.8f, true, "Viewport");
+            var viewport = UIKit.Panel(Root, ColorUtil.Glass, 0.8f, true, "Viewport");
             viewport.rectTransform.Fill(30, 40, 30, 350);
             viewport.gameObject.AddComponent<RectMask2D>();
 
@@ -95,7 +95,7 @@ namespace JellyDrop.Interface
                 bool active = kv.Key == _tab;
                 kv.Value.transform.localScale = Vector3.one * (active ? 1.08f : 0.94f);
                 kv.Value.Interactable = true;
-                kv.Value.SetColor(active ? TabColors[(int)kv.Key] : Color.Lerp(TabColors[(int)kv.Key], Color.white, 0.45f));
+                kv.Value.SetColor(active ? TabColors[(int)kv.Key] : Color.Lerp(TabColors[(int)kv.Key], ColorUtil.Muted, 0.55f));
             }
 
             UIKit.ClearChildren(_content);

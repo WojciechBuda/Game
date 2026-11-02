@@ -172,7 +172,7 @@ namespace JellyDrop.Interface
             var pass = UIKit.Text(Root, Loc.T("season.pass"), 38, ColorUtil.Orange, TextAnchor.MiddleCenter, true).Fit(20);
             pass.rectTransform.At(UIKit.Top, new Vector2(CellW / 2f + 90, -462), new Vector2(CellW, 56));
 
-            var viewport = UIKit.Panel(Root, new Color(1f, 1f, 1f, 0.35f), 0.8f, true, "Viewport");
+            var viewport = UIKit.Panel(Root, ColorUtil.Glass, 0.8f, true, "Viewport");
             viewport.rectTransform.Fill(20, 250, 20, 500);
             viewport.gameObject.AddComponent<RectMask2D>();
             _list = UIKit.Node("Tiers", viewport.transform);
@@ -242,9 +242,9 @@ namespace JellyDrop.Interface
                 bool reached = tier <= l.Tier;
 
                 // Track line and tier marker in the middle
-                var line = UIKit.Panel(_list, reached ? ColorUtil.Orange : new Color(0.17f, 0.18f, 0.36f, 0.12f), 3f, false, "Line");
+                var line = UIKit.Panel(_list, reached ? ColorUtil.Orange : ColorUtil.Faint, 3f, false, "Line");
                 line.rectTransform.At(UIKit.Top, new Vector2(0, y), new Vector2(16, RowH));
-                var marker = UIKit.Image(_list, SpriteFactory.Circle(), reached ? ColorUtil.Orange : ColorUtil.Hex("#D6DAEC"), false, "Tier");
+                var marker = UIKit.Image(_list, SpriteFactory.Circle(), reached ? ColorUtil.Orange : ColorUtil.Muted, false, "Tier");
                 marker.rectTransform.At(UIKit.Top, new Vector2(0, y), new Vector2(100, 100));
                 var num = UIKit.Text(marker.transform, tier.ToString(), 42, reached ? Color.white : ColorUtil.InkDim, TextAnchor.MiddleCenter, false);
                 num.rectTransform.Fill();
@@ -260,7 +260,7 @@ namespace JellyDrop.Interface
             bool claimed = l.IsClaimed(tier, pass);
             bool canClaim = l.CanClaim(tier, pass);
             bool locked = pass && !l.HasPass;
-            Color color = claimed ? ColorUtil.Hex("#E3E6F3") : canClaim ? (pass ? ColorUtil.Gold : ColorUtil.Mint) : ColorUtil.PanelLight;
+            Color color = claimed ? ColorUtil.Muted : canClaim ? (pass ? ColorUtil.Gold : ColorUtil.Mint) : ColorUtil.PanelLight;
             int t = tier;
             var b = UIKit.Button(_list, "", color, () => OnCell(t, pass), new Vector2(CellW, RowH - 26), 30, null, "Cell");
             b.GetComponent<RectTransform>().At(UIKit.Top, pos, new Vector2(CellW, RowH - 26));

@@ -104,6 +104,11 @@ namespace JellyDrop.Core.Economy
                 if (Data.equippedSkin == "skin_neon") Data.equippedSkin = null;
                 if (Data.equippedTheme == "theme_arcade") Data.equippedTheme = null;
             }
+            if (Data.version < 5)
+            {
+                // The default look went darker (Dusk). Daydream stays owned and can be equipped in the shop.
+                if (Data.equippedTheme == "theme_daydream") Data.equippedTheme = null;
+            }
             Data.version = PlayerData.CurrentVersion;
 
             if (Data.totalGames == 0 && Data.owned.Count == 0)

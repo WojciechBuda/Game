@@ -38,7 +38,7 @@ namespace JellyDrop.Interface
             pill.GetChild(1).GetComponent<Image>().color = ColorUtil.Gold;
             _stars = starPill;
 
-            var viewport = UIKit.Panel(Root, new Color(1f, 1f, 1f, 0.35f), 0.8f, true, "Viewport");
+            var viewport = UIKit.Panel(Root, ColorUtil.Glass, 0.8f, true, "Viewport");
             viewport.rectTransform.Fill(24, 30, 24, 180);
             viewport.gameObject.AddComponent<RectMask2D>();
 
@@ -93,7 +93,7 @@ namespace JellyDrop.Interface
                 for (int k = 1; k <= 4; k++)
                 {
                     float t = k / 5f;
-                    var dot = UIKit.Image(_content, SpriteFactory.Circle(), done ? PixelCanvas.WithAlpha(ColorUtil.Pink, 0.55f) : new Color(0.17f, 0.18f, 0.36f, 0.14f), false, "Dot");
+                    var dot = UIKit.Image(_content, SpriteFactory.Circle(), done ? PixelCanvas.WithAlpha(ColorUtil.Pink, 0.55f) : ColorUtil.Faint, false, "Dot");
                     Place(dot.rectTransform, Mathf.Lerp(NodeX(n), NodeX(n + 1), t), Mathf.Lerp(NodeY(n), NodeY(n + 1), t), 22, height);
                 }
             }
@@ -111,7 +111,7 @@ namespace JellyDrop.Interface
             int stars = progress.StarsOf(n);
             float size = boost ? 190f : 150f;
 
-            Color color = !unlocked ? ColorUtil.Hex("#C9CDE6") : boost ? ColorUtil.Gold : current ? ColorUtil.Pink : ColorUtil.Mint;
+            Color color = !unlocked ? ColorUtil.Muted : boost ? ColorUtil.Gold : current ? ColorUtil.Pink : ColorUtil.Mint;
             int level = n;
             var node = UIKit.Button(_content, boost ? Loc.T("level.boost") : n.ToString(), color, () => OnNode(level),
                 new Vector2(size, size), boost ? 40 : 60, !unlocked ? SpriteFactory.LockIcon() : null, "Level" + n);
