@@ -84,8 +84,32 @@ namespace JellyDrop.Gameplay
             _gestures.OnMove = () => _audio.Play(Sfx.Move, 0.5f, 0.08f);
             _gestures.OnHardDrop = () => Session.HardDrop();
             _gestures.OnHold = () => { if (Session.Hold()) _audio.Play(Sfx.Hold, 0.8f); };
+            _gestures.OnTap = OnTap;
 
             SetWorldVisible(false);
+        }
+
+        /// <summary>
+        /// Tap on (or right next to) the falling piece rotates it. Tap anywhere else on the board drops the piece
+        /// straight into that column. Taps outside the board rotate.
+        /// </summary>
+        private void OnTap(Vector2 screen)
+        {
+            if (Session == null || Session.Current == null || Session.IsOver) return;
+            var world = _camera.ScreenToWorldPoint(new Vector3(screen.x, screen.y, 10f));
+            var local = Board.transform.InverseTransformPoint(world);
+            int col = Mathf.FloorToInt(local.x), row = Mathf.FloorToInt(local.y);
+            bool onBoard = col >= 0 && col < _config.BoardWidth && local.y >= -1f && row < _config.BoardVisibleHeight + 2;
+            bool nearPiece = false;
+            foreach (var c in Session.Current.BoardCells())
+                if (Mathf.Abs(c.x - col) <= 1 && Mathf.Abs(c.y - row) <= 1) nearPiece = true;
+
+            if (!onBoard || nearPiece)
+            {
+                if (Session.RotateClockwise()) { _audio.Play(Sfx.Rotate, 0.7f); Haptics.Tap(); }
+                return;
+            }
+            Session.DropAtColumn(col);
         }
 
         private PieceSlot MakeSlot(string name, Vector3 pos, float box, float cellScale)

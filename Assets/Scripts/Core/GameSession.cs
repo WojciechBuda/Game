@@ -262,6 +262,26 @@ namespace JellyDrop.Core
             return false;
         }
 
+        /// <summary>
+        /// Tap-to-place: slides the current piece so it is centred on <paramref name="column"/> (as far as it can go)
+        /// and hard-drops it. Returns false when there is no piece to drop.
+        /// </summary>
+        public bool DropAtColumn(int column)
+        {
+            if (Current == null || IsOver) return false;
+            int min = int.MaxValue, max = int.MinValue;
+            foreach (var c in Current.BoardCells())
+            {
+                if (c.x < min) min = c.x;
+                if (c.x > max) max = c.x;
+            }
+            int shift = column - (min + (max - min) / 2);
+            for (int i = 0; i < Math.Abs(shift); i++)
+                if (!(shift > 0 ? MoveRight() : MoveLeft())) break;
+            HardDrop();
+            return true;
+        }
+
         public int HardDrop()
         {
             if (!CanAct()) return 0;

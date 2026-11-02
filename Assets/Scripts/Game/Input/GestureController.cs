@@ -5,7 +5,7 @@ namespace JellyDrop.GameInput
 {
     /// <summary>
     /// Turns touches into game actions:
-    /// tap = rotate, drag sideways = move one cell per step, drag down = soft drop,
+    /// tap = place (see OnTap; rotate when OnTap is not set), drag sideways = move one cell per step, drag down = soft drop,
     /// quick flick down = hard drop, flick up = hold. Keyboard works too (editor / desktop testing).
     /// </summary>
     public sealed class GestureController
@@ -42,6 +42,8 @@ namespace JellyDrop.GameInput
         public System.Action OnHardDrop;
         public System.Action OnHold;
         public System.Action OnMove;
+        /// <summary>Tap at a screen position. The game decides: tap on the piece rotates, tap elsewhere drops it there.</summary>
+        public System.Action<Vector2> OnTap;
 
         /// <param name="pixelsPerCell">How many screen pixels one board cell covers.</param>
         public void Update(GameSession session, float pixelsPerCell, float deltaTime)
@@ -137,7 +139,8 @@ namespace JellyDrop.GameInput
             else if (!_movedSideways && !_softDropping && duration <= TapMaxSeconds &&
                      Mathf.Abs(totalDx) < TapMaxCells && Mathf.Abs(totalDy) < TapMaxCells)
             {
-                OnRotate?.Invoke();
+                if (OnTap != null) OnTap(_start);
+                else OnRotate?.Invoke();
             }
             _softDropping = false;
         }

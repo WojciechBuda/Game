@@ -96,6 +96,28 @@ namespace JellyDrop.Tests
             return session;
         }
 
+        [Test]
+        public void DropAtColumnCentresThePieceThereAndLocksIt()
+        {
+            for (int target = 0; target < 10; target++)
+            {
+                var s = NewSession();
+                var type = s.Current.Type;
+                int placed = s.Stats.PiecesPlaced;
+                Assert.IsTrue(s.DropAtColumn(target));
+                Assert.AreEqual(placed + 1, s.Stats.PiecesPlaced, "the piece is locked");
+                // Every column the piece now occupies is within its width of the tapped column.
+                int width = 0, min = int.MaxValue, max = int.MinValue;
+                for (int x = 0; x < s.Board.Width; x++)
+                    for (int y = 0; y < 4; y++)
+                        if (!s.Board[x, y].IsEmpty) { min = System.Math.Min(min, x); max = System.Math.Max(max, x); }
+                width = max - min;
+                Assert.IsTrue(target >= min - 1 && target <= max + 1 || min == 0 || max == s.Board.Width - 1,
+                    $"{type}: tapped {target}, landed {min}..{max}");
+                Assert.IsTrue(width <= 3);
+            }
+        }
+
         private static void FillRowExcept(Board board, int row, params int[] gaps)
         {
             var skip = new HashSet<int>(gaps);

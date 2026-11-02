@@ -287,7 +287,9 @@ namespace JellyDrop.Core
             // ---------------------------------------------------------------- tutorial
             Add("tut.title", "HOW TO PLAY", "JAK GRAĆ", "SO WIRD GESPIELT", "CÓMO JUGAR", "COMMENT JOUER", "COMO JOGAR");
             Add("tut.tap", "TAP", "STUKNIJ", "TIPPEN", "TOCA", "TAPE", "TOQUE");
-            Add("tut.tap_d", "rotate the piece", "obróć klocek", "Stein drehen", "girar la pieza", "tourner la pièce", "girar a peça");
+            Add("tut.tap_d", "tap a column: drop there\ntap the piece: rotate", "stuknij kolumnę: klocek spada tam\nstuknij klocek: obrót",
+                "Spalte tippen: dort fallen lassen\nStein tippen: drehen", "toca una columna: cae ahí\ntoca la pieza: girar",
+                "tape une colonne : la pièce y tombe\ntape la pièce : tourner", "toque uma coluna: cai ali\ntoque a peça: girar");
             Add("tut.swipe", "SWIPE SIDEWAYS", "PRZESUŃ W BOK", "ZUR SEITE WISCHEN", "DESLIZA AL LADO", "GLISSE SUR LE CÔTÉ", "DESLIZE AO LADO");
             Add("tut.swipe_d", "move left / right", "ruch w lewo / prawo", "nach links / rechts", "mover izq. / der.", "gauche / droite", "mover esq. / dir.");
             Add("tut.drag", "DRAG DOWN", "PRZECIĄGNIJ W DÓŁ", "NACH UNTEN ZIEHEN", "ARRASTRA ABAJO", "GLISSE VERS LE BAS", "ARRASTE PARA BAIXO");
