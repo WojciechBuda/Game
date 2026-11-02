@@ -13,6 +13,7 @@ namespace JellyDrop.Interface
         private CandyButton _sfx;
         private CandyButton _haptics;
         private CandyButton _privacy;
+        private CandyButton _account;
 
         protected override void Build()
         {
@@ -26,6 +27,8 @@ namespace JellyDrop.Interface
             var c = card.rectTransform;
 
             float y = -100;
+            _account = Action(c, ref y, Loc.T("account.sign_in"), ColorUtil.Blue, App.SignInWithGoogle);
+            y -= 10;
             _language = Toggle(c, ref y, () => App.Screens.PushModal(App.LanguagePicker), ColorUtil.Blue);
             _music = Toggle(c, ref y, () => App.SetMusic(!App.Economy.Data.musicOn));
             _sfx = Toggle(c, ref y, () => App.SetSfx(!App.Economy.Data.sfxOn));
@@ -49,7 +52,7 @@ namespace JellyDrop.Interface
         {
             var b = UIKit.Button(parent, "", color ?? ColorUtil.Pink, onClick, new Vector2(760, 130), 50);
             b.GetComponent<RectTransform>().At(UIKit.Top, new Vector2(0, y), new Vector2(760, 130));
-            y -= 155;
+            y -= 142;
             return b;
         }
 
@@ -57,7 +60,7 @@ namespace JellyDrop.Interface
         {
             var b = UIKit.Button(parent, label, color, onClick, new Vector2(760, 110), 42);
             b.GetComponent<RectTransform>().At(UIKit.Top, new Vector2(0, y), new Vector2(760, 110));
-            y -= 135;
+            y -= 124;
             return b;
         }
 
@@ -70,6 +73,8 @@ namespace JellyDrop.Interface
             string languageName = chosen.HasValue
                 ? Loc.NativeName(chosen.Value)
                 : Loc.T("settings.auto", Loc.NativeName(Loc.Current));
+            _account.SetLabel(App.Online.IsSignedIn ? Loc.T("account.google_name", App.Online.PlayerName) : Loc.T("account.sign_in"));
+            _account.SetColor(App.Online.IsSignedIn ? ColorUtil.Mint : ColorUtil.Blue);
             _language.SetLabel($"{Loc.T("settings.language")}: {languageName}");
 
             _music.SetLabel(OnOff("settings.music", d.musicOn));

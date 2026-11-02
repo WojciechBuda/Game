@@ -180,6 +180,20 @@ Until this is set up, the game shows **fake test ads**, so the whole reward flow
 
 Restore Purchases is in **Settings** and on the **Premium** shop tab. Apple requires it.
 
+## 5b. Google sign-in (Google Play Games)
+
+The game signs players in with their Google account through Google Play Games Services (Android). Until it is set up, the game runs offline and the Settings button explains that sign-in is not available yet.
+
+1. In **Play Console**: your app > **Grow > Play Games Services > Setup and management > Configuration**. Create a Play Games Services project.
+2. Add an **Android credential**: package `com.wojciechbuda.stackville` and the SHA-1 of your signing keys (Play Console > Setup > App signing shows both the upload key and the app signing key; add both).
+3. Under **Leaderboards**, create "Highest level" (integer, larger is better) and put its ID in `Game/Online/OnlineIds.cs`.
+4. Add your Google account under **Testers** while the game is unpublished.
+5. Download the **Play Games plugin for Unity** (`GooglePlayGamesPlugin-x.y.z.unitypackage`) from github.com/playgameservices/play-games-plugin-for-unity and import it.
+6. **Window > Google Play Games > Setup > Android setup**: paste the resources XML from Play Console (Configuration > Get resources).
+7. Run the menu **Stackville > Online: enable Google Play Games**. This adds the `PLAY_GAMES` define.
+
+Players are signed in silently at start; **Settings > Sign in with Google** signs in on demand. For iOS, add Sign in with Apple later (Apple requires it whenever another sign-in is offered).
+
 ## 6. Publishing checklist
 
 - [ ] Final name. Don't use "Tetris" or "-tris" in the name, icon or store text: The Tetris Company enforces its trademark.

@@ -145,6 +145,12 @@ namespace JellyDrop.EditorTools
         [MenuItem("Stackville/IAP: use fake store", priority = 33)]
         public static void DisableIap() => SetDefine("UNITY_PURCHASING", false);
 
+        [MenuItem("Stackville/Online: enable Google Play Games (after importing the plugin)", priority = 34)]
+        public static void EnablePlayGames() => SetDefine("PLAY_GAMES", true);
+
+        [MenuItem("Stackville/Online: offline only", priority = 35)]
+        public static void DisablePlayGames() => SetDefine("PLAY_GAMES", false);
+
         [MenuItem("Stackville/Reset saved progress", priority = 50)]
         public static void ResetProgress()
         {

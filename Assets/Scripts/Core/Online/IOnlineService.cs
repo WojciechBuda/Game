@@ -44,7 +44,14 @@ namespace JellyDrop.Core.Online
         string PlayerId { get; }
         string PlayerName { get; }
 
+        /// <summary>True when a real sign-in provider (e.g. Google Play Games) is available on this device.</summary>
+        bool CanSignIn { get; }
+
+        /// <summary>Silent sign-in at startup (no UI). Calls back with true when signed in.</summary>
         void SignIn(Action<bool> onDone);
+
+        /// <summary>Sign-in from a button press: may show the provider's account picker.</summary>
+        void SignInWithUi(Action<bool> onDone);
 
         /// <summary>Uploads the city and progress so they survive a phone change.</summary>
         void SaveProgress(string json, Action<bool> onDone);
@@ -63,8 +70,10 @@ namespace JellyDrop.Core.Online
         public bool IsSignedIn => false;
         public string PlayerId => "local";
         public string PlayerName => "Player";
+        public bool CanSignIn => false;
 
         public void SignIn(Action<bool> onDone) => onDone?.Invoke(false);
+        public void SignInWithUi(Action<bool> onDone) => onDone?.Invoke(false);
         public void SaveProgress(string json, Action<bool> onDone) => onDone?.Invoke(false);
         public void SubmitLevelScore(LevelScore score, Action<bool> onDone) => onDone?.Invoke(false);
         public void GetLevelLeaderboard(int level, int count, Action<List<LevelScore>> onDone) => onDone?.Invoke(new List<LevelScore>());

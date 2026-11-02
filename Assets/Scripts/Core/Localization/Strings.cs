@@ -524,6 +524,22 @@ namespace JellyDrop.Core
                 "No se puede comprar. Vuelve en el pase de su temporada.",
                 "Impossible à acheter. Il revient dans le pass de sa saison.",
                 "Não dá para comprar. Ele volta no passe da sua temporada.");
+            // ---------------------------------------------------------------- Google account
+            Add("account.title", "Google account", "Konto Google", "Google-Konto", "Cuenta de Google", "Compte Google", "Conta Google");
+            Add("account.sign_in", "SIGN IN WITH GOOGLE", "ZALOGUJ PRZEZ GOOGLE", "MIT GOOGLE ANMELDEN", "INICIAR SESIÓN CON GOOGLE", "CONNEXION AVEC GOOGLE", "ENTRAR COM GOOGLE");
+            Add("account.google_name", "Google: {0}", "Google: {0}", "Google: {0}", "Google: {0}", "Google : {0}", "Google: {0}");
+            Add("account.signed_in", "Signed in as {0}.", "Zalogowano jako {0}.", "Angemeldet als {0}.", "Sesión iniciada como {0}.", "Connecté en tant que {0}.", "Conectado como {0}.");
+            Add("account.welcome", "Welcome!", "Witaj!", "Willkommen!", "¡Bienvenido!", "Bienvenue !", "Bem-vindo!");
+            Add("account.failed", "Sign-in didn't work. Check your connection and try again.", "Logowanie się nie udało. Sprawdź połączenie i spróbuj ponownie.",
+                "Anmeldung fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.", "No se pudo iniciar sesión. Revisa tu conexión e inténtalo de nuevo.",
+                "La connexion a échoué. Vérifie ta connexion et réessaie.", "Não foi possível entrar. Verifique sua conexão e tente de novo.");
+            Add("account.unavailable", "Google sign-in works in the Android app once Google Play Games is set up.",
+                "Logowanie Google działa w aplikacji na Androida po skonfigurowaniu Google Play Games.",
+                "Die Google-Anmeldung funktioniert in der Android-App, sobald Google Play Games eingerichtet ist.",
+                "El inicio de sesión con Google funciona en la app de Android cuando Google Play Games está configurado.",
+                "La connexion Google fonctionne dans l'appli Android une fois Google Play Jeux configuré.",
+                "O login com Google funciona no app Android depois de configurar o Google Play Games.");
+
             // ---------------------------------------------------------------- Block Run bonus
             Same("run.title", "BLOCK RUN");
             Add("run.hint", "Swipe left / right to change lanes\nup to jump, down to slide", "Przesuń w lewo / prawo, by zmienić tor\nw górę: skok, w dół: ślizg",

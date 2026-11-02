@@ -111,8 +111,13 @@ namespace JellyDrop
             Progress = new ProgressService(Economy);
             Loyalty = new LoyaltyService(Economy);
             Economy.CoinBonusPercent = () => City.CoinBonusPercent + Loyalty.CoinBonusPercent;
+#if PLAY_GAMES && UNITY_ANDROID && !UNITY_EDITOR
+            Online = new JellyDrop.Online.PlayGamesService();
+#else
             Online = new OfflineService();
-            Online.SignIn(_ => { });
+#endif
+            // Silent Google sign-in at startup (no UI); the Settings button signs in on demand.
+            Online.SignIn(ok => { if (ok && Screens != null) Screens.RefreshAll(); });
             Economy.Changed += OnEconomyChanged;
             SpriteFactory.PlayerLook = Economy.Look;
             Haptics.Enabled = Economy.Data.hapticsOn;
@@ -402,6 +407,31 @@ namespace JellyDrop
         public void OpenArcade() => Screens.Show(Arcade);
         public void OpenSeason() => Screens.Show(Season);
         public void OpenWardrobe() => Screens.Show(WardrobeView);
+
+        /// <summary>Sign in with the Google account (Google Play Games) from the Settings button.</summary>
+        public void SignInWithGoogle()
+        {
+            if (Online.IsSignedIn)
+            {
+                Popup.ShowMessage(Loc.T("account.title"), Loc.T("account.signed_in", Online.PlayerName), SpriteFactory.Star());
+                return;
+            }
+            if (!Online.CanSignIn)
+            {
+                Popup.ShowMessage(Loc.T("account.title"), Loc.T("account.unavailable"), SpriteFactory.LockIcon());
+                return;
+            }
+            Online.SignInWithUi(ok =>
+            {
+                if (ok)
+                {
+                    Audio.Play(Sfx.Win);
+                    Popup.ShowReward(Loc.T("account.welcome"), Loc.T("account.signed_in", Online.PlayerName), SpriteFactory.Star());
+                }
+                else Popup.ShowMessage(Loc.T("account.title"), Loc.T("account.failed"), SpriteFactory.LockIcon());
+                Screens.RefreshAll();
+            });
+        }
 
         /// <summary>Starts a Block Run (uses a ticket: one free per day, more from Boost levels).</summary>
         public void StartRun()
