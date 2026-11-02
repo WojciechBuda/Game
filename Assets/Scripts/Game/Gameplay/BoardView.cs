@@ -216,10 +216,11 @@ namespace JellyDrop.Gameplay
                     }
 
                     bool coin = (cell.Flags & CellFlags.Coin) != 0;
-                    overlay.enabled = coin || golden;
-                    if (coin)
+                    bool mushroom = (cell.Flags & CellFlags.Mushroom) != 0;
+                    overlay.enabled = coin || golden || mushroom;
+                    if (coin || mushroom)
                     {
-                        overlay.sprite = SpriteFactory.Coin();
+                        overlay.sprite = mushroom ? IslandSprites.Mushroom() : SpriteFactory.Coin();
                         overlay.transform.localScale = Vector3.one * (0.6f + Mathf.Sin(t * 5f) * 0.05f);
                         overlay.transform.localRotation = Quaternion.identity;
                         overlay.color = Color.white;
@@ -317,7 +318,7 @@ namespace JellyDrop.Gameplay
                 o.enabled = visible && (coin || piece.Golden);
                 if (coin)
                 {
-                    o.sprite = SpriteFactory.Coin();
+                    o.sprite = piece.Mushroom ? IslandSprites.Mushroom() : SpriteFactory.Coin();
                     o.color = Color.white;
                     o.transform.localScale = Vector3.one * 0.6f;
                     o.transform.localRotation = Quaternion.identity;

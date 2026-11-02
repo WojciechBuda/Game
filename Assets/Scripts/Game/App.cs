@@ -440,6 +440,7 @@ namespace JellyDrop
 
         /// <summary>The current Block Run used a bonus ticket (coins x2).</summary>
         public bool RunDoubled { get; private set; }
+        public bool RunExtraLife { get; private set; }
 
         public void OpenTowerMenu()
         {
@@ -493,11 +494,15 @@ namespace JellyDrop
         public void StartRun()
         {
             RunDoubled = Economy.StartRun();
+            // Mushroom power: 3 mushrooms buy a 4th life (toggle in the Arcade screen).
+            int lives = JellyDrop.Core.Runner.RunnerSession.StartLives;
+            if (Economy.UseMushroomBoost(ref Economy.Data.runExtraLife)) lives++;
+            RunExtraLife = lives > JellyDrop.Core.Runner.RunnerSession.StartLives;
             Save.Save(Economy.Data);
             Game.Leave();
             if (Screens.Current == Runner && Runner.IsVisible) Runner.PrepareRun();
             else Screens.Show(Runner);
-            RunnerWorld.Begin(Environment.TickCount, SpriteFactory.Avatar(Economy.EquippedAvatar, AvatarMood.Excited));
+            RunnerWorld.Begin(Environment.TickCount, SpriteFactory.Avatar(Economy.EquippedAvatar, AvatarMood.Excited), lives);
         }
 
         /// <summary>Applies the wardrobe (colour, hat, glasses) to the avatar everywhere.</summary>

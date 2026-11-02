@@ -106,7 +106,18 @@ namespace JellyDrop.Visuals
         });
 
         /// <summary>Food and gift icons.</summary>
-        public static Sprite Item(string id) => Cached("item_" + id, c =>
+        public static Sprite Item(string id)
+        {
+            switch (id)
+            {
+                case "mushroom_soup": return IslandSprites.Dish(0);
+                case "berry_bowl": return IslandSprites.Berries();
+                case "honey_toast": return IslandSprites.Honey();
+            }
+            return DrawItem(id);
+        }
+
+        private static Sprite DrawItem(string id) => Cached("item_" + id, c =>
         {
             switch (id)
             {

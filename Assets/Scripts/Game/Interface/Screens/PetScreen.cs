@@ -137,11 +137,27 @@ namespace JellyDrop.Interface
             _trayTitle.rectTransform.At(UIKit.Top, new Vector2(0, -60), new Vector2(800, 80));
             var close = UIKit.IconButton(_tray, SpriteFactory.CloseIcon(), ColorUtil.Purple, CloseTray, 90);
             close.GetComponent<RectTransform>().At(UIKit.TopRight, new Vector2(-70, -60), new Vector2(90, 90));
-            _trayContent = UIKit.Node("Items", _tray);
-            _trayContent.Fill(20, 20, 20, 120);
+            // Scrolls sideways when there are more items than fit.
+            var viewport = UIKit.Node("Viewport", _tray);
+            viewport.Fill(20, 20, 20, 120);
+            viewport.gameObject.AddComponent<RectMask2D>();
+            var hit = UIKit.Image(viewport, null, new Color(0, 0, 0, 0), true, "Hit");
+            hit.rectTransform.Fill();
+            _trayContent = UIKit.Node("Items", viewport);
+            _trayContent.anchorMin = new Vector2(0, 0);
+            _trayContent.anchorMax = new Vector2(0, 1);
+            _trayContent.pivot = new Vector2(0, 0.5f);
+            _trayContent.offsetMin = _trayContent.offsetMax = Vector2.zero;
+            _trayContent.gameObject.AddComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            var scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            scroll.viewport = viewport;
+            scroll.content = _trayContent;
+            scroll.vertical = false;
+            scroll.horizontal = true;
             var row = _trayContent.gameObject.AddComponent<HorizontalLayoutGroup>();
             row.spacing = 12;
-            row.childAlignment = TextAnchor.MiddleCenter;
+            row.padding = new RectOffset(4, 4, 0, 0);
+            row.childAlignment = TextAnchor.MiddleLeft;
             row.childForceExpandWidth = false;
             row.childForceExpandHeight = false;
             row.childControlWidth = false;
@@ -243,6 +259,7 @@ namespace JellyDrop.Interface
                     Save();
                     break;
                 case PetResult.NotEnoughCoins: Fail(Loc.T("city.not_enough_coins")); break;
+                case PetResult.NotEnoughGoods: Fail(Loc.T("mush.not_enough")); break;
                 case PetResult.Full: Fail(Loc.T("pet.full")); break;
                 case PetResult.AlreadyClean: Fail(Loc.T("pet.already_clean")); break;
                 case PetResult.Sleeping: Fail(Loc.T("pet.shh")); break;
@@ -308,9 +325,12 @@ namespace JellyDrop.Interface
             icon.rectTransform.At(UIKit.Center, new Vector2(0, 40), new Vector2(120, 120));
             var gain = UIKit.Text(card.rectTransform, GainText(item), 24, ColorUtil.Mint, TextAnchor.MiddleCenter, false).Fit(14);
             gain.rectTransform.At(UIKit.Center, new Vector2(0, -55), new Vector2(w - 20, 80));
-            var b = UIKit.Button(card.rectTransform, item.Coins.ToString(), ColorUtil.Orange, () => Use(item), new Vector2(w - 30, 90), 34, SpriteFactory.Coin());
+            var d = App.Economy.Data;
+            string cost = item.Mushrooms > 0 ? item.Mushrooms.ToString() : item.Berries > 0 ? item.Berries.ToString() : item.Honey > 0 ? item.Honey.ToString() : item.Coins.ToString();
+            var costIcon = item.Mushrooms > 0 ? IslandSprites.Mushroom() : item.Berries > 0 ? IslandSprites.Berries() : item.Honey > 0 ? IslandSprites.Honey() : SpriteFactory.Coin();
+            var b = UIKit.Button(card.rectTransform, cost, item.UsesGoods ? ColorUtil.Mint : ColorUtil.Orange, () => Use(item), new Vector2(w - 30, 90), 34, costIcon);
             b.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 60), new Vector2(w - 30, 90));
-            b.Interactable = App.Economy.Coins >= item.Coins;
+            b.Interactable = App.Economy.Coins >= item.Coins && d.mushrooms >= item.Mushrooms && d.berries >= item.Berries && d.honey >= item.Honey;
             b.ClickWhenDisabled = true;
         }
 

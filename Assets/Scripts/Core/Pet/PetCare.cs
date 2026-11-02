@@ -8,7 +8,7 @@ namespace JellyDrop.Core.Pet
     /// <summary>How the pet feels right now, most urgent first.</summary>
     public enum PetMood { Happy, Okay, Hungry, Tired, Bored, Dirty, Lonely, Sick, Sleeping }
 
-    public enum PetResult { Ok, NotEnoughCoins, Full, AlreadyClean, Sleeping, NotSick, NotSleepy, Unknown }
+    public enum PetResult { Ok, NotEnoughCoins, NotEnoughGoods, Full, AlreadyClean, Sleeping, NotSick, NotSleepy, Unknown }
 
     /// <summary>Something the pet can eat or play with, bought with coins.</summary>
     public sealed class PetItem
@@ -17,6 +17,10 @@ namespace JellyDrop.Core.Pet
         public int Coins;
         public float Food, Energy, Fun, Clean;
         public bool IsGift;
+        /// <summary>Forest goods it costs instead of (or as well as) coins.</summary>
+        public int Mushrooms, Berries, Honey;
+
+        public bool UsesGoods => Mushrooms > 0 || Berries > 0 || Honey > 0;
 
         public PetItem(string id, int coins, float food = 0, float energy = 0, float fun = 0, float clean = 0, bool gift = false)
         {
@@ -33,6 +37,10 @@ namespace JellyDrop.Core.Pet
             new PetItem("smoothie", 20, food: 18, energy: 15),
             new PetItem("burger", 25, food: 50, clean: -8),
             new PetItem("cake", 35, food: 28, fun: 15, clean: -4),
+            // Made from forest goods: cheap and very good for the pet.
+            new PetItem("mushroom_soup", 0, food: 45, fun: 5) { Mushrooms = 2 },
+            new PetItem("berry_bowl", 0, food: 22, fun: 12) { Berries = 4 },
+            new PetItem("honey_toast", 0, food: 26, energy: 10, fun: 10) { Honey = 1 },
         };
 
         public static readonly PetItem[] Gifts =
@@ -236,7 +244,11 @@ namespace JellyDrop.Core.Pet
             if (item == null || item.IsGift) return PetResult.Unknown;
             if (Data.petSleeping) return PetResult.Sleeping;
             if (Data.petFood >= 95f) return PetResult.Full;
+            if (Data.mushrooms < item.Mushrooms || Data.berries < item.Berries || Data.honey < item.Honey) return PetResult.NotEnoughGoods;
             if (!_economy.TrySpendCoins(item.Coins)) return PetResult.NotEnoughCoins;
+            Data.mushrooms -= item.Mushrooms;
+            Data.berries -= item.Berries;
+            Data.honey -= item.Honey;
             Apply(item);
             Cared();
             return PetResult.Ok;

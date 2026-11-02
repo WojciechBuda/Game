@@ -277,6 +277,7 @@ namespace JellyDrop.Interface
             if (r.Wood > 0) parts.Add(Loc.T("mission.supply", r.Wood, Loc.T("supply.Wood")));
             if (r.Brick > 0) parts.Add(Loc.T("mission.supply", r.Brick, Loc.T("supply.Brick")));
             if (r.Glass > 0) parts.Add(Loc.T("mission.supply", r.Glass, Loc.T("supply.Glass")));
+            if (r.Mushrooms > 0) parts.Add(Loc.T("mush.count", r.Mushrooms));
             return string.Join(" · ", parts);
         }
 
@@ -603,7 +604,7 @@ namespace JellyDrop.Interface
 
         protected override void Build()
         {
-            var card = BuildModalCard(new Vector2(920, 1180), ColorUtil.Panel, ColorUtil.Blue);
+            var card = BuildModalCard(new Vector2(920, 1520), ColorUtil.Panel, ColorUtil.Blue);
             _content = UIKit.Node("Content", card).Fill(30, 30, 30, 30);
 
             var close = UIKit.IconButton(_content, SpriteFactory.CloseIcon(), ColorUtil.Purple, () => App.Screens.PopModal(this), 90);
@@ -622,6 +623,37 @@ namespace JellyDrop.Interface
                 BuildRow(s, y);
                 y -= 250;
             }
+
+            // Selling goods from the forest and the garden
+            var sellTitle = UIKit.Text(_content, Loc.T("market.sell"), 40, ColorUtil.Mint).Fit(22);
+            sellTitle.rectTransform.At(UIKit.Top, new Vector2(0, y - 20), new Vector2(800, 56));
+            string[] goods = { "mushroom", "gold_mushroom", "berries", "honey", "egg" };
+            Sprite[] icons = { IslandSprites.Mushroom(), IslandSprites.Mushroom(true), IslandSprites.Berries(), IslandSprites.Honey(), IslandSprites.Egg() };
+            int[] prices = { EconomyService.MushroomPrice, EconomyService.GoldMushroomPrice, EconomyService.BerryPrice, EconomyService.HoneyPrice, EconomyService.EggPrice };
+            for (int i = 0; i < goods.Length; i++)
+            {
+                string g = goods[i];
+                float x = -336 + i * 168;
+                var cell = UIKit.NeonCard(_content, ColorUtil.Mint, ColorUtil.PanelLight, 1.2f, false, "Good", 0.15f);
+                cell.rectTransform.At(UIKit.Top, new Vector2(x, y - 190), new Vector2(156, 250));
+                var ic = UIKit.Image(cell.transform, icons[i], Color.white);
+                ic.rectTransform.At(UIKit.Top, new Vector2(0, -55), new Vector2(80, 80));
+                var own = UIKit.Text(cell.transform, "", 30, ColorUtil.Ink).Fit(16);
+                own.rectTransform.At(UIKit.Top, new Vector2(0, -122), new Vector2(140, 40));
+                _goodsOwned[i] = own;
+                var sell = UIKit.Button(cell.transform, "+" + prices[i], ColorUtil.Gold, () => Sell(g), new Vector2(136, 80), 28, SpriteFactory.Coin());
+                sell.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 50), new Vector2(136, 80));
+            }
+        }
+
+        private readonly Text[] _goodsOwned = new Text[5];
+
+        private void Sell(string good)
+        {
+            int coins = App.Economy.SellGoods(good, 1);
+            if (coins <= 0) { App.Audio.Play(Sfx.Error); return; }
+            App.Audio.Play(Sfx.Coin);
+            Refresh();
         }
 
         private void BuildRow(Supply s, float y)
@@ -655,6 +687,9 @@ namespace JellyDrop.Interface
             _coins.text = Loc.Number(App.Economy.Coins);
             foreach (Supply s in Enum.GetValues(typeof(Supply)))
                 _owned[(int)s].text = "× " + Loc.Number(App.City.Amount(s));
+            var d = App.Economy.Data;
+            int[] have = { d.mushrooms, d.goldMushrooms, d.berries, d.honey, d.eggs };
+            for (int i = 0; i < have.Length; i++) _goodsOwned[i].text = "× " + Loc.Number(have[i]);
         }
 
         private void Buy(Supply s, int amount)

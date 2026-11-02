@@ -49,6 +49,8 @@ namespace JellyDrop.Core.Economy
         public bool IsPersonalBest;
         /// <summary>Extra coins from a wheel booster (coins x2).</summary>
         public int BoosterBonus;
+        /// <summary>Mushrooms picked during the game.</summary>
+        public int Mushrooms;
         public int Total => ScoreCoins + CollectedCoins + PersonalBestBonus + SprintBonus + PremiumBonus + CityBonus + BoosterBonus;
         public List<MissionDef> MissionsCompleted = new List<MissionDef>();
     }
@@ -242,8 +244,9 @@ namespace JellyDrop.Core.Economy
         }
 
         /// <summary>Pays out a finished run and returns the coins earned.</summary>
-        public int ApplyRunResult(int coinsCollected, float distance, bool doubled = false)
+        public int ApplyRunResult(int coinsCollected, float distance, bool doubled = false, int mushrooms = 0)
         {
+            Data.mushrooms += Math.Max(0, mushrooms);
             int coins = Math.Max(0, coinsCollected) + (int)(Math.Max(0f, distance) / RunMetresPerCoin);
             if (doubled) coins *= 2;
             if (Data.premium) coins = (int)Math.Round(coins * Config.PremiumCoinMultiplier);
@@ -626,6 +629,11 @@ namespace JellyDrop.Core.Economy
                 rewards.CityBonus = (int)Math.Round(baseTotal * cityPercent / 100.0);
             }
 
+            if (result.Mushrooms > 0)
+            {
+                rewards.Mushrooms = result.Mushrooms;
+                Data.mushrooms += result.Mushrooms;
+            }
             if (Data.coinBoostGames > 0)
             {
                 rewards.BoosterBonus = rewards.ScoreCoins + rewards.CollectedCoins + rewards.PersonalBestBonus + rewards.SprintBonus;
@@ -639,6 +647,56 @@ namespace JellyDrop.Core.Economy
             Data.totalCoinsEarned += rewards.Total;
             Notify();
             return rewards;
+        }
+
+        /// <summary>Mushrooms a mushroom power costs (extra life in Block Run, spring start in the tower).</summary>
+        public const int MushroomBoostCost = 3;
+
+        /// <summary>
+        /// If the boost is switched on and there are enough mushrooms, spends them and returns true. Switches the
+        /// boost off when the mushrooms run out.
+        /// </summary>
+        public bool UseMushroomBoost(ref bool enabled)
+        {
+            if (!enabled) return false;
+            if (Data.mushrooms < MushroomBoostCost) { enabled = false; Notify(); return false; }
+            Data.mushrooms -= MushroomBoostCost;
+            Notify();
+            return true;
+        }
+
+        public int Mushrooms => Data.mushrooms;
+        public int GoldMushrooms => Data.goldMushrooms;
+
+        public void AddMushrooms(int normal, int gold = 0)
+        {
+            Data.mushrooms += Math.Max(0, normal);
+            Data.goldMushrooms += Math.Max(0, gold);
+            Notify();
+        }
+
+        // Market prices for forest and garden goods
+        public const int MushroomPrice = 12, GoldMushroomPrice = 90, BerryPrice = 4, HoneyPrice = 15, EggPrice = 8;
+
+        /// <summary>Sells goods at the market. Returns the coins earned (0 if there is nothing to sell).</summary>
+        public int SellGoods(string good, int count)
+        {
+            count = Math.Max(0, count);
+            int price;
+            switch (good)
+            {
+                case "mushroom": count = Math.Min(count, Data.mushrooms); Data.mushrooms -= count; price = MushroomPrice; break;
+                case "gold_mushroom": count = Math.Min(count, Data.goldMushrooms); Data.goldMushrooms -= count; price = GoldMushroomPrice; break;
+                case "berries": count = Math.Min(count, Data.berries); Data.berries -= count; price = BerryPrice; break;
+                case "honey": count = Math.Min(count, Data.honey); Data.honey -= count; price = HoneyPrice; break;
+                case "egg": count = Math.Min(count, Data.eggs); Data.eggs -= count; price = EggPrice; break;
+                default: return 0;
+            }
+            int coins = count * price;
+            Data.coins += coins;
+            Data.totalCoinsEarned += coins;
+            Notify();
+            return coins;
         }
 
         public const int PaidSpinCost = 60;

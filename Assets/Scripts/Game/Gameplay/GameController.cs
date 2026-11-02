@@ -397,6 +397,11 @@ namespace JellyDrop.Gameplay
                 case LuckyEventType.CoinCell:
                     _audio.Play(Sfx.Coin);
                     break;
+                case LuckyEventType.Mushroom:
+                    _audio.Play(Sfx.Pop);
+                    FloatingText?.Invoke(Loc.T("fx.mushroom", e.Coins), center, ColorUtil.Hex("#FF7A6E"), 1.1f);
+                    Particles.Burst(center, 8, new[] { Color.white, ColorUtil.Red }, 7f, 1f, 0.5f, IslandSprites.Mushroom());
+                    break;
                 case LuckyEventType.GoldenClear:
                     _audio.Play(Sfx.Golden);
                     FloatingText?.Invoke(Loc.T("fx.golden_clear", Session.Config.Lucky.GoldenCoinMultiplier, Loc.Coins(e.Coins)), center, ColorUtil.Gold, 1.4f);

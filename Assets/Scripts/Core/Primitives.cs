@@ -64,7 +64,8 @@ namespace JellyDrop.Core
         GoldenClear,   // a line clear included golden cells (coins multiplied)
         CoinCell,      // coin cell(s) cleared
         Rainbow,       // random rainbow bonus on a clear
-        Jackpot        // very rare big coin rain
+        Jackpot,       // very rare big coin rain
+        Mushroom       // mushroom cell(s) cleared (Coins holds how many)
     }
 
     /// <summary>Random source abstraction so tests and daily challenges can be deterministic.</summary>

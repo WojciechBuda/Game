@@ -51,6 +51,7 @@ namespace JellyDrop.City3D
         private int _missionHits, _missionNeeded;
         private readonly List<Transform> _targets = new List<Transform>();
         private float _spawnTimer, _catTimer;
+        private readonly Dictionary<Transform, float> _mushroomLife = new Dictionary<Transform, float>();
 
         // Camera rig
         private Vector3 _target;
@@ -641,6 +642,7 @@ namespace JellyDrop.City3D
         {
             foreach (var t in _targets) if (t != null) Destroy(t.gameObject);
             _targets.Clear();
+            _mushroomLife.Clear();
             MissionActive = false;
         }
 
@@ -657,7 +659,31 @@ namespace JellyDrop.City3D
             MissionTimeLeft -= dt;
             if (MissionTimeLeft <= 0f) { EndMission(false); return; }
 
-            if (_missionType == JellyDrop.Core.City.CityMissionType.Balloons)
+            if (_missionType == JellyDrop.Core.City.CityMissionType.Mushrooms)
+            {
+                // Mushrooms pop up next to buildings and hide again after a moment.
+                _spawnTimer -= dt;
+                if (_spawnTimer <= 0f && _targets.Count < 3)
+                {
+                    _spawnTimer = 0.7f;
+                    var go = MeshObject("Mushroom", JellyDrop.Runner3D.RunnerWorld.MushroomMesh);
+                    int plot = _rng.Next(Mathf.Min(_rows * Cols, _plots.Length));
+                    float sx = _rng.Next(2) == 0 ? -1f : 1f, sz = _rng.Next(2) == 0 ? -1f : 1f;
+                    go.transform.localPosition = PlotCenter(plot) + new Vector3(sx * 1.8f, 0.3f, sz * 1.8f);
+                    go.transform.localScale = Vector3.one * 1.6f;
+                    go.AddComponent<Squash>();
+                    _targets.Add(go.transform);
+                    _mushroomLife[go.transform] = 2.6f;
+                }
+                for (int i = _targets.Count - 1; i >= 0; i--)
+                {
+                    var m = _targets[i];
+                    if (m == null || !_mushroomLife.ContainsKey(m)) continue;
+                    _mushroomLife[m] -= dt;
+                    if (_mushroomLife[m] <= 0f) { _mushroomLife.Remove(m); Destroy(m.gameObject); _targets.RemoveAt(i); }
+                }
+            }
+            else if (_missionType == JellyDrop.Core.City.CityMissionType.Balloons)
             {
                 _spawnTimer -= dt;
                 if (_spawnTimer <= 0f && _targets.Count < 4)
@@ -702,6 +728,8 @@ namespace JellyDrop.City3D
             switch (_missionType)
             {
                 case JellyDrop.Core.City.CityMissionType.Balloons:
+                case JellyDrop.Core.City.CityMissionType.Mushrooms:
+                    _mushroomLife.Remove(target);
                     Destroy(target.gameObject);
                     _targets.RemoveAt(index);
                     break;

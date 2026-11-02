@@ -125,6 +125,7 @@ namespace JellyDrop.Core.Tower
             Data.wood += collected[(int)TowerItemKind.Wood];
             Data.brick += collected[(int)TowerItemKind.Brick];
             Data.glass += collected[(int)TowerItemKind.Glass];
+            if (collected.Length > (int)TowerItemKind.Mushroom) Data.mushrooms += collected[(int)TowerItemKind.Mushroom];
             _economy.NotifyChanged();
         }
 

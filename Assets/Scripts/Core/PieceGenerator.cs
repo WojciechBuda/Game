@@ -9,6 +9,8 @@ namespace JellyDrop.Core
         public bool Golden;
         /// <summary>Index of the cell carrying a coin, or -1.</summary>
         public int CoinCellIndex;
+        /// <summary>The marked cell (CoinCellIndex) carries a mushroom instead of a coin.</summary>
+        public bool Mushroom;
 
         public static QueuedPiece Plain(PieceType type) => new QueuedPiece { Type = type, CoinCellIndex = -1 };
     }
@@ -96,6 +98,11 @@ namespace JellyDrop.Core
             else if (_rng.NextDouble() < _lucky.CoinPieceChance)
             {
                 piece.CoinCellIndex = _rng.Range(0, PieceData.GetCells(type, 0).Length);
+            }
+            else if (_lucky.MushroomPieceChance > 0 && _rng.NextDouble() < _lucky.MushroomPieceChance)
+            {
+                piece.CoinCellIndex = _rng.Range(0, PieceData.GetCells(type, 0).Length);
+                piece.Mushroom = true;
             }
             return piece;
         }

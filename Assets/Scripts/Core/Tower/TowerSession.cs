@@ -10,7 +10,7 @@ namespace JellyDrop.Core.Tower
     public enum TowerScenery { Ice = 0, Candy = 1, Jungle = 2, Space = 3, Lava = 4, Forest = 5 }
 
     /// <summary>Things to grab on the way up: coins, energy for the pet and supplies for the city.</summary>
-    public enum TowerItemKind { Coin = 0, Energy = 1, Wood = 2, Brick = 3, Glass = 4 }
+    public enum TowerItemKind { Coin = 0, Energy = 1, Wood = 2, Brick = 3, Glass = 4, Mushroom = 5 }
 
     public sealed class TowerItem
     {
@@ -46,6 +46,8 @@ namespace JellyDrop.Core.Tower
         public int NarrowAfter = 200;      // floors until platforms reach MinWidth
         public float IceChance, MovingChance, CrumbleChance, SpringChance;
         public bool AllIce;
+        /// <summary>Mushroom power: the climb starts with a big spring jump.</summary>
+        public bool SpringStart;
 
         public static TowerConfig Endless(TowerMode mode, TowerScenery scenery)
         {
@@ -108,7 +110,7 @@ namespace JellyDrop.Core.Tower
         public event Action<TowerItem> ItemCollected;
 
         /// <summary>How many of each item were collected (index = (int)TowerItemKind).</summary>
-        public readonly int[] Collected = new int[5];
+        public readonly int[] Collected = new int[6];
         private readonly List<TowerItem> _items = new List<TowerItem>();
         private Random _itemRng;
         public IReadOnlyList<TowerItem> Items => _items;
@@ -130,6 +132,13 @@ namespace JellyDrop.Core.Tower
             EnsureGenerated();
             Ground = _platforms[0];
             Y = 0f;
+            if (config.SpringStart)
+            {
+                Grounded = false;
+                Ground = null;
+                Vy = SpringJump * 1.25f;
+                _jumpFrom = 0;
+            }
         }
 
         /// <summary>The look for the current height (endless towers change every 50 floors).</summary>
@@ -197,6 +206,10 @@ namespace JellyDrop.Core.Tower
             else if (roll < 0.15) kind = TowerItemKind.Brick;
             else if (roll < 0.175 && p.Floor >= 15) kind = TowerItemKind.Glass;
             else if (roll < 0.6) kind = TowerItemKind.Coin;
+            // Mushrooms grow in the green towers.
+            var look = SceneryAt(p.Floor);
+            double mushChance = look == TowerScenery.Forest || look == TowerScenery.Jungle ? 0.12 : 0.04;
+            if (kind != TowerItemKind.Energy && r.NextDouble() < mushChance) kind = TowerItemKind.Mushroom;
             if (kind.HasValue)
             {
                 float x = p.Kind == PlatformKind.Moving ? p.X : p.Left + 0.5f + (float)r.NextDouble() * Math.Max(0f, p.Width - 1f);

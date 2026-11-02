@@ -19,6 +19,8 @@ namespace JellyDrop.Core.Runner
         /// <summary>Floating coin, only reachable with a jump.</summary>
         public bool High;
         public bool Taken;
+        /// <summary>A mushroom instead of a coin.</summary>
+        public bool Mushroom;
     }
 
     /// <summary>
@@ -79,10 +81,15 @@ namespace JellyDrop.Core.Runner
         private float _jump = -1f;
         private float _slide = -1f;
 
-        public RunnerSession(int seed)
+        public RunnerSession(int seed, int lives = StartLives)
         {
             _rng = new Random(seed);
+            _itemRng = new Random(seed * 17 + 3);
+            Lives = Math.Max(1, lives);
         }
+
+        private readonly Random _itemRng;
+        public int Mushrooms { get; private set; }
 
         public void Start() => Generate();
 
@@ -195,7 +202,8 @@ namespace JellyDrop.Core.Runner
                 bool reachable = c.High ? Height > 0.9f : Height < 1.2f;
                 if (!reachable) continue;
                 c.Taken = true;
-                Coins++;
+                if (c.Mushroom) Mushrooms++;
+                else Coins++;
                 CoinCollected?.Invoke(c);
             }
         }
@@ -253,7 +261,7 @@ namespace JellyDrop.Core.Runner
                 // A trail leading up to the row; over a low barrier the last coins float, so they take a jump.
                 float z = o == RunObstacle.None ? row.Z - 4f + i * 1.6f : row.Z - (count - 1 - i) * 1.6f;
                 bool high = o == RunObstacle.Low && i >= count - 2;
-                var coin = new RunCoin { Lane = lane, Z = z, High = high };
+                var coin = new RunCoin { Lane = lane, Z = z, High = high, Mushroom = _itemRng.NextDouble() < 0.04 };
                 _coins.Add(coin);
                 CoinSpawned?.Invoke(coin);
             }

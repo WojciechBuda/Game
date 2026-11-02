@@ -10,6 +10,7 @@ namespace JellyDrop.Core
         public Int2 Origin;
         public bool Golden;
         public int CoinCellIndex = -1;
+        public bool Mushroom;
 
         public Int2[] LocalCells => PieceData.GetCells(Type, Rotation);
 
@@ -29,6 +30,7 @@ namespace JellyDrop.Core
         public bool BackToBack;
         public bool IsQuad => LineCount >= 4;
         public int CoinCells;
+        public int MushroomCells;
         public bool HadGolden;
     }
 
@@ -62,6 +64,8 @@ namespace JellyDrop.Core
         public float TimeSeconds;
         /// <summary>Coins collected during play (coin cells, golden clears, lucky bonuses).</summary>
         public int CoinsCollected;
+        /// <summary>Mushrooms picked by clearing rows with mushroom cells.</summary>
+        public int Mushrooms;
         public Difficulty Difficulty = Difficulty.Normal;
         /// <summary>Level number on the path (Level and Boost modes), otherwise 0.</summary>
         public int LevelNumber;
@@ -129,6 +133,7 @@ namespace JellyDrop.Core
         public int Lines { get; private set; }
         public int Level { get; private set; }
         public int CoinsCollected { get; private set; }
+        public int MushroomsCollected { get; private set; }
         public float ElapsedSeconds { get; private set; }
         public bool IsOver { get; private set; }
         public bool Completed { get; private set; }
@@ -357,7 +362,8 @@ namespace JellyDrop.Core
                     {
                         Type = Current.Type,
                         Golden = Current.Golden,
-                        CoinCellIndex = Current.CoinCellIndex
+                        CoinCellIndex = Current.CoinCellIndex,
+                        Mushroom = Current.Mushroom
                     });
                     SpawnPiece(new QueuedPiece { Type = PieceType.Bomb, CoinCellIndex = -1 });
                     break;
@@ -487,6 +493,7 @@ namespace JellyDrop.Core
                 Rotation = 0,
                 Golden = queued.Golden,
                 CoinCellIndex = queued.CoinCellIndex,
+                Mushroom = queued.Mushroom,
                 Origin = PieceData.SpawnOrigin(queued.Type, Board.Width, _config.SpawnRow)
             };
             if (!keepHoldFlag) HoldUsedThisTurn = false;
@@ -529,7 +536,7 @@ namespace JellyDrop.Core
                     var p = piece.Origin + local[i];
                     var flags = CellFlags.None;
                     if (piece.Golden) flags |= CellFlags.Golden;
-                    if (i == piece.CoinCellIndex) flags |= CellFlags.Coin;
+                    if (i == piece.CoinCellIndex) flags |= piece.Mushroom ? CellFlags.Mushroom : CellFlags.Coin;
                     Board[p.x, p.y] = BoardCell.Of(piece.Type, flags);
                     if (p.y < Board.VisibleHeight) allAboveVisible = false;
                 }
@@ -627,6 +634,7 @@ namespace JellyDrop.Core
                 foreach (var cell in row.Cells)
                 {
                     if ((cell.Flags & CellFlags.Coin) != 0) result.CoinCells++;
+                    if ((cell.Flags & CellFlags.Mushroom) != 0) result.MushroomCells++;
                     if ((cell.Flags & CellFlags.Golden) != 0) result.HadGolden = true;
                 }
             }
@@ -645,6 +653,11 @@ namespace JellyDrop.Core
             }
             coins = Coins(coins);
             result.CoinsGained = coins;
+            if (result.MushroomCells > 0)
+            {
+                MushroomsCollected += result.MushroomCells;
+                Lucky?.Invoke(new LuckyEvent { Type = LuckyEventType.Mushroom, Coins = result.MushroomCells });
+            }
 
             Score += result.ScoreGained;
             CoinsCollected += coins;
@@ -732,6 +745,7 @@ namespace JellyDrop.Core
             Level = Level,
             TimeSeconds = ElapsedSeconds,
             CoinsCollected = CoinsCollected,
+            Mushrooms = MushroomsCollected,
             Difficulty = _config.Difficulty,
             LevelNumber = _config.LevelNumber,
             TargetScore = _config.TargetScore,

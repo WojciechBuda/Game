@@ -15,7 +15,8 @@ namespace JellyDrop.Interface
         private Text _coins;
         private Text _distance;
         private Text _hint;
-        private readonly Image[] _hearts = new Image[JellyDrop.Core.Runner.RunnerSession.StartLives];
+        private int _maxLives = 3;
+        private readonly Image[] _hearts = new Image[JellyDrop.Core.Runner.RunnerSession.StartLives + 1];
         private RectTransform _results;
         private Text _resultCoins;
         private Text _resultInfo;
@@ -77,7 +78,8 @@ namespace JellyDrop.Interface
             App.RunnerWorld.RunEnded += OnRunEnded;
             App.RunnerWorld.LivesChanged -= OnLives;
             App.RunnerWorld.LivesChanged += OnLives;
-            ShowLives(JellyDrop.Core.Runner.RunnerSession.StartLives);
+            _maxLives = JellyDrop.Core.Runner.RunnerSession.StartLives + (App.RunExtraLife ? 1 : 0);
+            ShowLives(_maxLives);
         }
 
         private void OnLives(int left)
@@ -91,7 +93,10 @@ namespace JellyDrop.Interface
         private void ShowLives(int left)
         {
             for (int i = 0; i < _hearts.Length; i++)
+            {
+                _hearts[i].gameObject.SetActive(i < _maxLives);
                 _hearts[i].color = i < left ? Color.white : new Color(1f, 1f, 1f, 0.18f);
+            }
         }
 
         protected override void OnHide()
@@ -136,7 +141,7 @@ namespace JellyDrop.Interface
             _pausedState = false;
             ShowLives(0);
             int best = App.Economy.Data.runBest;
-            int earned = App.Economy.ApplyRunResult(s.Coins, s.Distance, App.RunDoubled);
+            int earned = App.Economy.ApplyRunResult(s.Coins, s.Distance, App.RunDoubled, s.Mushrooms);
             App.Pet.OnGamePlayed();
             App.Save.Save(App.Economy.Data);
             bool record = (int)s.Distance > best;
@@ -147,6 +152,7 @@ namespace JellyDrop.Interface
             _again.SetLabel(tickets > 0 ? Loc.T("run.again_bonus", tickets) : Loc.T("run.again_free"));
             _again.Interactable = true;
             if (App.RunDoubled) _resultInfo.text += "\n" + Loc.T("run.doubled");
+            if (s.Mushrooms > 0) _resultInfo.text += "\n" + Loc.T("mush.picked", s.Mushrooms);
             _pause.gameObject.SetActive(false);
             _results.gameObject.SetActive(true);
             UIKit.Pop(_results, 0.8f, 0.4f);

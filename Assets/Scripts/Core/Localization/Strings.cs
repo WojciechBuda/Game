@@ -447,6 +447,21 @@ namespace JellyDrop.Core
             Add("privacy.deleted_title", "Data deleted", "Dane usunięte", "Daten gelöscht", "Datos borrados", "Données supprimées", "Dados apagados");
             Add("privacy.deleted_body", "Everything was deleted. The game will now close and start fresh next time.", "Wszystko zostało usunięte. Gra się teraz zamknie i następnym razem zacznie od nowa.", "Alles wurde gelöscht. Das Spiel wird jetzt beendet und startet beim nächsten Mal neu.", "Se ha borrado todo. El juego se cerrará y empezará de cero la próxima vez.", "Tout a été supprimé. Le jeu va se fermer et repartira de zéro.", "Tudo foi apagado. O jogo vai fechar e recomeçar da próxima vez.");
 
+            // Mushrooms
+            Add("mission.Mushrooms", "Mushroom hunt!", "Grzybobranie!", "Pilzsuche!", "¡A por setas!", "Cueillette de champignons !", "Apanha de cogumelos!");
+            Add("mission.Mushrooms.do", "Picked {0}/{1}", "Zebrane {0}/{1}", "Gesammelt {0}/{1}", "Recogidas {0}/{1}", "Cueillis {0}/{1}", "Apanhados {0}/{1}");
+            Add("mission.Mushrooms.body", "Mushrooms pop up around the village for a moment. Pick {0} in {1} seconds!", "Grzyby wyrastają na chwilę przy domach. Zbierz {0} w {1} sekund!", "Pilze tauchen kurz im Dorf auf. Sammle {0} in {1} Sekunden!", "Aparecen setas por el pueblo un momento. ¡Recoge {0} en {1} segundos!", "Des champignons poussent un instant dans le village. Cueilles-en {0} en {1} secondes !", "Surgem cogumelos pela vila por um momento. Apanha {0} em {1} segundos!");
+            Add("fx.mushroom", "+{0} mushroom!", "+{0} grzyb!", "+{0} Pilz!", "¡+{0} seta!", "+{0} champignon !", "+{0} cogumelo!");
+            Add("mush.picked", "Mushrooms picked: {0}", "Zebrane grzyby: {0}", "Gesammelte Pilze: {0}", "Setas recogidas: {0}", "Champignons cueillis : {0}", "Cogumelos apanhados: {0}");
+            Add("mush.count", "{0} mushrooms", "{0} grzybów", "{0} Pilze", "{0} setas", "{0} champignons", "{0} cogumelos");
+            Add("mush.extra_life", "+1 LIFE ({0})", "+1 ŻYCIE ({0})", "+1 LEBEN ({0})", "+1 VIDA ({0})", "+1 VIE ({0})", "+1 VIDA ({0})");
+            Add("mush.spring_start", "SPRING START ({0})", "START ZE SPRĘŻYNY ({0})", "FEDER-START ({0})", "SALTO INICIAL ({0})", "DÉPART RESSORT ({0})", "SALTO INICIAL ({0})");
+            Add("mush.not_enough", "Not enough goods - visit the forest!", "Za mało - zajrzyj do lasu!", "Nicht genug - geh in den Wald!", "No tienes suficiente: ¡ve al bosque!", "Pas assez - va dans la forêt !", "Não chega - vai à floresta!");
+            Add("market.sell", "Sell goods", "Sprzedaj towary", "Waren verkaufen", "Vender productos", "Vendre des produits", "Vender produtos");
+            Add("pet.item.mushroom_soup", "Mushroom soup", "Zupa grzybowa", "Pilzsuppe", "Sopa de setas", "Soupe aux champignons", "Sopa de cogumelos");
+            Add("pet.item.berry_bowl", "Berry bowl", "Miska jagód", "Beerenschale", "Cuenco de bayas", "Bol de baies", "Taça de bagas");
+            Add("pet.item.honey_toast", "Honey toast", "Tost z miodem", "Honigtoast", "Tostada con miel", "Tartine au miel", "Torrada com mel");
+
             // Tower climb
             Add("tower.title", "TOWER", "WIEŻA", "TURM", "TORRE", "TOUR", "TORRE");
             Add("tower.endless", "Endless tower", "Nieskończona wieża", "Endloser Turm", "Torre infinita", "Tour infinie", "Torre infinita");

@@ -188,10 +188,10 @@ namespace JellyDrop.Runner3D
 
         // ------------------------------------------------------------------ run lifecycle
 
-        public void Begin(int seed, Sprite avatar)
+        public void Begin(int seed, Sprite avatar, int lives = RunnerSession.StartLives)
         {
             End();
-            Session = new RunnerSession(seed);
+            Session = new RunnerSession(seed, lives);
             Session.RowSpawned += SpawnRow;
             Session.CoinSpawned += SpawnCoin;
             Session.CoinCollected += OnCoin;
@@ -263,11 +263,29 @@ namespace JellyDrop.Runner3D
             var go = new GameObject("Coin");
             go.transform.SetParent(_root, false);
             go.transform.localPosition = new Vector3(LaneX(coin.Lane), coin.High ? 2.0f : 0.7f, coin.Z);
-            go.AddComponent<MeshFilter>().sharedMesh = _coinMesh;
+            go.AddComponent<MeshFilter>().sharedMesh = coin.Mushroom ? MushroomMesh : _coinMesh;
             var r = go.AddComponent<MeshRenderer>();
             r.sharedMaterial = MeshBuilder.SharedMaterial;
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _coinObjects[coin] = go.transform;
+        }
+
+        private static Mesh _mushroomMesh;
+        /// <summary>A little red-capped mushroom (also used on the islands).</summary>
+        public static Mesh MushroomMesh
+        {
+            get
+            {
+                if (_mushroomMesh != null) return _mushroomMesh;
+                var mb = new MeshBuilder();
+                mb.Cylinder(new Vector3(0, -0.3f, 0), 0.14f, 0.32f, ColorUtil.Hex("#F2E6D0"), 8);
+                mb.Sphere(new Vector3(0, 0.06f, 0), 0.34f, ColorUtil.Hex("#E0483E"), 4, 10);
+                mb.Disc(new Vector3(0, 0.0f, 0), 0.34f, ColorUtil.Hex("#A82A2A"), 12);
+                foreach (var p in new[] { new Vector3(0.15f, 0.3f, 0.12f), new Vector3(-0.14f, 0.28f, 0.16f), new Vector3(0.02f, 0.38f, -0.15f), new Vector3(-0.2f, 0.18f, -0.1f) })
+                    mb.Sphere(p, 0.06f, Color.white, 2, 5);
+                _mushroomMesh = mb.ToMesh("Mushroom");
+                return _mushroomMesh;
+            }
         }
 
         private void OnCoin(RunCoin coin)

@@ -21,6 +21,8 @@ namespace JellyDrop.Core
         public double BombPieceChance = 0;
         /// <summary>Chance of a row blast and of a column blast (each).</summary>
         public double LineBlastChance = 0;
+        /// <summary>Chance a piece carries a mushroom (clear its row to pick it).</summary>
+        public double MushroomPieceChance = 0;
 
         /// <summary>The surprise pieces used in the real game (tests keep them off for exact piece orders).</summary>
         public LuckyConfig WithSurprisePieces()
@@ -28,6 +30,7 @@ namespace JellyDrop.Core
             SmallPieceChance = 0.06;
             BombPieceChance = 0.02;
             LineBlastChance = 0.015;
+            MushroomPieceChance = 0.04;
             return this;
         }
 

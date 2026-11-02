@@ -127,6 +127,11 @@ namespace JellyDrop.Core.Economy
         public int paidSpinDay = -1, paidSpinsToday;
         public int coinBoostGames;           // games left with coins x2 (from the wheel)
 
+        // Forest & garden goods
+        public int mushrooms, goldMushrooms, berries, honey, eggs;
+        public bool runExtraLife;            // spend mushrooms for a 4th life in Block Run
+        public bool towerSpringStart;        // spend mushrooms for a spring start in the tower
+
         // Block Run bonus: tickets (one free each day, more from Boost levels) and best distance
         public int runTickets;
         public int runTicketDay = -1;

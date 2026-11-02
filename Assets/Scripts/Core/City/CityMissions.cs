@@ -14,11 +14,13 @@ namespace JellyDrop.Core.City
         Balloons = 2,
         /// <summary>A cat hides next to buildings and keeps moving: find it twice.</summary>
         Cat = 3,
+        /// <summary>Mushrooms pop up around the village for a moment: pick 5.</summary>
+        Mushrooms = 4,
     }
 
     public sealed class CityMissionReward
     {
-        public int Coins, Wood, Brick, Glass;
+        public int Coins, Wood, Brick, Glass, Mushrooms;
     }
 
     /// <summary>
@@ -28,7 +30,7 @@ namespace JellyDrop.Core.City
     public sealed class CityMissionService
     {
         public const long OfferSeconds = 2 * 3600;
-        public const int TypeCount = 4;
+        public const int TypeCount = 5;
 
         private readonly EconomyService _economy;
         private readonly CityService _city;
@@ -69,10 +71,11 @@ namespace JellyDrop.Core.City
         public int MissionsDone => Data.cityMissionsDone;
 
         public static float TimeLimit(CityMissionType t) =>
-            t == CityMissionType.Chicken ? 20f : t == CityMissionType.Thief ? 25f : t == CityMissionType.Balloons ? 20f : 18f;
+            t == CityMissionType.Chicken ? 20f : t == CityMissionType.Thief ? 25f : t == CityMissionType.Balloons ? 20f :
+            t == CityMissionType.Mushrooms ? 22f : 18f;
 
         public static int TapsNeeded(CityMissionType t) =>
-            t == CityMissionType.Balloons ? 6 : t == CityMissionType.Cat ? 2 : 3;
+            t == CityMissionType.Balloons ? 6 : t == CityMissionType.Cat ? 2 : t == CityMissionType.Mushrooms ? 5 : 3;
 
         public CityMissionReward RewardFor(CityMissionType t)
         {
@@ -85,6 +88,7 @@ namespace JellyDrop.Core.City
                 r.Brick = 1 + level / 4;
                 r.Glass = level >= 4 ? 1 + level / 6 : 0;
             }
+            if (t == CityMissionType.Mushrooms) r.Mushrooms = 4 + level / 3;
             return r;
         }
 
@@ -102,6 +106,7 @@ namespace JellyDrop.Core.City
                 Data.wood += reward.Wood;
                 Data.brick += reward.Brick;
                 Data.glass += reward.Glass;
+                Data.mushrooms += reward.Mushrooms;
                 Data.cityMissionsDone++;
                 Data.cityMissionNext = Now + 20 * 60 + _rng.Next(25 * 60);
             }

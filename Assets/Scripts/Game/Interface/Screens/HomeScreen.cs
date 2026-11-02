@@ -167,6 +167,7 @@ namespace JellyDrop.Interface
         private CandyButton _run;
         private Text _runInfo;
         private Text _towerInfo;
+        private CandyButton _extraLife;
         private readonly Dictionary<Difficulty, CandyButton> _difficultyButtons = new Dictionary<Difficulty, CandyButton>();
 
         protected override void Build()
@@ -220,6 +221,11 @@ namespace JellyDrop.Interface
             tower.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(235, -560), new Vector2(440, 160));
             _towerInfo = UIKit.Text(Root, "", 28, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(16);
             _towerInfo.rectTransform.At(UIKit.Center, new Vector2(235, -665), new Vector2(460, 50));
+            _extraLife = MushroomUi.Toggle(Root, UIKit.Center, new Vector2(-235, -745), new Vector2(440, 70), () =>
+            {
+                App.Economy.Data.runExtraLife = !App.Economy.Data.runExtraLife;
+                App.Economy.NotifyChanged();
+            });
         }
 
         public override void Refresh()
@@ -240,6 +246,7 @@ namespace JellyDrop.Interface
             _run.SetBadge(tickets);
             _run.Interactable = true;
             _runInfo.text = tickets > 0 ? Loc.T("run.info_bonus", tickets) : Loc.T("run.info", e.Data.runBest);
+            MushroomUi.Refresh(_extraLife, e.Data.runExtraLife, e.Mushrooms, "mush.extra_life");
             _towerInfo.text = Loc.T("tower.arcade_info", App.Tower.Cleared, JellyDrop.Core.Tower.TowerCatalog.Count, App.Tower.Best(JellyDrop.Core.Tower.TowerMode.Classic));
             int dailyBest = e.DailyChallengeBestToday;
             _dailyInfo.text = dailyBest > 0 ? Loc.T("home.daily_today", Loc.Number(dailyBest)) : Loc.T("home.daily_info");

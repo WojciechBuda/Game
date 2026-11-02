@@ -85,6 +85,7 @@ namespace JellyDrop.Interface
         private readonly List<CandyButton> _sceneryChips = new List<CandyButton>();
         private readonly Text[] _modeBest = new Text[3];
         private RectTransform _list;
+        private CandyButton _spring;
 
         protected override void Build()
         {
@@ -116,13 +117,18 @@ namespace JellyDrop.Interface
                 _modeBest[i].rectTransform.At(UIKit.Top, new Vector2(-340 + i * 340, -515), new Vector2(320, 44));
             }
             var modeInfo = UIKit.Text(Root, Loc.T("tower.modes_info"), 28, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(16);
-            modeInfo.rectTransform.At(UIKit.Top, new Vector2(0, -570), new Vector2(980, 60));
+            modeInfo.rectTransform.At(UIKit.Top, new Vector2(0, -560), new Vector2(980, 50));
+            _spring = MushroomUi.Toggle(Root, UIKit.Top, new Vector2(0, -625), new Vector2(720, 70), () =>
+            {
+                App.Economy.Data.towerSpringStart = !App.Economy.Data.towerSpringStart;
+                App.Economy.NotifyChanged();
+            });
 
             // Towers with a floor limit
             var towers = UIKit.Text(Root, Loc.T("tower.towers"), 50, ColorUtil.Ink).Fit(26);
-            towers.rectTransform.At(UIKit.Top, new Vector2(0, -660), new Vector2(900, 70));
+            towers.rectTransform.At(UIKit.Top, new Vector2(0, -700), new Vector2(900, 70));
             var viewport = UIKit.Panel(Root, ColorUtil.Glass, 0.8f, true, "Viewport");
-            viewport.rectTransform.Fill(30, 60, 30, 720);
+            viewport.rectTransform.Fill(30, 60, 30, 750);
             viewport.gameObject.AddComponent<RectMask2D>();
             _list = UIKit.Node("Content", viewport.transform);
             _list.anchorMin = new Vector2(0, 1);
@@ -152,6 +158,7 @@ namespace JellyDrop.Interface
             for (int i = 0; i < _sceneryChips.Count; i++)
                 _sceneryChips[i].transform.localScale = Vector3.one * ((int)t.Scenery == i ? 1.08f : 0.9f);
             for (int i = 0; i < 3; i++) _modeBest[i].text = Loc.T("tower.best", t.Best((TowerMode)i));
+            MushroomUi.Refresh(_spring, App.Economy.Data.towerSpringStart, App.Economy.Mushrooms, "mush.spring_start");
         }
 
         private void PickScenery(TowerScenery s)
@@ -361,13 +368,17 @@ namespace JellyDrop.Interface
         {
             _mode = mode;
             _towerIndex = -1;
-            Begin(new TowerSession(TowerConfig.Endless(mode, scenery), System.Environment.TickCount));
+            var cfg = TowerConfig.Endless(mode, scenery);
+            cfg.SpringStart = App.Economy.UseMushroomBoost(ref App.Economy.Data.towerSpringStart);
+            Begin(new TowerSession(cfg, System.Environment.TickCount));
         }
 
         public void BeginTower(int index)
         {
             _towerIndex = index;
-            Begin(new TowerSession(TowerCatalog.Get(index).Config(), System.Environment.TickCount));
+            var cfg = TowerCatalog.Get(index).Config();
+            cfg.SpringStart = App.Economy.UseMushroomBoost(ref App.Economy.Data.towerSpringStart);
+            Begin(new TowerSession(cfg, System.Environment.TickCount));
         }
 
         private void Begin(TowerSession session)
@@ -453,6 +464,7 @@ namespace JellyDrop.Interface
             if (got[(int)TowerItemKind.Wood] > 0) parts.Add(Loc.T("mission.supply", got[(int)TowerItemKind.Wood], Loc.T("supply.Wood")));
             if (got[(int)TowerItemKind.Brick] > 0) parts.Add(Loc.T("mission.supply", got[(int)TowerItemKind.Brick], Loc.T("supply.Brick")));
             if (got[(int)TowerItemKind.Glass] > 0) parts.Add(Loc.T("mission.supply", got[(int)TowerItemKind.Glass], Loc.T("supply.Glass")));
+            if (got[(int)TowerItemKind.Mushroom] > 0) parts.Add(Loc.T("mush.count", got[(int)TowerItemKind.Mushroom]));
             return string.Join(" · ", parts);
         }
 
@@ -924,6 +936,7 @@ namespace JellyDrop.Interface
                 case TowerItemKind.Wood: return CitySprites.SupplyIcon(JellyDrop.Core.City.Supply.Wood);
                 case TowerItemKind.Brick: return CitySprites.SupplyIcon(JellyDrop.Core.City.Supply.Brick);
                 case TowerItemKind.Glass: return CitySprites.SupplyIcon(JellyDrop.Core.City.Supply.Glass);
+                case TowerItemKind.Mushroom: return IslandSprites.Mushroom();
                 default: return SpriteFactory.Coin();
             }
         }

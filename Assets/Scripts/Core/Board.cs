@@ -8,7 +8,9 @@ namespace JellyDrop.Core
     {
         None = 0,
         Coin = 1,
-        Golden = 2
+        Golden = 2,
+        /// <summary>A mushroom to collect: clearing its row adds it to the player's mushrooms.</summary>
+        Mushroom = 4
     }
 
     /// <summary>One board cell. <see cref="Color"/> 0 means empty, otherwise (int)PieceType + 1.</summary>
