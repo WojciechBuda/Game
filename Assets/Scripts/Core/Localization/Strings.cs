@@ -473,7 +473,7 @@ namespace JellyDrop.Core
             Add("forest.missing.NotEnoughCoins", "Not enough coins", "Za mało monet", "Nicht genug Münzen", "Faltan monedas", "Pas assez de pièces", "Faltam moedas");
             Add("forest.missing.NotEnoughWood", "Not enough wood - chop some trees", "Za mało drewna - zetnij drzewa", "Nicht genug Holz - fälle Bäume", "Falta madera: tala árboles", "Pas assez de bois - coupe des arbres", "Falta madeira - corta árvores");
             Add("forest.missing.NotEnoughMushrooms", "Not enough mushrooms", "Za mało grzybów", "Nicht genug Pilze", "Faltan setas", "Pas assez de champignons", "Faltam cogumelos");
-            Add("forest.missing.MaxLevel", "", "", "", "", "", "");
+            Add("forest.missing.MaxLevel", "Fully upgraded!", "W pełni ulepszone!", "Voll ausgebaut!", "¡Al máximo!", "Au maximum !", "No máximo!");
             Add("forest.collect_honey", "COLLECT HONEY ({0})", "ZBIERZ MIÓD ({0})", "HONIG ERNTEN ({0})", "RECOGER MIEL ({0})", "RÉCOLTER LE MIEL ({0})", "APANHAR MEL ({0})");
             Add("forest.brew", "BREW A POWER-UP ({0})", "UWARZ WZMOCNIENIE ({0})", "POWER-UP BRAUEN ({0})", "PREPARAR POTENCIADOR ({0})", "PRÉPARER UN BONUS ({0})", "PREPARAR POWER-UP ({0})");
             Add("forest.brewed", "The herbalist brewed a power-up!", "Zielarka uwarzyła wzmocnienie!", "Die Kräuterfrau hat ein Power-up gebraut!", "¡La herbolaria preparó un potenciador!", "L'herboriste a préparé un bonus !", "A herbanária preparou um power-up!");
