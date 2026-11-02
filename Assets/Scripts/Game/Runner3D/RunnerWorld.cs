@@ -64,7 +64,7 @@ namespace JellyDrop.Runner3D
             camGo.transform.SetParent(transform, false);
             _cam = camGo.AddComponent<Camera>();
             _cam.clearFlags = CameraClearFlags.SolidColor;
-            _cam.backgroundColor = ColorUtil.Hex("#8DB8FF");
+            _cam.backgroundColor = ColorUtil.Hex("#161838");
             _cam.fieldOfView = 62f;
             _cam.nearClipPlane = 0.2f;
             _cam.farClipPlane = 140f;
@@ -76,8 +76,8 @@ namespace JellyDrop.Runner3D
             _light.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
             var l = _light.AddComponent<Light>();
             l.type = LightType.Directional;
-            l.color = ColorUtil.Hex("#FFF1DA");
-            l.intensity = 1.1f;
+            l.color = ColorUtil.Hex("#C9D2FF");
+            l.intensity = 0.95f;
             l.shadows = LightShadows.Soft;
             l.shadowStrength = 0.5f;
             _light.SetActive(false);
@@ -113,20 +113,20 @@ namespace JellyDrop.Runner3D
             mb.Clear(); // Low barrier: striped bar on two legs (jump over)
             foreach (var x in new[] { -0.75f, 0.75f }) mb.Box(new Vector3(x, 0, 0), new Vector3(0.12f, 0.75f, 0.12f), ColorUtil.Hex("#8D91A6"));
             for (int i = 0; i < 6; i++)
-                mb.Box(new Vector3(-0.75f + 0.25f + i * 0.25f - 0.125f, 0.45f, 0), new Vector3(0.25f, 0.26f, 0.16f), i % 2 == 0 ? ColorUtil.Hex("#FF5A6E") : Color.white);
+                mb.Box(new Vector3(-0.75f + 0.25f + i * 0.25f - 0.125f, 0.45f, 0), new Vector3(0.25f, 0.26f, 0.16f), i % 2 == 0 ? ColorUtil.Hex("#FF4FA3") : ColorUtil.Hex("#F2F0FF"));
             _lowMesh = mb.ToMesh("Low");
 
             mb.Clear(); // High gate: tall posts with a warning bar overhead (slide under)
             foreach (var x in new[] { -0.82f, 0.82f }) mb.Box(new Vector3(x, 0, 0), new Vector3(0.14f, 2.3f, 0.14f), ColorUtil.Hex("#5B5F80"));
             for (int i = 0; i < 6; i++)
-                mb.Box(new Vector3(-0.82f + 0.27f + i * 0.27f - 0.135f, 1.25f, 0), new Vector3(0.27f, 0.42f, 0.2f), i % 2 == 0 ? ColorUtil.Hex("#FFC93C") : ColorUtil.Hex("#2B2F5E"));
+                mb.Box(new Vector3(-0.82f + 0.27f + i * 0.27f - 0.135f, 1.25f, 0), new Vector3(0.27f, 0.42f, 0.2f), i % 2 == 0 ? ColorUtil.Hex("#3DE0FF") : ColorUtil.Hex("#1F2240"));
             _highMesh = mb.ToMesh("High");
 
             mb.Clear(); // Crate: a big wooden box blocking the lane
             float len = RunnerSession.BlockLength;
-            mb.Box(new Vector3(0, 0, len / 2f), new Vector3(1.55f, 1.7f, len), ColorUtil.Hex("#C98552"), ColorUtil.Hex("#DDA06A"));
+            mb.Box(new Vector3(0, 0, len / 2f), new Vector3(1.55f, 1.7f, len), ColorUtil.Hex("#4A3A7A"), ColorUtil.Hex("#5E4C96"));
             for (int i = 0; i < 3; i++)
-                mb.Box(new Vector3(0, 0.25f + i * 0.55f, -0.02f), new Vector3(1.58f, 0.08f, 0.06f), ColorUtil.Hex("#8A5A34"));
+                mb.Box(new Vector3(0, 0.25f + i * 0.55f, -0.02f), new Vector3(1.58f, 0.08f, 0.06f), ColorUtil.Hex("#FF4FA3"));
             mb.Box(new Vector3(0, 1.7f, len / 2f), new Vector3(0.5f, 0.35f, 0.5f), ColorUtil.Hex("#FF6F91"));
             _crateMesh = mb.ToMesh("Crate");
 
@@ -141,16 +141,25 @@ namespace JellyDrop.Runner3D
             var rng = new System.Random(index * 97 + 13);
             var mb = new MeshBuilder();
             float half = ChunkLength / 2f;
-            mb.Box(new Vector3(0, -0.2f, half), new Vector3(LaneWidth * 3f + 0.4f, 0.2f, ChunkLength), ColorUtil.Hex("#5C5F86"), ColorUtil.Hex("#6B6E98"));
+            mb.Box(new Vector3(0, -0.2f, half), new Vector3(LaneWidth * 3f + 0.4f, 0.2f, ChunkLength), ColorUtil.Hex("#1F2240"), ColorUtil.Hex("#272B4F"));
             for (int k = 0; k < 2; k++)
             {
                 float x = (k - 0.5f) * LaneWidth;
-                for (float z = 1f; z < ChunkLength; z += 3f) mb.Box(new Vector3(x, 0f, z), new Vector3(0.1f, 0.01f, 1.4f), ColorUtil.Hex("#E9ECFF"));
+                for (float z = 1f; z < ChunkLength; z += 3f) mb.Box(new Vector3(x, 0f, z), new Vector3(0.1f, 0.01f, 1.4f), ColorUtil.Hex("#3DE0FF"));
             }
             foreach (var side in new[] { -1f, 1f })
             {
-                mb.Box(new Vector3(side * (LaneWidth * 1.5f + 0.9f), -0.2f, half), new Vector3(1.4f, 0.32f, ChunkLength), ColorUtil.Hex("#D9D2C3"));
-                mb.Box(new Vector3(side * (LaneWidth * 1.5f + 6f), -0.25f, half), new Vector3(8.8f, 0.25f, ChunkLength), ColorUtil.Hex("#6CC56F"));
+                mb.Box(new Vector3(side * (LaneWidth * 1.5f + 0.9f), -0.2f, half), new Vector3(1.4f, 0.32f, ChunkLength), ColorUtil.Hex("#3A3F6E"));
+                // Neon edge along the track
+                mb.Box(new Vector3(side * (LaneWidth * 1.5f + 0.22f), 0.12f, half), new Vector3(0.06f, 0.06f, ChunkLength), side > 0 ? ColorUtil.Hex("#FF4FA3") : ColorUtil.Hex("#3DE0FF"));
+                mb.Box(new Vector3(side * (LaneWidth * 1.5f + 6f), -0.25f, half), new Vector3(8.8f, 0.25f, ChunkLength), ColorUtil.Hex("#173B3F"));
+                // Street lamps with glowing heads
+                for (float lz = 4f; lz < ChunkLength; lz += 12f)
+                {
+                    var lp = new Vector3(side * (LaneWidth * 1.5f + 1.2f), 0f, lz);
+                    mb.Box(lp, new Vector3(0.1f, 2.6f, 0.1f), ColorUtil.Hex("#2B2F5E"));
+                    mb.Sphere(lp + new Vector3(-side * 0.25f, 2.65f, 0f), 0.2f, side > 0 ? ColorUtil.Hex("#FFB3E0") : ColorUtil.Hex("#9FF3FF"), 4, 8);
+                }
                 for (float z = 3f; z < ChunkLength; z += 6f + (float)rng.NextDouble() * 3f)
                 {
                     var at = new Vector3(side * (LaneWidth * 1.5f + 3.6f + (float)rng.NextDouble() * 2f), 0f, z);
@@ -187,6 +196,7 @@ namespace JellyDrop.Runner3D
             Session.CoinSpawned += SpawnCoin;
             Session.CoinCollected += OnCoin;
             Session.Crashed += OnCrash;
+            Session.Hit += OnHit;
             _avatar.sprite = avatar;
             _laneX = 0f;
             _crashTime = -1f;
@@ -204,7 +214,7 @@ namespace JellyDrop.Runner3D
             RenderSettings.fogStartDistance = 40f;
             RenderSettings.fogEndDistance = 95f;
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = ColorUtil.Hex("#9DA6D8");
+            RenderSettings.ambientLight = ColorUtil.Hex("#4A5290");
             QualitySettings.shadowDistance = 45f;
 
             Session.Start();
@@ -271,6 +281,16 @@ namespace JellyDrop.Runner3D
             CoinPicked?.Invoke();
         }
 
+        private void OnHit(int livesLeft)
+        {
+            _audio.Play(Sfx.Bomb);
+            Haptics.Medium();
+            LivesChanged?.Invoke(livesLeft);
+        }
+
+        /// <summary>Raised when a life is lost (lives left).</summary>
+        public event System.Action<int> LivesChanged;
+
         private void OnCrash()
         {
             _crashTime = 0f;
@@ -321,6 +341,8 @@ namespace JellyDrop.Runner3D
             if (s.IsOver) _player.localRotation = Quaternion.Euler(0f, 0f, Mathf.Min(1f, Math.Max(0f, _crashTime)) * 75f);
             else _player.localRotation = Quaternion.Euler(0f, 0f, (_laneX - LaneX(s.Lane)) * -12f);
             _avatar.transform.rotation = _cam.transform.rotation;
+            // Blink while invincible after losing a life.
+            _avatar.enabled = s.Invincible <= 0f || Mathf.Repeat(s.Invincible * 10f, 1f) < 0.55f;
             _shadow.localPosition = new Vector3(_laneX, 0.02f, z);
             _shadow.localScale = Vector3.one * (1f - Mathf.Min(0.5f, s.Height * 0.25f));
 

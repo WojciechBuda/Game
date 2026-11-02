@@ -45,6 +45,14 @@ namespace JellyDrop.Core.Runner
         public event Action<RunCoin> CoinSpawned;
         public event Action<RunCoin> CoinCollected;
         public event Action Crashed;
+        /// <summary>Hit an obstacle but still has lives left (argument: lives left).</summary>
+        public event Action<int> Hit;
+
+        public const int StartLives = 3;
+        public const float InvincibleSeconds = 1.6f;
+        public int Lives { get; private set; } = StartLives;
+        /// <summary>Seconds of blinking after a hit, during which obstacles are passed through.</summary>
+        public float Invincible { get; private set; }
         public event Action<int> LaneChanged;
 
         public int Lane { get; private set; } = 1;
@@ -126,6 +134,7 @@ namespace JellyDrop.Core.Runner
         private void Step(float dt)
         {
             Time += dt;
+            if (Invincible > 0f) Invincible = Math.Max(0f, Invincible - dt);
             Speed = Math.Min(MaxSpeed, Speed + Acceleration * dt);
             if (_jump >= 0f) { _jump += dt; if (_jump >= JumpSeconds) _jump = -1f; }
             if (_slide >= 0f) { _slide += dt; if (_slide >= SlideSeconds) _slide = -1f; }
@@ -140,6 +149,7 @@ namespace JellyDrop.Core.Runner
 
         private void CheckCollisions(float from, float to)
         {
+            if (Invincible > 0f) return;
             foreach (var row in _rows)
             {
                 var o = row.Lanes[Lane];
@@ -158,8 +168,19 @@ namespace JellyDrop.Core.Runner
                 }
                 if (hit)
                 {
-                    IsOver = true;
-                    Crashed?.Invoke();
+                    Lives--;
+                    if (Lives <= 0)
+                    {
+                        IsOver = true;
+                        Crashed?.Invoke();
+                    }
+                    else
+                    {
+                        // Lose a life: blink for a moment and slow down a little.
+                        Invincible = InvincibleSeconds;
+                        Speed = Math.Max(StartSpeed, Speed * 0.8f);
+                        Hit?.Invoke(Lives);
+                    }
                     return;
                 }
             }

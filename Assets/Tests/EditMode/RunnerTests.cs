@@ -73,14 +73,19 @@ namespace JellyDrop.Tests
         }
 
         [Test]
-        public void HittingACrateEndsTheRun()
+        public void ThreeHitsEndTheRun()
         {
             var s = New(5);
             bool crashed = false;
+            int hits = 0;
             s.Crashed += () => crashed = true;
+            s.Hit += lives => { hits++; Assert.AreEqual(RunnerSession.StartLives - hits, lives); Assert.Greater(s.Invincible, 0f); };
+            Assert.AreEqual(3, s.Lives);
             for (int i = 0; i < 20000 && !s.IsOver; i++) s.Tick(1f / 60f); // never dodges
             Assert.IsTrue(s.IsOver);
             Assert.IsTrue(crashed);
+            Assert.AreEqual(2, hits);
+            Assert.AreEqual(0, s.Lives);
         }
 
         [Test]

@@ -27,6 +27,7 @@ namespace JellyDrop.Interface
                 case TowerScenery.Candy: return new Palette { Top = ColorUtil.Hex("#4A1F5E"), Bottom = ColorUtil.Hex("#E86FA8"), Wall = ColorUtil.Hex("#FFB3CF"), Platform = ColorUtil.Hex("#FF6F91"), Decor = ColorUtil.Hex("#FFE1EC") };
                 case TowerScenery.Jungle: return new Palette { Top = ColorUtil.Hex("#0B2E22"), Bottom = ColorUtil.Hex("#2F8F55"), Wall = ColorUtil.Hex("#6B4A2A"), Platform = ColorUtil.Hex("#8BD15C"), Decor = ColorUtil.Hex("#C8F59A") };
                 case TowerScenery.Space: return new Palette { Top = ColorUtil.Hex("#05061A"), Bottom = ColorUtil.Hex("#2A1A5E"), Wall = ColorUtil.Hex("#3B3F7A"), Platform = ColorUtil.Hex("#8E7CFF"), Decor = Color.white };
+                case TowerScenery.Forest: return new Palette { Top = ColorUtil.Hex("#0E2018"), Bottom = ColorUtil.Hex("#3E6B3A"), Wall = ColorUtil.Hex("#5A3E28"), Platform = ColorUtil.Hex("#8A5E3A"), Decor = ColorUtil.Hex("#E8F5B0") };
                 case TowerScenery.Lava: return new Palette { Top = ColorUtil.Hex("#220808"), Bottom = ColorUtil.Hex("#A8361A"), Wall = ColorUtil.Hex("#4A2626"), Platform = ColorUtil.Hex("#FF9F43"), Decor = ColorUtil.Hex("#FFC93C") };
                 default: return new Palette { Top = ColorUtil.Hex("#14305E"), Bottom = ColorUtil.Hex("#5FA8DE"), Wall = ColorUtil.Hex("#BFE6FF"), Platform = ColorUtil.Hex("#E8F6FF"), Decor = Color.white };
             }
@@ -97,12 +98,12 @@ namespace JellyDrop.Interface
             // Endless
             var endless = UIKit.Text(Root, Loc.T("tower.endless"), 50, ColorUtil.Ink).Fit(26);
             endless.rectTransform.At(UIKit.Top, new Vector2(0, -200), new Vector2(900, 70));
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < TowerSession.SceneryCount; i++)
             {
                 var sc = (TowerScenery)i;
                 var pal = TowerLook.Get(sc);
-                var chip = UIKit.Button(Root, Loc.T("tower.scenery." + sc), pal.Bottom, () => PickScenery(sc), new Vector2(196, 80), 26);
-                chip.GetComponent<RectTransform>().At(UIKit.Top, new Vector2(-412 + i * 206, -290), new Vector2(196, 80));
+                var chip = UIKit.Button(Root, Loc.T("tower.scenery." + sc), pal.Bottom, () => PickScenery(sc), new Vector2(160, 80), 24);
+                chip.GetComponent<RectTransform>().At(UIKit.Top, new Vector2(-420 + i * 168, -290), new Vector2(160, 80));
                 _sceneryChips.Add(chip);
             }
             Color[] modeColors = { ColorUtil.Pink, ColorUtil.Orange, ColorUtil.Blue };
@@ -148,7 +149,7 @@ namespace JellyDrop.Interface
         {
             _coins.text = Loc.Number(App.Economy.Coins);
             var t = App.Tower;
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < _sceneryChips.Count; i++)
                 _sceneryChips[i].transform.localScale = Vector3.one * ((int)t.Scenery == i ? 1.08f : 0.9f);
             for (int i = 0; i < 3; i++) _modeBest[i].text = Loc.T("tower.best", t.Best((TowerMode)i));
         }
@@ -211,28 +212,37 @@ namespace JellyDrop.Interface
     }
 
     /// <summary>
-    /// The tower climb itself, drawn with UI images: walls, platforms, the avatar, a combo meter and the
-    /// controls (hold left / right, hold jump). Arrow keys and space work in the editor.
+    /// The tower climb itself, drawn with UI images: a painted backdrop per scenery (scrolling with parallax),
+    /// textured walls, styled platforms, items to grab, animated critters and the avatar.
+    /// Touch: slide a finger left / right to run (like a joystick that follows the finger), double-tap to jump;
+    /// keep the finger down after the double tap to keep bouncing. Arrow keys and space work in the editor.
     /// </summary>
     public sealed class TowerScreen : UIScreen
     {
-        private const float Wall = 40f;
-        private const float BottomUi = 260f;
+        private const float Wall = 44f;
+        private const float BottomUi = 150f;
+        private const float WallTileH = 88f;
+        private const float PlatformH = 46f;
+        private const float DoubleTapTime = 0.32f;
 
         private RectTransform _field;
-        private Image _bgTop, _bgBottom, _wallL, _wallR;
+        private Image _bgTop, _bgBottom;
+        private readonly Image[] _backdrop = new Image[3];
+        private readonly List<Image> _wallTiles = new List<Image>();
         private RectTransform _avatar;
         private Image _avatarImage;
         private readonly Dictionary<TowerPlatform, Image> _views = new Dictionary<TowerPlatform, Image>();
         private readonly Stack<Image> _pool = new Stack<Image>();
-        private readonly List<RectTransform> _decor = new List<RectTransform>();
-        private readonly List<Vector2> _decorPos = new List<Vector2>();
-        private Text _floor, _score, _comboText, _hint;
+        private readonly Dictionary<TowerItem, Image> _itemViews = new Dictionary<TowerItem, Image>();
+        private readonly Stack<Image> _itemPool = new Stack<Image>();
+        private readonly List<Critter> _critters = new List<Critter>();
+        private Text _floor, _score, _comboText, _hint, _loot;
         private Image _comboBar;
         private RectTransform _results;
         private Text _resultTitle, _resultCoins, _resultInfo;
-        private HoldButton _left, _right, _jump;
         private CandyButton _pause;
+        private RectTransform _stick;
+        private RectTransform _stickKnob;
 
         private TowerSession _session;
         private TowerMode _mode;
@@ -240,7 +250,23 @@ namespace JellyDrop.Interface
         private bool _paused, _finished;
         private TowerScenery _shownScenery = (TowerScenery)(-1);
         private float _spin, _squash, _hintTime, _comboHold;
+        private float _lastCam;
         private readonly List<TowerPlatform> _remove = new List<TowerPlatform>();
+        private readonly List<TowerItem> _removeItems = new List<TowerItem>();
+
+        // Touch state
+        private bool _touching, _touchIgnored, _holdJump;
+        private float _anchorX, _touchX, _touchStart, _lastTapEnd = -10f, _jumpBuffer;
+        private Vector2 _touchStartPos;
+        private bool _lastWasTap;
+
+        private sealed class Critter
+        {
+            public Image Image;
+            public TowerArt.CritterKind Kind;
+            public Vector2 Pos, Vel;
+            public float Phase, Life;
+        }
 
         private float Scale => (_field.rect.width - 2 * Wall) / TowerSession.Width;
 
@@ -252,27 +278,29 @@ namespace JellyDrop.Interface
             _bgBottom.rectTransform.Fill();
             _bgTop = UIKit.Image(_field, SpriteFactory.Gradient(Color.white, new Color(1, 1, 1, 0)), Color.white, false, "BgTop");
             _bgTop.rectTransform.Fill();
-            for (int i = 0; i < 18; i++)
+            for (int i = 0; i < _backdrop.Length; i++)
             {
-                var d = UIKit.Image(_field, i % 3 == 0 ? SpriteFactory.Sparkle() : SpriteFactory.SoftDot(), Color.white, false, "Decor");
-                float size = 18 + (i * 37) % 30;
-                d.rectTransform.anchorMin = d.rectTransform.anchorMax = Vector2.zero;
-                d.rectTransform.sizeDelta = new Vector2(size, size);
-                _decor.Add(d.rectTransform);
-                _decorPos.Add(new Vector2((i * 0.379f) % 1f, (i * 0.617f) % 1f));
+                var b = UIKit.Image(_field, null, new Color(0.82f, 0.82f, 0.88f, 0.92f), false, "Backdrop");
+                b.rectTransform.anchorMin = b.rectTransform.anchorMax = Vector2.zero;
+                b.rectTransform.pivot = Vector2.zero;
+                _backdrop[i] = b;
             }
-            _wallL = UIKit.Image(_field, SpriteFactory.RoundedRect(), Color.white, false, "WallL");
-            _wallL.rectTransform.anchorMin = new Vector2(0, 0);
-            _wallL.rectTransform.anchorMax = new Vector2(0, 1);
-            _wallL.rectTransform.pivot = new Vector2(0, 0.5f);
-            _wallL.rectTransform.offsetMin = new Vector2(-20, -40);
-            _wallL.rectTransform.offsetMax = new Vector2(Wall, 40);
-            _wallR = UIKit.Image(_field, SpriteFactory.RoundedRect(), Color.white, false, "WallR");
-            _wallR.rectTransform.anchorMin = new Vector2(1, 0);
-            _wallR.rectTransform.anchorMax = new Vector2(1, 1);
-            _wallR.rectTransform.pivot = new Vector2(1, 0.5f);
-            _wallR.rectTransform.offsetMin = new Vector2(-Wall, -40);
-            _wallR.rectTransform.offsetMax = new Vector2(20, 40);
+            for (int i = 0; i < 14; i++)
+            {
+                var img = UIKit.Image(_field, null, Color.white, false, "Critter");
+                img.rectTransform.anchorMin = img.rectTransform.anchorMax = Vector2.zero;
+                _critters.Add(new Critter { Image = img, Life = -1f });
+            }
+            for (int side = 0; side < 2; side++)
+                for (int i = 0; i < 26; i++)
+                {
+                    var t = UIKit.Image(_field, null, Color.white, false, "Wall");
+                    var rt = t.rectTransform;
+                    rt.anchorMin = rt.anchorMax = new Vector2(side, 0);
+                    rt.pivot = new Vector2(side, 0);
+                    rt.sizeDelta = new Vector2(Wall, WallTileH);
+                    _wallTiles.Add(t);
+                }
 
             _avatarImage = UIKit.Image(_field, null, Color.white, false, "Avatar");
             _avatar = _avatarImage.rectTransform;
@@ -280,51 +308,48 @@ namespace JellyDrop.Interface
             _avatar.pivot = new Vector2(0.5f, 0.1f);
             _avatar.sizeDelta = new Vector2(120, 120);
 
+            // Floating joystick shown under the finger
+            var stick = UIKit.Image(Root, SpriteFactory.Circle(), new Color(1f, 1f, 1f, 0.12f), false, "Stick");
+            _stick = stick.rectTransform;
+            _stick.anchorMin = _stick.anchorMax = Vector2.zero;
+            _stick.sizeDelta = new Vector2(220, 220);
+            var knob = UIKit.Image(_stick, SpriteFactory.Circle(), new Color(1f, 1f, 1f, 0.4f), false, "Knob");
+            _stickKnob = knob.rectTransform;
+            _stickKnob.At(UIKit.Center, Vector2.zero, new Vector2(90, 90));
+            stick.gameObject.SetActive(false);
+
             // HUD
             _pause = UIKit.IconButton(Root, SpriteFactory.PauseIcon(), ColorUtil.Purple, TogglePause, 110);
-            _pause.GetComponent<RectTransform>().At(UIKit.TopLeft, new Vector2(80, -80), new Vector2(110, 110));
+            _pause.GetComponent<RectTransform>().At(UIKit.TopLeft, new Vector2(90, -80), new Vector2(110, 110));
             _floor = UIKit.Text(Root, "", 72, Color.white).Fit(30);
             _floor.rectTransform.At(UIKit.Top, new Vector2(0, -72), new Vector2(520, 100));
-            _score = UIKit.Text(Root, "", 36, ColorUtil.Gold, TextAnchor.MiddleRight, false).Fit(20);
-            _score.rectTransform.At(UIKit.TopRight, new Vector2(-170, -80), new Vector2(300, 60));
+            _score = UIKit.Text(Root, "", 36, ColorUtil.Gold, TextAnchor.MiddleRight, true).Fit(20);
+            _score.rectTransform.At(UIKit.TopRight, new Vector2(-180, -60), new Vector2(300, 56));
+            _loot = UIKit.Text(Root, "", 30, Color.white, TextAnchor.MiddleRight, true).Fit(16);
+            _loot.rectTransform.At(UIKit.TopRight, new Vector2(-180, -112), new Vector2(320, 48));
             _comboText = UIKit.Text(Root, "", 54, ColorUtil.Yellow).Fit(26);
             _comboText.rectTransform.At(UIKit.Top, new Vector2(0, -170), new Vector2(700, 80));
             _comboBar = UIKit.ProgressBar(Root, ColorUtil.Yellow, new Vector2(420, 26));
             _comboBar.transform.parent.GetComponent<RectTransform>().At(UIKit.Top, new Vector2(0, -225), new Vector2(420, 26));
             _hint = UIKit.Text(Root, Loc.T("tower.hint"), 40, Color.white, TextAnchor.MiddleCenter, true).Fit(22);
-            _hint.rectTransform.At(UIKit.Center, new Vector2(0, 200), new Vector2(940, 220));
-
-            // Controls
-            _left = Control(SpriteFactory.Triangle(), new Vector2(130, 130), 90f);
-            _right = Control(SpriteFactory.Triangle(), new Vector2(330, 130), -90f);
-            _jump = Control(SpriteFactory.PlayIcon(), new Vector2(-180, 130), 90f, true);
+            _hint.rectTransform.At(UIKit.Center, new Vector2(0, 200), new Vector2(940, 260));
 
             // Results card
             var card = UIKit.NeonCard(Root, ColorUtil.Gold, ColorUtil.Panel, 0.8f, true, "Results");
-            card.rectTransform.At(UIKit.Center, new Vector2(0, 40), new Vector2(880, 900));
+            card.rectTransform.At(UIKit.Center, new Vector2(0, 40), new Vector2(880, 960));
             _results = card.rectTransform;
             _resultTitle = UIKit.Text(_results, "", 76, ColorUtil.Gold).Fit(36);
             _resultTitle.rectTransform.At(UIKit.Top, new Vector2(0, -100), new Vector2(780, 120));
             var coin = UIKit.Image(_results, SpriteFactory.Coin(), Color.white);
-            coin.rectTransform.At(UIKit.Top, new Vector2(-120, -280), new Vector2(130, 130));
+            coin.rectTransform.At(UIKit.Top, new Vector2(-120, -270), new Vector2(130, 130));
             _resultCoins = UIKit.Text(_results, "", 96, ColorUtil.Ink, TextAnchor.MiddleLeft);
-            _resultCoins.rectTransform.At(UIKit.Top, new Vector2(110, -280), new Vector2(320, 140));
-            _resultInfo = UIKit.Text(_results, "", 38, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(22);
-            _resultInfo.rectTransform.At(UIKit.Top, new Vector2(0, -450), new Vector2(780, 180));
+            _resultCoins.rectTransform.At(UIKit.Top, new Vector2(110, -270), new Vector2(320, 140));
+            _resultInfo = UIKit.Text(_results, "", 36, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(20);
+            _resultInfo.rectTransform.At(UIKit.Top, new Vector2(0, -470), new Vector2(780, 240));
             var again = UIKit.Button(_results, Loc.T("tower.again"), ColorUtil.Pink, Again, new Vector2(620, 150), 52, SpriteFactory.PlayIcon());
             again.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 250), new Vector2(620, 150));
             var back = UIKit.Button(_results, Loc.T("run.back"), ColorUtil.Purple, App.OpenTowerMenu, new Vector2(620, 130), 46);
             back.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 90), new Vector2(620, 130));
-        }
-
-        private HoldButton Control(Sprite icon, Vector2 pos, float rotation, bool right = false)
-        {
-            var bg = UIKit.Image(Root, SpriteFactory.Circle(), new Color(1f, 1f, 1f, 0.18f), true, "Control");
-            bg.rectTransform.At(right ? new Vector2(1, 0) : new Vector2(0, 0), pos, new Vector2(right ? 230 : 180, right ? 230 : 180));
-            var ic = UIKit.Image(bg.rectTransform, icon, new Color(1f, 1f, 1f, 0.9f), false, "Icon");
-            ic.rectTransform.At(UIKit.Center, Vector2.zero, new Vector2(80, 80));
-            ic.rectTransform.localRotation = Quaternion.Euler(0, 0, rotation);
-            return bg.gameObject.AddComponent<HoldButton>();
         }
 
         // ------------------------------------------------------------------ start / end
@@ -348,21 +373,30 @@ namespace JellyDrop.Interface
             _session.Landed += OnLanded;
             _session.ComboEnded += OnComboEnded;
             _session.Bounced += () => Haptics.Tap();
+            _session.ItemCollected += OnItem;
             _paused = false;
             _finished = false;
             _spin = 0f;
             _squash = 0f;
-            _hintTime = 4f;
+            _hintTime = 5f;
             _comboHold = 0f;
             _comboText.text = "";
             _hint.text = Loc.T("tower.hint");
+            _touching = false;
+            _holdJump = false;
+            _jumpBuffer = 0f;
+            _stick.gameObject.SetActive(false);
             _results.gameObject.SetActive(false);
             _pause.gameObject.SetActive(true);
             foreach (var v in _views.Values) { v.gameObject.SetActive(false); _pool.Push(v); }
             _views.Clear();
+            foreach (var v in _itemViews.Values) { v.gameObject.SetActive(false); _itemPool.Push(v); }
+            _itemViews.Clear();
+            foreach (var c in _critters) { c.Life = -1f; c.Image.enabled = false; }
             _shownScenery = (TowerScenery)(-1);
+            _lastCam = 0f;
             _avatarImage.sprite = SpriteFactory.Avatar(App.Economy.EquippedAvatar, AvatarMood.Excited);
-            Render();
+            Render(0f);
         }
 
         private void Again()
@@ -391,15 +425,33 @@ namespace JellyDrop.Interface
                 _resultTitle.text = record ? Loc.T("tower.record") : Loc.T("tower.fell");
                 info = Loc.T("tower.result", s.HighestFloor, s.BestCombo, s.Score) + "\n" + Loc.T("tower.best", App.Tower.Best(_mode));
             }
+            // Everything picked up on the way is kept, even after a fall.
+            var got = s.Collected;
+            App.Tower.PayItems(got);
+            if (got[(int)TowerItemKind.Energy] > 0) App.Pet.AddEnergy(got[(int)TowerItemKind.Energy] * 15f);
+            coins += got[(int)TowerItemKind.Coin];
+            info += "\n" + LootText(got, true);
             App.Pet.OnGamePlayed();
             App.Save.Save(App.Economy.Data);
             _resultCoins.text = "+" + Loc.Number(coins);
             _resultInfo.text = info;
             _pause.gameObject.SetActive(false);
+            _stick.gameObject.SetActive(false);
             _results.gameObject.SetActive(true);
             UIKit.Pop(_results, 0.8f, 0.4f);
             App.Audio.Play(s.IsWon ? Sfx.Win : Sfx.GameOver);
             Haptics.Medium();
+        }
+
+        private static string LootText(int[] got, bool long_)
+        {
+            var parts = new List<string>();
+            if (long_ && got[(int)TowerItemKind.Coin] > 0) parts.Add(Loc.T("tower.loot.Coin", got[(int)TowerItemKind.Coin]));
+            if (got[(int)TowerItemKind.Energy] > 0) parts.Add(Loc.T("tower.loot.Energy", got[(int)TowerItemKind.Energy]));
+            if (got[(int)TowerItemKind.Wood] > 0) parts.Add(Loc.T("mission.supply", got[(int)TowerItemKind.Wood], Loc.T("supply.Wood")));
+            if (got[(int)TowerItemKind.Brick] > 0) parts.Add(Loc.T("mission.supply", got[(int)TowerItemKind.Brick], Loc.T("supply.Brick")));
+            if (got[(int)TowerItemKind.Glass] > 0) parts.Add(Loc.T("mission.supply", got[(int)TowerItemKind.Glass], Loc.T("supply.Glass")));
+            return string.Join(" · ", parts);
         }
 
         private void OnLanded(int floor, int jumped)
@@ -419,53 +471,143 @@ namespace JellyDrop.Interface
             App.Audio.Play(Sfx.Clear3);
         }
 
+        private void OnItem(TowerItem item)
+        {
+            App.Audio.Play(item.Kind == TowerItemKind.Coin ? Sfx.Coin : Sfx.PowerUp, 0.8f);
+            if (_itemViews.TryGetValue(item, out var v))
+            {
+                // Fly up and fade.
+                var img = v;
+                _itemViews.Remove(item);
+                var rt = img.rectTransform;
+                var from = rt.anchoredPosition;
+                Tweener.Run(0.35f, t =>
+                {
+                    rt.anchoredPosition = from + new Vector2(0, 90f * t);
+                    rt.localScale = Vector3.one * (1f + 0.6f * t);
+                    img.color = new Color(1, 1, 1, 1f - t);
+                }, Ease.OutQuad, () => { img.color = Color.white; rt.localScale = Vector3.one; img.gameObject.SetActive(false); _itemPool.Push(img); }, 0f, img);
+            }
+            UIKit.Punch(_loot.transform, 0.12f);
+        }
+
+        // ------------------------------------------------------------------ input
+
+        private void ReadInput(out float move, out bool jump)
+        {
+            move = 0f;
+            float dt = Time.deltaTime;
+            if (_jumpBuffer > 0f) _jumpBuffer -= dt;
+
+            bool down = PointerInput.TryGetPointer(out var pos);
+            float now = Time.unscaledTime;
+            if (down && !_touching)
+            {
+                _touching = true;
+                _touchIgnored = PointerInput.IsOverUi(pos);
+                _touchStart = now;
+                _touchStartPos = pos;
+                _anchorX = pos.x;
+                _touchX = pos.x;
+                // Second tap soon after a first one: jump, and keep bouncing while the finger stays down.
+                if (!_touchIgnored && _lastWasTap && now - _lastTapEnd < DoubleTapTime)
+                {
+                    _jumpBuffer = 0.25f;
+                    _holdJump = true;
+                }
+                if (!_touchIgnored)
+                {
+                    _stick.gameObject.SetActive(true);
+                    _stick.anchoredPosition = ToCanvas(pos);
+                }
+            }
+            else if (!down && _touching)
+            {
+                _touching = false;
+                bool tap = now - _touchStart < 0.25f && (pos - _touchStartPos).magnitude < Screen.height * 0.02f;
+                // A tap that was itself the second of a double tap doesn't start a new one.
+                _lastWasTap = tap && !_holdJump;
+                _lastTapEnd = now;
+                _holdJump = false;
+                _stick.gameObject.SetActive(false);
+            }
+
+            if (_touching && !_touchIgnored)
+            {
+                _touchX = pos.x;
+                float range = Screen.width * 0.09f;
+                float dx = _touchX - _anchorX;
+                // The joystick centre follows the finger when it goes past the edge (easy direction changes).
+                if (dx > range) _anchorX = _touchX - range;
+                if (dx < -range) _anchorX = _touchX + range;
+                dx = _touchX - _anchorX;
+                move = Mathf.Abs(dx) < range * 0.12f ? 0f : Mathf.Clamp(dx / range, -1f, 1f);
+                _stick.anchoredPosition = ToCanvas(new Vector2(_anchorX, _touchStartPos.y));
+                _stickKnob.anchoredPosition = new Vector2(move * 70f, 0f);
+            }
+
+            if (PointerInput.KeyHeld(GameKey.Left)) move = -1f;
+            if (PointerInput.KeyHeld(GameKey.Right)) move = 1f;
+            jump = _jumpBuffer > 0f || (_holdJump && _touching) || PointerInput.KeyHeld(GameKey.HardDrop);
+        }
+
+        private Vector2 ToCanvas(Vector2 screen)
+        {
+            RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)Root, screen, null, out var local);
+            var r = ((RectTransform)Root).rect;
+            return local - r.min;
+        }
+
         // ------------------------------------------------------------------ update
 
         private void Update()
         {
             if (_session == null) return;
+            float dt = Time.deltaTime;
             if (!_paused && !_finished)
             {
-                float move = 0f;
-                if (_left.Held || PointerInput.KeyHeld(GameKey.Left)) move -= 1f;
-                if (_right.Held || PointerInput.KeyHeld(GameKey.Right)) move += 1f;
-                bool jump = _jump.Held || PointerInput.KeyHeld(GameKey.HardDrop);
+                ReadInput(out float move, out bool jump);
                 int jumps = _session.Jumps;
-                _session.Step(Time.deltaTime, move, jump);
-                if (_session.Jumps != jumps) { App.Audio.Play(Sfx.Move); if (Mathf.Abs(_session.Vx) > 9f) _spin = 1f; }
+                _session.Step(dt, move, jump);
+                if (_session.Jumps != jumps)
+                {
+                    _jumpBuffer = 0f;
+                    App.Audio.Play(Sfx.Move);
+                    if (Mathf.Abs(_session.Vx) > 9f) _spin = 1f;
+                }
                 if (_session.IsOver || _session.IsWon) Finish();
             }
-            Render();
+            Render(_paused ? 0f : dt);
         }
 
-        private void Render()
+        private void Render(float dt)
         {
             var s = _session;
             float k = Scale;
             float cam = s.CameraY;
+            float w = _field.rect.width, h = _field.rect.height;
 
             var scenery = s.SceneryAt(s.HighestFloor);
-            if (scenery != _shownScenery)
-            {
-                _shownScenery = scenery;
-                var pal = TowerLook.Get(scenery);
-                _bgBottom.color = pal.Bottom;
-                _bgTop.color = pal.Top;
-                _wallL.color = _wallR.color = pal.Wall;
-                foreach (var d in _decor) d.GetComponent<Image>().color = PixelCanvas.WithAlpha(pal.Decor, 0.55f);
-                foreach (var kv in _views) Paint(kv.Value, kv.Key, pal);
-            }
+            if (scenery != _shownScenery) ApplyScenery(scenery);
 
-            // Decorations drift with parallax.
-            float w = _field.rect.width, h = _field.rect.height;
-            for (int i = 0; i < _decor.Count; i++)
+            // Backdrop (parallax) and walls (scroll with the tower)
+            float bh = w * TowerArt.BackH / (float)TowerArt.BackW;
+            float off = Mathf.Repeat(cam * k * 0.35f, bh);
+            for (int i = 0; i < _backdrop.Length; i++)
             {
-                float y = Mathf.Repeat(_decorPos[i].y * h - cam * k * 0.3f, h);
-                _decor[i].anchoredPosition = new Vector2(Wall + _decorPos[i].x * (w - 2 * Wall), y);
+                var rt = _backdrop[i].rectTransform;
+                rt.sizeDelta = new Vector2(w, bh + 1f);
+                rt.anchoredPosition = new Vector2(0, -off + i * bh);
+            }
+            float woff = Mathf.Repeat(cam * k, WallTileH);
+            int perSide = _wallTiles.Count / 2;
+            for (int i = 0; i < _wallTiles.Count; i++)
+            {
+                int row = i % perSide;
+                _wallTiles[i].rectTransform.anchoredPosition = new Vector2(0, -woff + row * WallTileH);
             }
 
             // Platforms
-            var palette = TowerLook.Get(_shownScenery);
             _remove.Clear();
             foreach (var kv in _views) _remove.Add(kv.Key);
             foreach (var p in s.Platforms)
@@ -477,13 +619,13 @@ namespace JellyDrop.Interface
                     view = _pool.Count > 0 ? _pool.Pop() : NewView();
                     view.gameObject.SetActive(true);
                     _views[p] = view;
-                    Paint(view, p, palette);
+                    Style(view, p);
                 }
                 var rt = view.rectTransform;
-                rt.anchoredPosition = new Vector2(Wall + p.Left * k, y);
-                rt.sizeDelta = new Vector2(p.Width * k, 34f);
+                rt.anchoredPosition = new Vector2(Wall + p.Left * k, y + 6f);
+                rt.sizeDelta = new Vector2(p.Width * k, PlatformH);
                 float alpha = p.Broken ? 0f : p.CrumbleTime >= 0f ? 0.4f + 0.6f * Mathf.Abs(Mathf.Sin(Time.time * 30f)) : 1f;
-                view.color = PixelCanvas.WithAlpha(view.color, alpha);
+                view.color = new Color(1f, 1f, 1f, alpha);
             }
             foreach (var p in _remove)
             {
@@ -493,8 +635,38 @@ namespace JellyDrop.Interface
                 _views.Remove(p);
             }
 
+            // Items (bob gently)
+            _removeItems.Clear();
+            foreach (var kv in _itemViews) _removeItems.Add(kv.Key);
+            foreach (var it in s.Items)
+            {
+                if (it.Taken) continue;
+                _removeItems.Remove(it);
+                if (!_itemViews.TryGetValue(it, out var img))
+                {
+                    img = _itemPool.Count > 0 ? _itemPool.Pop() : NewItemView();
+                    img.gameObject.SetActive(true);
+                    img.sprite = ItemSprite(it.Kind);
+                    img.color = Color.white;
+                    _itemViews[it] = img;
+                }
+                float bob = Mathf.Sin(Time.time * 3f + it.X) * 6f;
+                img.rectTransform.anchoredPosition = new Vector2(Wall + it.X * k, (it.Y - cam) * k + BottomUi + bob);
+                img.rectTransform.localRotation = it.Kind == TowerItemKind.Coin ? Quaternion.identity : Quaternion.Euler(0, 0, Mathf.Sin(Time.time * 2f + it.Y) * 10f);
+            }
+            foreach (var it in _removeItems)
+            {
+                var v = _itemViews[it];
+                v.gameObject.SetActive(false);
+                _itemPool.Push(v);
+                _itemViews.Remove(it);
+            }
+
+            UpdateCritters(dt, (cam - _lastCam) * k, w, h);
+            _lastCam = cam;
+
             // Avatar: squash on landing, spin on fast jumps.
-            _avatar.anchoredPosition = new Vector2(Wall + s.X * k, (s.Y - cam) * k + BottomUi + 30f);
+            _avatar.anchoredPosition = new Vector2(Wall + s.X * k, (s.Y - cam) * k + BottomUi + 6f + PlatformH - 10f);
             _squash = Mathf.Max(0f, _squash - Time.deltaTime * 5f);
             float sq = 1f + Mathf.Sin(_squash * Mathf.PI) * 0.25f;
             _avatar.localScale = new Vector3(Mathf.Sign(s.Vx == 0 ? 1 : s.Vx) * sq, 1f / sq, 1f);
@@ -504,6 +676,7 @@ namespace JellyDrop.Interface
             // HUD
             _floor.text = s.Config.Floors > 0 ? Loc.T("tower.floor_of", s.HighestFloor, s.Config.Floors) : Loc.T("tower.floor", s.HighestFloor);
             _score.text = Loc.Number(s.Score);
+            _loot.text = Loc.T("tower.loot.Coin", s.Collected[(int)TowerItemKind.Coin]) + "  " + LootText(s.Collected, false);
             if (s.Combo > 0)
             {
                 _comboText.text = Loc.T("tower.combo", s.Combo);
@@ -524,22 +697,215 @@ namespace JellyDrop.Interface
             else if (!_paused) _hint.color = new Color(1f, 1f, 1f, 0f);
         }
 
+        private void ApplyScenery(TowerScenery scenery)
+        {
+            _shownScenery = scenery;
+            var pal = TowerLook.Get(scenery);
+            _bgBottom.color = pal.Bottom;
+            _bgTop.color = pal.Top;
+            var back = TowerArt.Backdrop(scenery);
+            foreach (var b in _backdrop) b.sprite = back;
+            var wall = TowerArt.Wall(scenery);
+            foreach (var t in _wallTiles) t.sprite = wall;
+            foreach (var kv in _views) Style(kv.Value, kv.Key);
+            var kinds = TowerArt.CrittersFor(scenery);
+            for (int i = 0; i < _critters.Count; i++)
+            {
+                _critters[i].Kind = kinds[i % kinds.Length];
+                _critters[i].Life = -1f - i * 0.6f; // stagger their first appearance
+                _critters[i].Image.enabled = false;
+            }
+        }
+
+        // ------------------------------------------------------------------ critters
+
+        private void UpdateCritters(float dt, float scrolled, float w, float h)
+        {
+            foreach (var c in _critters)
+            {
+                var img = c.Image;
+                if (c.Life < 0f)
+                {
+                    c.Life += dt;
+                    if (c.Life >= 0f) Spawn(c, w, h);
+                    continue;
+                }
+                c.Life += dt;
+                c.Phase += dt;
+                c.Pos += c.Vel * dt;
+                c.Pos.y -= scrolled * 0.6f; // drift with the tower a bit
+                var rt = img.rectTransform;
+                switch (c.Kind)
+                {
+                    case TowerArt.CritterKind.Bird:
+                    case TowerArt.CritterKind.Butterfly:
+                    {
+                        float flap = c.Kind == TowerArt.CritterKind.Bird ? 0.16f : 0.1f;
+                        img.sprite = TowerArt.Critter(c.Kind, (int)(c.Phase / flap) % 2);
+                        if (c.Kind == TowerArt.CritterKind.Butterfly) c.Vel.y = Mathf.Sin(c.Phase * 3f) * 60f;
+                        else c.Pos.y += Mathf.Sin(c.Phase * 2f) * 20f * dt;
+                        rt.localScale = new Vector3(c.Vel.x < 0 ? -1f : 1f, 1f, 1f);
+                        break;
+                    }
+                    case TowerArt.CritterKind.Leaf:
+                    case TowerArt.CritterKind.Snow:
+                    case TowerArt.CritterKind.Sprinkle:
+                        c.Pos.x += Mathf.Sin(c.Phase * 1.7f) * 40f * dt;
+                        rt.localRotation = Quaternion.Euler(0, 0, c.Phase * 90f);
+                        break;
+                    case TowerArt.CritterKind.Firefly:
+                        c.Vel += new Vector2(Mathf.Sin(c.Phase * 1.3f), Mathf.Cos(c.Phase * 1.1f)) * 30f * dt;
+                        img.color = PixelCanvas.WithAlpha(img.color, 0.35f + 0.65f * Mathf.Abs(Mathf.Sin(c.Phase * 2.5f)));
+                        break;
+                    case TowerArt.CritterKind.Ember:
+                    case TowerArt.CritterKind.Bubble:
+                        c.Pos.x += Mathf.Sin(c.Phase * 2f) * 25f * dt;
+                        if (c.Kind == TowerArt.CritterKind.Ember) img.color = PixelCanvas.WithAlpha(img.color, Mathf.Clamp01(1.5f - c.Life * 0.25f));
+                        break;
+                }
+                rt.anchoredPosition = c.Pos;
+                bool gone = c.Pos.x < -80 || c.Pos.x > w + 80 || c.Pos.y < -80 || c.Pos.y > h + 80 || c.Life > 14f;
+                if (gone) { img.enabled = false; c.Life = -Random.Range(0.5f, 4f); }
+            }
+        }
+
+        private void Spawn(Critter c, float w, float h)
+        {
+            var img = c.Image;
+            img.enabled = true;
+            img.sprite = TowerArt.Critter(c.Kind);
+            img.color = Color.white;
+            img.rectTransform.localRotation = Quaternion.identity;
+            img.rectTransform.localScale = Vector3.one;
+            float size = 46f;
+            switch (c.Kind)
+            {
+                case TowerArt.CritterKind.Bird:
+                {
+                    bool left = Random.value < 0.5f;
+                    c.Pos = new Vector2(left ? -60 : w + 60, Random.Range(h * 0.35f, h * 0.9f));
+                    c.Vel = new Vector2((left ? 1 : -1) * Random.Range(130f, 220f), 0f);
+                    size = Random.Range(44f, 64f);
+                    break;
+                }
+                case TowerArt.CritterKind.Butterfly:
+                {
+                    bool left = Random.value < 0.5f;
+                    c.Pos = new Vector2(left ? -40 : w + 40, Random.Range(h * 0.2f, h * 0.8f));
+                    c.Vel = new Vector2((left ? 1 : -1) * Random.Range(60f, 100f), 0f);
+                    size = 50f;
+                    break;
+                }
+                case TowerArt.CritterKind.Leaf:
+                    c.Pos = new Vector2(Random.Range(0, w), h + 40);
+                    c.Vel = new Vector2(0, -Random.Range(60f, 110f));
+                    img.sprite = TowerArt.Critter(c.Kind, Random.value < 0.5f ? 0 : 1);
+                    size = Random.Range(30f, 44f);
+                    break;
+                case TowerArt.CritterKind.Snow:
+                    c.Pos = new Vector2(Random.Range(0, w), h + 30);
+                    c.Vel = new Vector2(0, -Random.Range(50f, 100f));
+                    size = Random.Range(16f, 30f);
+                    img.color = new Color(1, 1, 1, 0.85f);
+                    break;
+                case TowerArt.CritterKind.Sprinkle:
+                    c.Pos = new Vector2(Random.Range(0, w), h + 30);
+                    c.Vel = new Vector2(0, -Random.Range(70f, 120f));
+                    size = 26f;
+                    Color[] sc = { ColorUtil.Pink, ColorUtil.Yellow, ColorUtil.Blue, ColorUtil.Mint };
+                    img.color = sc[Random.Range(0, sc.Length)];
+                    break;
+                case TowerArt.CritterKind.Firefly:
+                    c.Pos = new Vector2(Random.Range(60, w - 60), Random.Range(h * 0.1f, h * 0.9f));
+                    c.Vel = Random.insideUnitCircle * 25f;
+                    size = Random.Range(20f, 34f);
+                    img.color = _shownScenery == TowerScenery.Space ? new Color(0.85f, 0.9f, 1f) : new Color(0.85f, 1f, 0.45f);
+                    break;
+                case TowerArt.CritterKind.Ember:
+                    c.Pos = new Vector2(Random.Range(0, w), -30);
+                    c.Vel = new Vector2(0, Random.Range(80f, 150f));
+                    size = Random.Range(16f, 30f);
+                    img.color = new Color(1f, Random.Range(0.45f, 0.75f), 0.2f);
+                    break;
+                case TowerArt.CritterKind.Bubble:
+                    c.Pos = new Vector2(Random.Range(0, w), -40);
+                    c.Vel = new Vector2(0, Random.Range(50f, 90f));
+                    size = Random.Range(24f, 48f);
+                    img.color = _shownScenery == TowerScenery.Lava ? new Color(1f, 0.6f, 0.3f, 0.7f) : new Color(1f, 1f, 1f, 0.8f);
+                    break;
+                case TowerArt.CritterKind.ShootingStar:
+                    c.Pos = new Vector2(Random.Range(w * 0.3f, w + 40), h + 40);
+                    c.Vel = new Vector2(-Random.Range(500f, 800f), -Random.Range(400f, 600f));
+                    size = 70f;
+                    img.rectTransform.localRotation = Quaternion.Euler(0, 0, 180f);
+                    break;
+            }
+            img.rectTransform.sizeDelta = new Vector2(size, size);
+            c.Life = 0f;
+            c.Phase = Random.Range(0f, 6f);
+        }
+
+        // ------------------------------------------------------------------ views
+
         private Image NewView()
         {
-            var img = UIKit.Image(_field, SpriteFactory.RoundedRect(), Color.white, false, "Platform");
+            var img = UIKit.Image(_field, null, Color.white, false, "Platform");
             img.type = Image.Type.Sliced;
             var rt = img.rectTransform;
             rt.anchorMin = rt.anchorMax = Vector2.zero;
             rt.pivot = new Vector2(0f, 1f);
-            var label = UIKit.Text(rt, "", 26, ColorUtil.FaceInk);
+            var mark = UIKit.Image(rt, null, Color.white, false, "Mark");
+            mark.rectTransform.At(UIKit.Top, new Vector2(0, 0), new Vector2(64, 40));
+            var label = UIKit.Text(rt, "", 26, Color.white, TextAnchor.MiddleCenter, true);
             label.rectTransform.Fill();
             _avatar.SetAsLastSibling();
             return img;
         }
 
-        private static void Paint(Image view, TowerPlatform p, TowerLook.Palette pal)
+        private Image NewItemView()
         {
-            view.color = TowerLook.KindColor(p.Kind, pal);
+            var img = UIKit.Image(_field, null, Color.white, false, "Item");
+            img.rectTransform.anchorMin = img.rectTransform.anchorMax = Vector2.zero;
+            img.rectTransform.sizeDelta = new Vector2(62, 62);
+            _avatar.SetAsLastSibling();
+            return img;
+        }
+
+        private static Sprite ItemSprite(TowerItemKind kind)
+        {
+            switch (kind)
+            {
+                case TowerItemKind.Energy: return PetSprites.Bolt();
+                case TowerItemKind.Wood: return CitySprites.SupplyIcon(JellyDrop.Core.City.Supply.Wood);
+                case TowerItemKind.Brick: return CitySprites.SupplyIcon(JellyDrop.Core.City.Supply.Brick);
+                case TowerItemKind.Glass: return CitySprites.SupplyIcon(JellyDrop.Core.City.Supply.Glass);
+                default: return SpriteFactory.Coin();
+            }
+        }
+
+        private void Style(Image view, TowerPlatform p)
+        {
+            view.sprite = TowerArt.Platform(_shownScenery, p.Kind);
+            var mark = view.transform.Find("Mark").GetComponent<Image>();
+            var mrt = mark.rectTransform;
+            switch (p.Kind)
+            {
+                case PlatformKind.Moving:
+                    mark.enabled = true; mark.sprite = TowerArt.Chevrons();
+                    mrt.At(UIKit.Center, new Vector2(0, -4), new Vector2(64, 32));
+                    break;
+                case PlatformKind.Spring:
+                    mark.enabled = true; mark.sprite = TowerArt.Spring();
+                    mrt.At(UIKit.Top, new Vector2(0, 30), new Vector2(64, 48));
+                    break;
+                case PlatformKind.Goal:
+                    mark.enabled = true; mark.sprite = TowerArt.Flag();
+                    mrt.At(UIKit.Top, new Vector2(120, 80), new Vector2(64, 96));
+                    break;
+                default:
+                    mark.enabled = false;
+                    break;
+            }
             var label = view.GetComponentInChildren<Text>();
             if (label != null)
                 label.text = p.Kind == PlatformKind.Goal ? Loc.T("tower.top") : p.Floor > 0 && p.Floor % 10 == 0 ? p.Floor.ToString() : "";
@@ -552,6 +918,8 @@ namespace JellyDrop.Interface
             _hint.text = _paused ? Loc.T("run.paused") : Loc.T("tower.hint");
             _hint.color = Color.white;
             _hintTime = _paused ? 0f : 1f;
+            _touching = false;
+            _stick.gameObject.SetActive(false);
         }
 
         protected override void OnHide()

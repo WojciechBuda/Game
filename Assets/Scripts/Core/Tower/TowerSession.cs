@@ -7,7 +7,17 @@ namespace JellyDrop.Core.Tower
     public enum TowerMode { Classic = 0, Speed = 1, Ice = 2 }
 
     /// <summary>Look of the tower (walls, platforms, background). Purely visual.</summary>
-    public enum TowerScenery { Ice = 0, Candy = 1, Jungle = 2, Space = 3, Lava = 4 }
+    public enum TowerScenery { Ice = 0, Candy = 1, Jungle = 2, Space = 3, Lava = 4, Forest = 5 }
+
+    /// <summary>Things to grab on the way up: coins, energy for the pet and supplies for the city.</summary>
+    public enum TowerItemKind { Coin = 0, Energy = 1, Wood = 2, Brick = 3, Glass = 4 }
+
+    public sealed class TowerItem
+    {
+        public TowerItemKind Kind;
+        public float X, Y;
+        public bool Taken;
+    }
 
     public enum PlatformKind { Normal, Ice, Moving, Crumble, Spring, Goal }
 
@@ -55,7 +65,9 @@ namespace JellyDrop.Core.Tower
     /// </summary>
     public sealed class TowerSession
     {
+        public const int SceneryCount = 6;
         public const float Width = 10f;
+        public const float PickupRadius = 0.85f;
         public const float Gap = 3f;
         public const float ViewHeight = 16f;
         public const float HalfBody = 0.4f;
@@ -93,6 +105,13 @@ namespace JellyDrop.Core.Tower
         public event Action<int> ComboEnded;
         public event Action Bounced;
         public event Action Finished;
+        public event Action<TowerItem> ItemCollected;
+
+        /// <summary>How many of each item were collected (index = (int)TowerItemKind).</summary>
+        public readonly int[] Collected = new int[5];
+        private readonly List<TowerItem> _items = new List<TowerItem>();
+        private Random _itemRng;
+        public IReadOnlyList<TowerItem> Items => _items;
 
         private readonly List<TowerPlatform> _platforms = new List<TowerPlatform>();
         private readonly Random _rng;
@@ -106,6 +125,7 @@ namespace JellyDrop.Core.Tower
         {
             Config = config;
             _rng = new Random(seed);
+            _itemRng = new Random(seed * 31 + 7);
             Generate(0);
             EnsureGenerated();
             Ground = _platforms[0];
@@ -114,7 +134,7 @@ namespace JellyDrop.Core.Tower
 
         /// <summary>The look for the current height (endless towers change every 50 floors).</summary>
         public TowerScenery SceneryAt(int floor) =>
-            Config.CycleScenery ? (TowerScenery)(((int)Config.Scenery + floor / 50) % 5) : Config.Scenery;
+            Config.CycleScenery ? (TowerScenery)(((int)Config.Scenery + floor / 50) % SceneryCount) : Config.Scenery;
 
         public bool IsMilestone(int floor) => Config.Floors == 0 && floor > 0 && floor % 50 == 0;
 
@@ -127,6 +147,7 @@ namespace JellyDrop.Core.Tower
             while (_generatedTo < need) Generate(_generatedTo + 1);
             // Forget floors far below the screen.
             _platforms.RemoveAll(p => p.Floor * Gap < CameraY - 4f && p != Ground);
+            _items.RemoveAll(i => i.Taken || i.Y < CameraY - 4f);
         }
 
         private float Rand(float a, float b) => a + (float)_rng.NextDouble() * (b - a);
@@ -160,6 +181,50 @@ namespace JellyDrop.Core.Tower
                 else if (!c.AllIce && (r -= c.IceChance) < 0) p.Kind = PlatformKind.Ice;
             }
             _platforms.Add(p);
+            SpawnItems(p);
+        }
+
+        /// <summary>Puts coins and the odd bonus above a platform (and sometimes a coin in the gap above it).</summary>
+        private void SpawnItems(TowerPlatform p)
+        {
+            if (p.Floor < 2 || p.Kind == PlatformKind.Goal) return;
+            var r = _itemRng;
+            float y = p.Floor * Gap + 0.9f;
+            double roll = r.NextDouble();
+            TowerItemKind? kind = null;
+            if (roll < 0.05) kind = TowerItemKind.Energy;
+            else if (roll < 0.11) kind = TowerItemKind.Wood;
+            else if (roll < 0.15) kind = TowerItemKind.Brick;
+            else if (roll < 0.175 && p.Floor >= 15) kind = TowerItemKind.Glass;
+            else if (roll < 0.6) kind = TowerItemKind.Coin;
+            if (kind.HasValue)
+            {
+                float x = p.Kind == PlatformKind.Moving ? p.X : p.Left + 0.5f + (float)r.NextDouble() * Math.Max(0f, p.Width - 1f);
+                _items.Add(new TowerItem { Kind = kind.Value, X = x, Y = y });
+                // Coins often come in a little row.
+                if (kind == TowerItemKind.Coin && p.Width > 3f && r.NextDouble() < 0.5)
+                {
+                    float x2 = Math.Min(p.Right - 0.4f, x + 0.9f);
+                    if (x2 > x + 0.5f) _items.Add(new TowerItem { Kind = TowerItemKind.Coin, X = x2, Y = y });
+                }
+            }
+            // A coin floating between floors rewards big jumps.
+            if (r.NextDouble() < 0.18)
+                _items.Add(new TowerItem { Kind = TowerItemKind.Coin, X = 1f + (float)r.NextDouble() * (Width - 2f), Y = p.Floor * Gap + Gap * 1.5f });
+        }
+
+        private void CollectItems()
+        {
+            float cy = Y + 0.5f;
+            foreach (var it in _items)
+            {
+                if (it.Taken) continue;
+                float dx = it.X - X, dy = it.Y - cy;
+                if (dx * dx + dy * dy > PickupRadius * PickupRadius) continue;
+                it.Taken = true;
+                Collected[(int)it.Kind]++;
+                ItemCollected?.Invoke(it);
+            }
         }
 
         // ------------------------------------------------------------------ simulation
@@ -234,6 +299,7 @@ namespace JellyDrop.Core.Tower
                 if (Vy <= 0f) TryLand(oldY);
             }
 
+            CollectItems();
             UpdateCombo(dt);
             UpdateCamera(dt);
             EnsureGenerated();

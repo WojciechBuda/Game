@@ -15,6 +15,7 @@ namespace JellyDrop.Interface
         private Text _coins;
         private Text _distance;
         private Text _hint;
+        private readonly Image[] _hearts = new Image[JellyDrop.Core.Runner.RunnerSession.StartLives];
         private RectTransform _results;
         private Text _resultCoins;
         private Text _resultInfo;
@@ -32,6 +33,11 @@ namespace JellyDrop.Interface
             pill.At(UIKit.TopRight, new Vector2(-150, -80), pill.sizeDelta);
             _distance = UIKit.Text(Root, "0 m", 76, Color.white).Fit(36);
             _distance.rectTransform.At(UIKit.Top, new Vector2(0, -80), new Vector2(420, 110));
+            for (int i = 0; i < _hearts.Length; i++)
+            {
+                _hearts[i] = UIKit.Image(Root, PetSprites.Heart(), Color.white, false, "Life");
+                _hearts[i].rectTransform.At(UIKit.Top, new Vector2(-80 + i * 80, -180), new Vector2(70, 70));
+            }
 
             _hint = UIKit.Text(Root, Loc.T("run.hint"), 40, Color.white, TextAnchor.MiddleCenter, true).Fit(22);
             _hint.rectTransform.At(UIKit.Center, new Vector2(0, 260), new Vector2(940, 200));
@@ -67,11 +73,29 @@ namespace JellyDrop.Interface
             _pause.gameObject.SetActive(true);
             App.RunnerWorld.RunEnded -= OnRunEnded;
             App.RunnerWorld.RunEnded += OnRunEnded;
+            App.RunnerWorld.LivesChanged -= OnLives;
+            App.RunnerWorld.LivesChanged += OnLives;
+            ShowLives(JellyDrop.Core.Runner.RunnerSession.StartLives);
+        }
+
+        private void OnLives(int left)
+        {
+            ShowLives(left);
+            if (left >= 0 && left < _hearts.Length) UIKit.Punch(_hearts[left].transform, 0.4f);
+            _hint.text = Loc.T("run.life_lost", left);
+            _hintTime = 1.4f;
+        }
+
+        private void ShowLives(int left)
+        {
+            for (int i = 0; i < _hearts.Length; i++)
+                _hearts[i].color = i < left ? Color.white : new Color(1f, 1f, 1f, 0.18f);
         }
 
         protected override void OnHide()
         {
             App.RunnerWorld.RunEnded -= OnRunEnded;
+            App.RunnerWorld.LivesChanged -= OnLives;
             App.RunnerWorld.End();
         }
 
@@ -108,6 +132,7 @@ namespace JellyDrop.Interface
             if (s == null || _finished) return;
             _finished = true;
             _pausedState = false;
+            ShowLives(0);
             int best = App.Economy.Data.runBest;
             int earned = App.Economy.ApplyRunResult(s.Coins, s.Distance);
             App.Pet.OnGamePlayed();

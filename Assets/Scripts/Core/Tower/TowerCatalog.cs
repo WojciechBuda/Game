@@ -53,7 +53,7 @@ namespace JellyDrop.Core.Tower
             {
                 Index = index,
                 Floors = FloorCounts[index],
-                Scenery = (TowerScenery)(index % 5),
+                Scenery = (TowerScenery)(index % TowerSession.SceneryCount),
                 Hazards = HazardSets[index],
                 Reward = 60 + 30 * index,
                 ReplayReward = 10 + 4 * index,
@@ -113,6 +113,19 @@ namespace JellyDrop.Core.Tower
             else coins = def.ReplayReward;
             Pay(coins);
             return coins;
+        }
+
+        /// <summary>
+        /// Pays what was picked up during a climb (coins and supplies; energy goes to the pet, see the caller).
+        /// </summary>
+        public void PayItems(int[] collected)
+        {
+            Data.coins += collected[(int)TowerItemKind.Coin];
+            Data.totalCoinsEarned += collected[(int)TowerItemKind.Coin];
+            Data.wood += collected[(int)TowerItemKind.Wood];
+            Data.brick += collected[(int)TowerItemKind.Brick];
+            Data.glass += collected[(int)TowerItemKind.Glass];
+            _economy.NotifyChanged();
         }
 
         private void Pay(int coins)

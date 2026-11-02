@@ -5,7 +5,7 @@
 import html, os
 
 DEVELOPER = "Wojciech Buda"
-CONTACT = "support@example.com"   # TODO: your public support e-mail
+CONTACT = "wojciech.buda6@gmail.com"
 DATE = {"en": "2 November 2026", "pl": "2 listopada 2026"}
 VERSION = 1
 

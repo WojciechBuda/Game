@@ -131,5 +131,40 @@ namespace JellyDrop.Tests
             Assert.IsFalse(record);
             Assert.AreEqual(120, t.Best(TowerMode.Speed));
         }
+
+        [Test]
+        public void ItemsAppearAndAreCollectedAndPaid()
+        {
+            var s = new TowerSession(TowerConfig.Endless(TowerMode.Classic, TowerScenery.Jungle), 11);
+            int events = 0;
+            s.ItemCollected += it => { events++; Assert.IsTrue(it.Taken); };
+            Assert.Greater(s.Items.Count, 0);
+            RunBot(s, 120f);
+            int total = 0;
+            foreach (var c in s.Collected) total += c;
+            Assert.Greater(total, 0, "the bot passes through items on its way up");
+            Assert.AreEqual(total, events);
+
+            var data = new PlayerData();
+            var economy = new EconomyService(data, Catalog.CreateDefault(), new EconomyConfig(), new FixedClock(1000));
+            data.coins = 0;
+            var t = new TowerService(economy);
+            t.PayItems(new[] { 7, 1, 2, 3, 4 });
+            Assert.AreEqual(7, data.coins);
+            Assert.GreaterOrEqual(data.wood, 2);
+            Assert.GreaterOrEqual(data.brick, 3);
+            Assert.GreaterOrEqual(data.glass, 4);
+        }
+
+        [Test]
+        public void EverySceneryIsUsedByTheTowers()
+        {
+            var seen = new bool[TowerSession.SceneryCount];
+            for (int i = 0; i < TowerCatalog.Count; i++) seen[(int)TowerCatalog.Get(i).Scenery] = true;
+            foreach (var b in seen) Assert.IsTrue(b);
+            var endless = new TowerSession(TowerConfig.Endless(TowerMode.Classic, TowerScenery.Lava), 1);
+            Assert.AreEqual(TowerScenery.Forest, endless.SceneryAt(50));
+            Assert.AreEqual(TowerScenery.Ice, endless.SceneryAt(100));
+        }
     }
 }

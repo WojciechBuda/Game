@@ -25,27 +25,23 @@ namespace JellyDrop.Interface
 
         protected override void Build()
         {
-            var card = BuildModalCard(new Vector2(960, 1720), ColorUtil.Panel, ColorUtil.Mint);
+            var card = BuildModalCard(new Vector2(980, 1760), ColorUtil.Panel, ColorUtil.Mint);
+            // Solid backdrop: the policy must be easy to read, nothing should show through.
+            var solid = Root.Find("Dim").GetComponent<Image>();
+            solid.color = new Color(0.03f, 0.035f, 0.09f, 0.96f);
             var title = UIKit.Text(card, Loc.T("settings.privacy_policy"), 60, ColorUtil.Mint).Fit(30);
             title.rectTransform.At(UIKit.Top, new Vector2(0, -80), new Vector2(820, 90));
             _intro = UIKit.Text(card, Loc.T("privacy.intro"), 32, ColorUtil.Ink, TextAnchor.MiddleCenter, true).Fit(18);
             _intro.rectTransform.At(UIKit.Top, new Vector2(0, -175), new Vector2(840, 100));
 
-            var viewport = UIKit.Panel(card, new Color(0, 0, 0, 0.18f), 0.6f, true, "Viewport");
-            viewport.rectTransform.Fill(40, 250, 40, 240);
+            var viewport = UIKit.Panel(card, ColorUtil.Hex("#14163A"), 0.6f, true, "Viewport");
+            viewport.rectTransform.Fill(36, 240, 36, 240);
             viewport.gameObject.AddComponent<RectMask2D>();
             _content = UIKit.Node("Content", viewport.transform);
             _content.anchorMin = new Vector2(0, 1);
             _content.anchorMax = new Vector2(1, 1);
             _content.pivot = new Vector2(0.5f, 1f);
             _content.offsetMin = _content.offsetMax = Vector2.zero;
-            var layout = _content.gameObject.AddComponent<VerticalLayoutGroup>();
-            layout.padding = new RectOffset(30, 30, 24, 40);
-            layout.spacing = 14;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = false;
             _scroll = viewport.gameObject.AddComponent<ScrollRect>();
             _scroll.viewport = viewport.rectTransform;
             _scroll.content = _content;
@@ -67,26 +63,45 @@ namespace JellyDrop.Interface
             Fill();
         }
 
+        private float _y;
+        private const float Pad = 34f;
+
         private void Fill()
         {
             UIKit.ClearChildren(_content);
+            _y = -28f;
             bool polish = Loc.Current == Language.Polish;
             var sections = polish ? PrivacyPolicyText.Polish : PrivacyPolicyText.English;
             Paragraph((polish ? "Obowiązuje od: " + PrivacyPolicyText.DatePl : "Effective: " + PrivacyPolicyText.DateEn), 28, ColorUtil.InkDim);
             if (!polish && Loc.Current != Language.English) Paragraph(Loc.T("privacy.english_only"), 28, ColorUtil.InkDim);
             foreach (var s in sections)
             {
-                Paragraph(s[0], 38, ColorUtil.Mint);
-                for (int i = 1; i < s.Length; i++) Paragraph(s[i], 29, ColorUtil.Ink);
+                _y -= 18f;
+                Paragraph(s[0], 40, ColorUtil.Mint);
+                for (int i = 1; i < s.Length; i++) Paragraph(s[i], 31, ColorUtil.Ink);
             }
+            _content.sizeDelta = new Vector2(0, -_y + 40f);
             _content.anchoredPosition = Vector2.zero;
         }
 
         private void Paragraph(string text, int size, Color color)
         {
+            // Laid out by hand: each paragraph gets the full width and exactly the height its text needs.
             var t = UIKit.Text(_content, text, size, color, TextAnchor.UpperLeft, false);
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.verticalOverflow = VerticalWrapMode.Overflow;
+            t.resizeTextForBestFit = false;
+            t.lineSpacing = 1.12f;
+            var rt = t.rectTransform;
+            rt.anchorMin = new Vector2(0, 1);
+            rt.anchorMax = new Vector2(1, 1);
+            rt.pivot = new Vector2(0.5f, 1f);
+            float width = ((RectTransform)_content.parent).rect.width - 2 * Pad;
+            var settings = t.GetGenerationSettings(new Vector2(Mathf.Max(100f, width), 0f));
+            float h = t.cachedTextGeneratorForLayout.GetPreferredHeight(text, settings) / t.pixelsPerUnit;
+            rt.anchoredPosition = new Vector2(0, _y);
+            rt.sizeDelta = new Vector2(-2 * Pad, h + 4f);
+            _y -= h + 16f;
         }
 
         private void Accept()

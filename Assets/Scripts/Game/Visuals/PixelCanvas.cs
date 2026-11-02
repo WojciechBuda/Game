@@ -70,6 +70,25 @@ namespace JellyDrop.Visuals
             }
         }
 
+        /// <summary>Like Paint, but only looks at pixels inside the box (much faster for small shapes on big canvases).</summary>
+        public void PaintIn(float x0, float y0, float x1, float y1, Func<float, float, float> sdf, Func<float, float, float, Color> shade, float softness = 1f)
+        {
+            int ix0 = Math.Max(0, (int)Math.Floor(x0) - 2), iy0 = Math.Max(0, (int)Math.Floor(y0) - 2);
+            int ix1 = Math.Min(Width - 1, (int)Math.Ceiling(x1) + 2), iy1 = Math.Min(Height - 1, (int)Math.Ceiling(y1) + 2);
+            for (int y = iy0; y <= iy1; y++)
+            {
+                float py = y + 0.5f;
+                for (int x = ix0; x <= ix1; x++)
+                {
+                    float px = x + 0.5f;
+                    float d = sdf(px, py);
+                    float coverage = Mathf.Clamp01(0.5f - d / softness);
+                    if (coverage <= 0f) continue;
+                    Blend(x, y, shade(px, py, d), coverage);
+                }
+            }
+        }
+
         public void Paint(Func<float, float, float> sdf, Color color, float softness = 1f) =>
             Paint(sdf, (x, y, d) => color, softness);
 

@@ -208,7 +208,7 @@ Both stores require a public privacy policy. It lives in `Tools/PrivacyPolicy/po
 - `privacy-policy.html` in the repo root (the public page for the store listing),
 - `Assets/Scripts/Game/Interface/PrivacyPolicyText.cs` (shown in the game: on first launch and in Settings > Privacy policy).
 
-Before publishing: set `CONTACT` in `policy.py` to your support e-mail and run `python3 Tools/PrivacyPolicy/policy.py`. Then publish the page with GitHub Pages (repo Settings > Pages > Deploy from a branch > `main` / root). The address, `https://wojciechbuda.github.io/Game/privacy-policy.html`, is already set in `MonetizationIds.PrivacyPolicyUrl`; paste it into the Play Console (App content > Privacy policy) too. If you change what the game collects, update the policy and raise `VERSION` so players see it again.
+To change the contact e-mail or the text, edit `policy.py` and run `python3 Tools/PrivacyPolicy/policy.py`. Then publish the page with GitHub Pages (repo Settings > Pages > Deploy from a branch > `main` / root). The address, `https://wojciechbuda.github.io/Game/privacy-policy.html`, is already set in `MonetizationIds.PrivacyPolicyUrl`; paste it into the Play Console (App content > Privacy policy) too. If you change what the game collects, update the policy and raise `VERSION` so players see it again.
 
 ## 6. Publishing checklist
 

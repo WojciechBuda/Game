@@ -436,6 +436,9 @@ namespace JellyDrop.Core
             Add("tower.scenery.Jungle", "Jungle", "Dżungla", "Dschungel", "Selva", "Jungle", "Selva");
             Add("tower.scenery.Space", "Space", "Kosmos", "Weltall", "Espacio", "Espace", "Espaço");
             Add("tower.scenery.Lava", "Lava", "Lawa", "Lava", "Lava", "Lave", "Lava");
+            Add("tower.scenery.Forest", "Forest", "Las", "Wald", "Bosque", "Forêt", "Floresta");
+            Add("tower.loot.Coin", "{0} coins", "{0} monet", "{0} Münzen", "{0} monedas", "{0} pièces", "{0} moedas");
+            Add("tower.loot.Energy", "{0} energy for your pet", "{0} energii dla pupila", "{0} Energie fürs Tier", "{0} energía para tu mascota", "{0} énergie pour ton compagnon", "{0} energia para o bichinho");
             Add("tower.best", "Best: floor {0}", "Rekord: piętro {0}", "Rekord: Etage {0}", "Récord: piso {0}", "Record : étage {0}", "Recorde: piso {0}");
             Add("tower.name", "{0}. {1} tower", "{0}. Wieża: {1}", "{0}. {1}-Turm", "{0}. Torre {1}", "{0}. Tour {1}", "{0}. Torre {1}");
             Add("tower.floors", "{0} floors", "{0} pięter", "{0} Etagen", "{0} pisos", "{0} étages", "{0} pisos");
@@ -449,7 +452,7 @@ namespace JellyDrop.Core
             Add("tower.hz.spring", "springs", "sprężyny", "Federn", "muelles", "ressorts", "molas");
             Add("tower.hz.fast", "fast rise", "szybkie tempo", "schneller Anstieg", "subida rápida", "montée rapide", "subida rápida");
             Add("tower.hz.narrow", "narrow floors", "wąskie piętra", "schmale Etagen", "pisos estrechos", "étages étroits", "pisos estreitos");
-            Add("tower.hint", "Hold the arrows to run, hold jump to bounce up. Run fast to jump higher - bounce off the walls!", "Trzymaj strzałki, żeby biec, trzymaj skok, żeby skakać. Im szybciej biegniesz, tym wyżej skaczesz - odbijaj się od ścian!", "Halte die Pfeile zum Laufen und Springen gedrückt. Je schneller, desto höher - prall von den Wänden ab!", "Mantén las flechas para correr y salto para saltar. ¡Cuanto más rápido, más alto! Rebota en las paredes.", "Maintiens les flèches pour courir et saut pour sauter. Plus tu cours vite, plus tu sautes haut - rebondis sur les murs !", "Segura as setas para correr e salto para saltar. Mais rápido = mais alto. Ressalta nas paredes!");
+            Add("tower.hint", "Slide your finger left / right to run. Double-tap to jump - keep the finger down to keep bouncing. Run fast to jump higher!", "Przesuwaj palec w lewo / prawo, żeby biec. Podwójne stuknięcie to skok - przytrzymaj palec, żeby skakać dalej. Im szybciej biegniesz, tym wyżej skaczesz!", "Wische nach links / rechts zum Laufen. Doppeltippen zum Springen - Finger halten, um weiter zu hüpfen. Je schneller, desto höher!", "Desliza el dedo a izquierda / derecha para correr. Doble toque para saltar; mantén el dedo para seguir saltando. ¡Cuanto más rápido, más alto!", "Glisse le doigt à gauche / droite pour courir. Double-tape pour sauter, garde le doigt pour rebondir. Plus vite = plus haut !", "Desliza o dedo para a esquerda / direita para correr. Toque duplo para saltar; mantém o dedo para continuar. Mais rápido = mais alto!");
             Add("tower.floor", "Floor {0}", "Piętro {0}", "Etage {0}", "Piso {0}", "Étage {0}", "Piso {0}");
             Add("tower.floor_of", "Floor {0} / {1}", "Piętro {0} / {1}", "Etage {0} / {1}", "Piso {0} / {1}", "Étage {0} / {1}", "Piso {0} / {1}");
             Add("tower.combo", "COMBO {0}", "COMBO {0}", "KOMBO {0}", "COMBO {0}", "COMBO {0}", "COMBO {0}");
@@ -676,6 +679,7 @@ namespace JellyDrop.Core
 
             // ---------------------------------------------------------------- Block Run bonus
             Same("run.title", "BLOCK RUN");
+            Add("run.life_lost", "Ouch! Lives left: {0}", "Auć! Zostało żyć: {0}", "Autsch! Noch {0} Leben", "¡Ay! Vidas: {0}", "Aïe ! Vies restantes : {0}", "Ai! Vidas: {0}");
             Add("run.hint", "Swipe left / right to change lanes\nup to jump, down to slide", "Przesuń w lewo / prawo, by zmienić tor\nw górę: skok, w dół: ślizg",
                 "Wische links / rechts für die Spur\nhoch: springen, runter: rutschen", "Desliza izq. / der. para cambiar de carril\narriba: saltar, abajo: deslizar",
                 "Glisse à gauche / droite pour changer de voie\nhaut : sauter, bas : glisser", "Deslize esq. / dir. para trocar de faixa\ncima: pular, baixo: deslizar");

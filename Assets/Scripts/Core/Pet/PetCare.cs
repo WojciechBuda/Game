@@ -321,6 +321,15 @@ namespace JellyDrop.Core.Pet
             Cared();
         }
 
+        /// <summary>Energy drinks picked up in the tower.</summary>
+        public void AddEnergy(float amount)
+        {
+            Tick();
+            Data.petEnergy = Clamp(Data.petEnergy + amount);
+            _economy.NotifyChanged();
+            Changed?.Invoke();
+        }
+
         /// <summary>Playing a level (or a mini game) together: fun, but tiring and makes it hungry.</summary>
         public void OnGamePlayed()
         {
