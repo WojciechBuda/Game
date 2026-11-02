@@ -25,6 +25,9 @@ namespace JellyDrop.Interface
         private Text _stars;
         private int _builtFor = -1;
         private int _builtStars = -1;
+        // The path is endless, so only the nodes near the visible area exist (rebuilt as you scroll).
+        private int _windowFrom = 1, _windowTo;
+        private const int WindowMargin = 12;
 
         protected override void Build()
         {
@@ -69,7 +72,8 @@ namespace JellyDrop.Interface
             Rebuild(force: false);
         }
 
-        private int VisibleLevels => Mathf.Max(30, Mathf.CeilToInt((App.Progress.CurrentLevel + 10) / 10f) * 10);
+        /// <summary>The path always shows 30 locked levels ahead of you, so it never seems to end.</summary>
+        private int VisibleLevels => Mathf.Max(50, App.Progress.CurrentLevel + 30);
 
         private float NodeX(int n) => Mathf.Sin(n * 0.9f) * 260f;
         private float NodeY(int n) => BottomPad + (n - 1) * Spacing; // from the bottom of the content
@@ -80,14 +84,58 @@ namespace JellyDrop.Interface
             if (!force && _builtFor == progress.CurrentLevel && _builtStars == progress.TotalStars) return;
             _builtFor = progress.CurrentLevel;
             _builtStars = progress.TotalStars;
-
-            UIKit.ClearChildren(_content);
             int count = VisibleLevels;
-            float height = BottomPad * 2 + (count - 1) * Spacing;
-            _content.sizeDelta = new Vector2(0, height);
+            _content.sizeDelta = new Vector2(0, BottomPad * 2 + (count - 1) * Spacing);
+            var (from, to) = VisibleRange(progress.CurrentLevel);
+            BuildWindow(from, to);
+        }
+
+        /// <summary>Levels currently on screen (plus a margin), or around <paramref name="focus"/> before layout.</summary>
+        private (int from, int to) VisibleRange(int focus)
+        {
+            int count = VisibleLevels;
+            float height = _content.sizeDelta.y;
+            float viewH = ((RectTransform)_scroll.viewport).rect.height;
+            int from, to;
+            if (viewH <= 1f)
+            {
+                from = focus - 8; to = focus + 8;
+            }
+            else
+            {
+                float top = height - _content.anchoredPosition.y;   // y from bottom at the top edge of the view
+                float bottom = top - viewH;
+                from = Mathf.FloorToInt((bottom - BottomPad) / Spacing) + 1;
+                to = Mathf.CeilToInt((top - BottomPad) / Spacing) + 1;
+            }
+            return (Mathf.Clamp(from, 1, count), Mathf.Clamp(to, 1, count));
+        }
+
+        private void Update()
+        {
+            if (_windowTo == 0) return;
+            var (from, to) = VisibleRange(App.Progress.CurrentLevel);
+            int count = VisibleLevels;
+            // Rebuild only when the view gets close to the edge of what is built.
+            bool nearBottom = from < _windowFrom + 3 && _windowFrom > 1;
+            bool nearTop = to > _windowTo - 3 && _windowTo < count;
+            if (nearBottom || nearTop) BuildWindow(from, to);
+        }
+
+        /// <summary>Builds the nodes for the visible levels plus a margin on both sides.</summary>
+        private void BuildWindow(int visibleFrom, int visibleTo)
+        {
+            var progress = App.Progress;
+            int count = VisibleLevels;
+            int from = Mathf.Max(1, visibleFrom - WindowMargin);
+            int to = Mathf.Min(count, visibleTo + WindowMargin);
+            UIKit.ClearChildren(_content);
+            _windowFrom = from;
+            _windowTo = to;
+            float height = _content.sizeDelta.y;
 
             // Trail dots first so the nodes draw on top.
-            for (int n = 1; n < count; n++)
+            for (int n = from; n < Mathf.Min(to + 1, count); n++)
             {
                 bool done = n < progress.CurrentLevel;
                 for (int k = 1; k <= 4; k++)
@@ -98,7 +146,7 @@ namespace JellyDrop.Interface
                 }
             }
 
-            for (int n = 1; n <= count; n++) BuildNode(n, height);
+            for (int n = from; n <= to; n++) BuildNode(n, height);
             _stars.text = progress.TotalStars.ToString();
         }
 
@@ -158,6 +206,9 @@ namespace JellyDrop.Interface
             if (contentH <= viewH) { _scroll.verticalNormalizedPosition = 0f; return; }
             float y = NodeY(App.Progress.CurrentLevel);
             _scroll.verticalNormalizedPosition = Mathf.Clamp01((y - viewH / 2f) / (contentH - viewH));
+            Canvas.ForceUpdateCanvases();
+            var (from, to) = VisibleRange(App.Progress.CurrentLevel);
+            BuildWindow(from, to);
         }
 
         private void OnNode(int level)

@@ -43,10 +43,29 @@ namespace JellyDrop.Tests
         }
 
         [Test]
+        public void ThePathIsEndlessAndStaysPlayable()
+        {
+            for (int n = LevelPath.HandTunedUntil + 1; n <= 5000; n++)
+            {
+                var d = LevelPath.Get(n);
+                Assert.AreEqual(n, d.Number);
+                if (d.IsBoost)
+                {
+                    Assert.IsTrue(d.StarScores[2] <= 70000, "boost stars level off");
+                    continue;
+                }
+                Assert.IsTrue(d.PieceLimit >= 44 && d.PieceLimit <= 56, "pieces stay in a fair range at " + n);
+                // Never asks for more than ~80% of what a strong player scores per piece at full speed.
+                Assert.IsTrue(d.TargetScore <= d.PieceLimit * LevelPath.ParPerPiece * 0.8f + 50, "target too high at " + n);
+                Assert.Greater(d.StarScores[2], d.StarScores[1]);
+            }
+        }
+
+        [Test]
         public void TargetsGrowAndStarsAreOrdered()
         {
             int previous = 0;
-            for (int n = 1; n < 60; n++)
+            for (int n = 1; n <= LevelPath.HandTunedUntil; n++)
             {
                 var d = LevelPath.Get(n);
                 if (d.IsBoost) continue;

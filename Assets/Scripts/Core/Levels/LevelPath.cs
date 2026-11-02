@@ -45,6 +45,12 @@ namespace JellyDrop.Core.Levels
 
         public static bool IsBoost(int number) => number > 0 && number % BoostEvery == 0;
 
+        /// <summary>Levels up to here use the original hand-tuned curve; after that the path is endless.</summary>
+        public const int HandTunedUntil = 40;
+
+        /// <summary>Points a strong player scores per piece at full speed with junk rows (measured with the test bot).</summary>
+        public const float ParPerPiece = 860f;
+
         public static LevelDef Get(int number)
         {
             if (number < 1) number = 1;
@@ -58,15 +64,30 @@ namespace JellyDrop.Core.Levels
                 def.StartSpeed = Math.Min(10, 1 + number / 8);
                 def.ScoreMultiplier = 2f;
                 def.LuckMultiplier = 2f;
-                float scale = 1f + (tier - 1) * 0.6f;
+                // Star scores grow with the tier but level off, because the speed stops rising (endless path).
+                float scale = Math.Min(7f, 1f + (tier - 1) * 0.6f);
                 def.StarScores = new[] { Round50(3000 * scale), Round50(6000 * scale), Round50(10000 * scale) };
                 return def;
             }
 
-            def.TargetScore = Round50(400 + 260 * number + 8 * number * number);
-            def.PieceLimit = 28 + number / 3;
             def.StartSpeed = Math.Min(12, 1 + number / 4);
             def.GarbageRows = number < 5 ? 0 : Math.Min(6, 1 + (number - 5) / 5);
+            if (number <= HandTunedUntil)
+            {
+                def.TargetScore = Round50(400 + 260 * number + 8 * number * number);
+                def.PieceLimit = 28 + number / 3;
+            }
+            else
+            {
+                // Endless levels. Speed is maxed out, so targets follow what the pieces can score:
+                // a varied piece budget, and a share of "par" that ramps up in each block of ten
+                // and slowly rises from block to block (leveling off, so it never becomes impossible).
+                int block = (number - HandTunedUntil - 1) / BoostEvery;
+                int inBlock = (number - HandTunedUntil - 1) % BoostEvery;
+                def.PieceLimit = 44 + (number * 7) % 13;
+                double share = 0.52 + 0.18 * (1.0 - Math.Exp(-block / 8.0)) + 0.01 * inBlock;
+                def.TargetScore = Round50((float)(def.PieceLimit * ParPerPiece * share));
+            }
             def.StarScores = new[] { def.TargetScore, Round50(def.TargetScore * 1.35f), Round50(def.TargetScore * 1.7f) };
             return def;
         }
@@ -120,7 +141,7 @@ namespace JellyDrop.Core.Levels
             }
 
             if (stars <= 0) return r;
-            r.Coins = 15 + 2 * def.Number + 8 * stars;
+            r.Coins = 15 + 2 * Math.Min(def.Number, 150) + 8 * stars;
             if (firstClear)
             {
                 r.Wood = 1 + (stars >= 2 ? 1 : 0);
