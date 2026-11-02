@@ -102,6 +102,12 @@ namespace JellyDrop.Core.Economy
         public List<int> seasonFreeClaimed = new List<int>();
         public List<int> seasonPremiumClaimed = new List<int>();
 
+        // Random village missions (catch the chicken, the thief...)
+        public int cityMissionType = -1;
+        public long cityMissionOfferEnds;
+        public long cityMissionNext;
+        public int cityMissionsDone;
+
         // Block Run bonus: tickets (one free each day, more from Boost levels) and best distance
         public int runTickets;
         public int runTicketDay = -1;

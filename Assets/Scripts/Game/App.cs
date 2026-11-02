@@ -37,6 +37,7 @@ namespace JellyDrop
         public IIapService Iap { get; private set; }
         public GameController Game { get; private set; }
         public CityService City { get; private set; }
+        public CityMissionService CityMissions { get; private set; }
         /// <summary>The 3D village shown behind the city screen.</summary>
         public CityWorld CityWorld { get; private set; }
         /// <summary>The 3D Block Run bonus.</summary>
@@ -108,6 +109,7 @@ namespace JellyDrop
             Save = new SaveService();
             Economy = new EconomyService(Save.Load(), Catalog.CreateDefault(), new EconomyConfig(), new SystemClock());
             City = new CityService(Economy);
+            CityMissions = new CityMissionService(Economy, City);
             Progress = new ProgressService(Economy);
             Loyalty = new LoyaltyService(Economy);
             Economy.CoinBonusPercent = () => City.CoinBonusPercent + Loyalty.CoinBonusPercent;

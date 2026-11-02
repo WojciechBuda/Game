@@ -42,6 +42,16 @@ namespace JellyDrop.City3D
         private float _iconTimer;
         private readonly System.Random _rng = new System.Random(7);
 
+        // Village missions
+        public event Action<int, int> MissionProgress;
+        public event Action<bool> MissionEnded;
+        public bool MissionActive { get; private set; }
+        public float MissionTimeLeft { get; private set; }
+        private JellyDrop.Core.City.CityMissionType _missionType;
+        private int _missionHits, _missionNeeded;
+        private readonly List<Transform> _targets = new List<Transform>();
+        private float _spawnTimer, _catTimer;
+
         // Camera rig
         private Vector3 _target;
         private float _zoom = 1f;
@@ -157,6 +167,7 @@ namespace JellyDrop.City3D
         {
             if (!IsActive) return;
             IsActive = false;
+            if (MissionActive) EndMission(false);
             _cam.enabled = false;
             _sun.SetActive(false);
             _root.gameObject.SetActive(false);
@@ -525,6 +536,7 @@ namespace JellyDrop.City3D
             }
 
             HandleInput();
+            UpdateMission(dt);
             UpdateCamera();
         }
 
@@ -593,8 +605,215 @@ namespace JellyDrop.City3D
             // Released
             _pressed = false;
             if (_ignore || _dragging) return;
+            if (MissionActive)
+            {
+                TapTargets(_pressPos);
+                return;
+            }
             int plot = PlotAt(_pressPos);
             if (plot >= 0) PlotTapped?.Invoke(plot);
+        }
+
+        // ------------------------------------------------------------------ village missions
+
+        /// <summary>Starts a mission: spawns what has to be caught / popped / found.</summary>
+        public void BeginMission(JellyDrop.Core.City.CityMissionType type)
+        {
+            CancelMission();
+            _missionType = type;
+            _missionHits = 0;
+            _missionNeeded = JellyDrop.Core.City.CityMissionService.TapsNeeded(type);
+            MissionTimeLeft = JellyDrop.Core.City.CityMissionService.TimeLimit(type);
+            MissionActive = true;
+            _spawnTimer = 0f;
+            _catTimer = 0f;
+            switch (type)
+            {
+                case JellyDrop.Core.City.CityMissionType.Chicken: SpawnRunner(ChickenMesh(), 3.0f, 0.25f); break;
+                case JellyDrop.Core.City.CityMissionType.Thief: SpawnRunner(ThiefMesh(), 2.6f, 0.12f); break;
+                case JellyDrop.Core.City.CityMissionType.Cat: SpawnCat(); break;
+                default: break; // balloons spawn over time
+            }
+            MissionProgress?.Invoke(_missionHits, _missionNeeded);
+        }
+
+        public void CancelMission()
+        {
+            foreach (var t in _targets) if (t != null) Destroy(t.gameObject);
+            _targets.Clear();
+            MissionActive = false;
+        }
+
+        private void EndMission(bool success)
+        {
+            foreach (var t in _targets) if (t != null) Puffs(t.position);
+            CancelMission();
+            MissionEnded?.Invoke(success);
+        }
+
+        private void UpdateMission(float dt)
+        {
+            if (!MissionActive) return;
+            MissionTimeLeft -= dt;
+            if (MissionTimeLeft <= 0f) { EndMission(false); return; }
+
+            if (_missionType == JellyDrop.Core.City.CityMissionType.Balloons)
+            {
+                _spawnTimer -= dt;
+                if (_spawnTimer <= 0f && _targets.Count < 4)
+                {
+                    _spawnTimer = 0.9f;
+                    SpawnBalloon();
+                }
+                for (int i = _targets.Count - 1; i >= 0; i--)
+                {
+                    var b = _targets[i];
+                    if (b == null) { _targets.RemoveAt(i); continue; }
+                    b.localPosition += new Vector3(Mathf.Sin(Time.time * 2f + i) * 0.4f * dt, 1.1f * dt, 0f);
+                    if (b.localPosition.y > 10f) { Destroy(b.gameObject); _targets.RemoveAt(i); }
+                }
+            }
+            else if (_missionType == JellyDrop.Core.City.CityMissionType.Cat)
+            {
+                _catTimer += dt;
+                if (_catTimer > 3.2f) MoveCat();
+            }
+        }
+
+        private void TapTargets(Vector2 screen)
+        {
+            float radius = Screen.height * 0.065f;
+            for (int i = 0; i < _targets.Count; i++)
+            {
+                var t = _targets[i];
+                if (t == null) continue;
+                var sp = _cam.WorldToScreenPoint(t.position + Vector3.up * 0.5f);
+                if (sp.z <= 0f) continue;
+                if ((new Vector2(sp.x, sp.y) - screen).magnitude > radius * Mathf.Clamp(20f / sp.z, 0.7f, 1.6f)) continue;
+                Hit(t, i);
+                return;
+            }
+        }
+
+        private void Hit(Transform target, int index)
+        {
+            _missionHits++;
+            Puffs(target.position);
+            switch (_missionType)
+            {
+                case JellyDrop.Core.City.CityMissionType.Balloons:
+                    Destroy(target.gameObject);
+                    _targets.RemoveAt(index);
+                    break;
+                case JellyDrop.Core.City.CityMissionType.Cat:
+                    MoveCat();
+                    break;
+                default:
+                    // Runners get faster every time you almost catch them.
+                    var w = target.GetComponent<Villager>();
+                    if (w != null) w.Speed += 0.7f;
+                    if (target.GetComponent<Squash>() == null) target.gameObject.AddComponent<Squash>();
+                    break;
+            }
+            MissionProgress?.Invoke(_missionHits, _missionNeeded);
+            if (_missionHits >= _missionNeeded) EndMission(true);
+        }
+
+        private void SpawnRunner(Mesh mesh, float speed, float hop)
+        {
+            var go = MeshObject("Runner", mesh);
+            go.transform.localScale = Vector3.one * 1.4f;
+            var v = go.AddComponent<Villager>();
+            v.Setup(this, _rng.Next(_nodes.Count), speed, _rng.Next());
+            v.NoWaits = true;
+            v.Hop = hop;
+            _targets.Add(go.transform);
+        }
+
+        private void SpawnBalloon()
+        {
+            var mb = new MeshBuilder();
+            string[] colors = { "#FF5A6E", "#3FB6FF", "#FFC93C", "#2ED3A0", "#B48CFF", "#FF9F43" };
+            var col = ColorUtil.Hex(colors[_rng.Next(colors.Length)]);
+            mb.Sphere(new Vector3(0, 0.45f, 0), 0.42f, col, 5, 9);
+            mb.Cone(new Vector3(0, -0.02f, 0), 0.1f, 0.1f, col, 6);
+            mb.Box(new Vector3(0, -0.9f, 0), new Vector3(0.03f, 0.9f, 0.03f), Color.white);
+            var go = mb.ToObject("Balloon", _root);
+            int plot = _rng.Next(Mathf.Min(_rows * Cols, _plots.Length));
+            go.transform.localPosition = PlotCenter(plot) + new Vector3((float)_rng.NextDouble() - 0.5f, 0.6f, (float)_rng.NextDouble() - 0.5f);
+            go.transform.localScale = Vector3.one * 1.3f;
+            _targets.Add(go.transform);
+        }
+
+        private void SpawnCat()
+        {
+            var go = MeshObject("Cat", CatMesh());
+            go.transform.localScale = Vector3.one * 1.4f;
+            _targets.Add(go.transform);
+            MoveCat();
+        }
+
+        /// <summary>The cat pops up next to a random plot, peeking out from a corner.</summary>
+        private void MoveCat()
+        {
+            _catTimer = 0f;
+            if (_targets.Count == 0 || _targets[0] == null) return;
+            var cat = _targets[0];
+            Puffs(cat.position);
+            int plot = _rng.Next(Mathf.Min(_rows * Cols, _plots.Length));
+            float sx = _rng.Next(2) == 0 ? -1f : 1f, sz = _rng.Next(2) == 0 ? -1f : 1f;
+            cat.localPosition = PlotCenter(plot) + new Vector3(sx * 1.75f, 0f, sz * 1.75f);
+            cat.localRotation = Quaternion.Euler(0f, (float)_rng.NextDouble() * 360f, 0f);
+        }
+
+        private GameObject MeshObject(string name, Mesh mesh)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_root, false);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var r = go.AddComponent<MeshRenderer>();
+            r.sharedMaterial = MeshBuilder.SharedMaterial;
+            return go;
+        }
+
+        private static Mesh ChickenMesh()
+        {
+            var mb = new MeshBuilder();
+            mb.Box(new Vector3(-0.08f, 0, 0), new Vector3(0.04f, 0.2f, 0.04f), ColorUtil.Hex("#FF9F43"));
+            mb.Box(new Vector3(0.08f, 0, 0), new Vector3(0.04f, 0.2f, 0.04f), ColorUtil.Hex("#FF9F43"));
+            mb.Sphere(new Vector3(0, 0.38f, 0), 0.24f, Color.white, 5, 8);
+            mb.Sphere(new Vector3(0, 0.66f, 0.14f), 0.14f, Color.white, 4, 8);
+            mb.Box(new Vector3(0, 0.78f, 0.14f), new Vector3(0.05f, 0.1f, 0.14f), ColorUtil.Hex("#FF5A6E"));
+            mb.Box(new Vector3(0, 0.62f, 0.3f), new Vector3(0.08f, 0.06f, 0.1f), ColorUtil.Hex("#FFC93C"));
+            mb.Box(new Vector3(0, 0.36f, -0.24f), new Vector3(0.18f, 0.22f, 0.1f), ColorUtil.Hex("#EDEDF5"));
+            return mb.ToMesh("Chicken");
+        }
+
+        private static Mesh ThiefMesh()
+        {
+            var mb = new MeshBuilder();
+            mb.Cylinder(Vector3.zero, 0.12f, 0.32f, ColorUtil.Hex("#22243F"), 6);
+            mb.Cylinder(new Vector3(0, 0.3f, 0), 0.17f, 0.34f, ColorUtil.Hex("#3B3F7A"), 7, 0.13f);
+            mb.Sphere(new Vector3(0, 0.8f, 0), 0.15f, ColorUtil.Hex("#F5C9A0"), 4, 7);
+            mb.Box(new Vector3(0, 0.79f, 0.02f), new Vector3(0.32f, 0.07f, 0.3f), ColorUtil.Hex("#111222"));   // mask
+            mb.Cylinder(new Vector3(0, 0.9f, 0), 0.16f, 0.1f, ColorUtil.Hex("#22243F"), 8);                    // beanie
+            mb.Sphere(new Vector3(0, 0.55f, -0.22f), 0.2f, ColorUtil.Hex("#C98552"), 4, 7);                  // sack of coins
+            mb.Sphere(new Vector3(0, 0.75f, -0.22f), 0.06f, ColorUtil.Hex("#FFC93C"), 3, 6);
+            return mb.ToMesh("Thief");
+        }
+
+        private static Mesh CatMesh()
+        {
+            var mb = new MeshBuilder();
+            var fur = ColorUtil.Hex("#FF9F43");
+            mb.Box(new Vector3(0, 0.08f, 0), new Vector3(0.3f, 0.3f, 0.5f), fur);
+            mb.Sphere(new Vector3(0, 0.5f, 0.24f), 0.17f, fur, 4, 8);
+            mb.Cone(new Vector3(-0.09f, 0.6f, 0.24f), 0.06f, 0.14f, fur, 4);
+            mb.Cone(new Vector3(0.09f, 0.6f, 0.24f), 0.06f, 0.14f, fur, 4);
+            mb.Box(new Vector3(0, 0.3f, -0.3f), new Vector3(0.06f, 0.45f, 0.06f), ColorUtil.Hex("#E07A2E"));
+            mb.Box(new Vector3(-0.06f, 0.52f, 0.4f), new Vector3(0.04f, 0.05f, 0.02f), ColorUtil.Hex("#2A1440"));
+            mb.Box(new Vector3(0.06f, 0.52f, 0.4f), new Vector3(0.04f, 0.05f, 0.02f), ColorUtil.Hex("#2A1440"));
+            return mb.ToMesh("Cat");
         }
 
         /// <summary>Which plot is under a screen position (-1 for none).</summary>
@@ -668,6 +887,10 @@ namespace JellyDrop.City3D
         private int _from, _to;
         private float _t, _speed, _wait;
         private System.Random _rng;
+        /// <summary>Runners (the chicken, the thief) never stop to chat.</summary>
+        public bool NoWaits;
+        public float Hop = 0.06f;
+        public float Speed { get => _speed; set => _speed = value; }
 
         public void Setup(CityWorld world, int startNode, float speed, int seed)
         {
@@ -697,12 +920,12 @@ namespace JellyDrop.City3D
                 _from = _to;
                 _to = next;
                 _t = 0f;
-                if (_rng.NextDouble() < 0.2) _wait = 0.5f + (float)_rng.NextDouble() * 1.5f;
+                if (!NoWaits && _rng.NextDouble() < 0.2) _wait = 0.5f + (float)_rng.NextDouble() * 1.5f;
                 return;
             }
             var dir = (b - a) / len;
             var side = new Vector3(dir.z, 0f, -dir.x) * _offset;
-            float bob = Mathf.Abs(Mathf.Sin(Time.time * 9f * _speed)) * 0.06f;
+            float bob = Mathf.Abs(Mathf.Sin(Time.time * 9f * Mathf.Min(_speed, 2f))) * Hop;
             transform.localPosition = Vector3.Lerp(a, b, _t) + side + Vector3.up * bob;
             transform.localRotation = Quaternion.LookRotation(dir, Vector3.up);
         }
@@ -729,16 +952,19 @@ namespace JellyDrop.City3D
     public sealed class Squash : MonoBehaviour
     {
         private float _t;
+        private Vector3 _base;
+        private bool _init;
 
         private void Update()
         {
+            if (!_init) { _base = transform.localScale; _init = true; }
             _t += Time.deltaTime;
             float k = Mathf.Clamp01(_t / 0.35f);
             float s = 1f + Mathf.Sin(k * Mathf.PI) * 0.12f;
-            transform.localScale = new Vector3(1f / Mathf.Sqrt(s), s, 1f / Mathf.Sqrt(s));
+            transform.localScale = Vector3.Scale(_base, new Vector3(1f / Mathf.Sqrt(s), s, 1f / Mathf.Sqrt(s)));
             if (k >= 1f)
             {
-                transform.localScale = Vector3.one;
+                transform.localScale = _base;
                 Destroy(this);
             }
         }

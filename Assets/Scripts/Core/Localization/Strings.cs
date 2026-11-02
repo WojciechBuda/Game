@@ -403,6 +403,27 @@ namespace JellyDrop.Core
             Add("city.speed_up", "FINISH NOW  {0}", "SKOŃCZ TERAZ  {0}", "SOFORT FERTIG  {0}", "TERMINAR YA  {0}", "TERMINER  {0}", "TERMINAR JÁ  {0}");
             Add("city.level_of", "LEVEL {0} / {1}", "POZIOM {0} / {1}", "STUFE {0} / {1}", "NIVEL {0} / {1}", "NIVEAU {0} / {1}", "NÍVEL {0} / {1}");
             Add("city.builders", "Builders {0} / {1}", "Budowniczowie {0} / {1}", "Bauarbeiter {0} / {1}", "Constructores {0} / {1}", "Ouvriers {0} / {1}", "Construtores {0} / {1}");
+            // Village missions
+            Add("mission.Chicken", "Runaway chicken!", "Uciekająca kura!", "Entlaufenes Huhn!", "¡Gallina fugitiva!", "Poule en fuite !", "Galinha fugitiva!");
+            Add("mission.Thief", "Stop the thief!", "Złap złodzieja!", "Haltet den Dieb!", "¡Atrapa al ladrón!", "Arrêtez le voleur !", "Pega o ladrão!");
+            Add("mission.Balloons", "Balloon festival", "Festiwal balonów", "Ballonfest", "Festival de globos", "Fête des ballons", "Festival de balões");
+            Add("mission.Cat", "Hide and seek cat", "Kot w chowanego", "Versteck-Katze", "Gato escondido", "Chat caché", "Gato escondido");
+            Add("mission.Chicken.do", "Caught {0}/{1}", "Złapano {0}/{1}", "Gefangen {0}/{1}", "Atrapada {0}/{1}", "Attrapée {0}/{1}", "Apanhada {0}/{1}");
+            Add("mission.Thief.do", "Tackles {0}/{1}", "Złapania {0}/{1}", "Gestoppt {0}/{1}", "Placajes {0}/{1}", "Plaquages {0}/{1}", "Agarrões {0}/{1}");
+            Add("mission.Balloons.do", "Popped {0}/{1}", "Przebite {0}/{1}", "Geplatzt {0}/{1}", "Reventados {0}/{1}", "Éclatés {0}/{1}", "Rebentados {0}/{1}");
+            Add("mission.Cat.do", "Found {0}/{1}", "Znaleziono {0}/{1}", "Gefunden {0}/{1}", "Encontrado {0}/{1}", "Trouvé {0}/{1}", "Encontrado {0}/{1}");
+            Add("mission.Chicken.body", "A chicken escaped from the farm! Tap it {0} times in {1} seconds to catch it.", "Kura uciekła z farmy! Stuknij ją {0} razy w {1} sekund, żeby ją złapać.", "Ein Huhn ist entlaufen! Tippe es {0}-mal in {1} Sekunden an.", "¡Se escapó una gallina! Tócala {0} veces en {1} segundos.", "Une poule s'est échappée ! Touche-la {0} fois en {1} secondes.", "Uma galinha fugiu! Toca nela {0} vezes em {1} segundos.");
+            Add("mission.Thief.body", "A thief grabbed a sack of coins! Tap him {0} times in {1} seconds before he gets away.", "Złodziej porwał worek monet! Stuknij go {0} razy w {1} sekund, zanim ucieknie.", "Ein Dieb hat einen Münzsack! Tippe ihn {0}-mal in {1} Sekunden an.", "¡Un ladrón robó monedas! Tócalo {0} veces en {1} segundos.", "Un voleur a pris des pièces ! Touche-le {0} fois en {1} secondes.", "Um ladrão roubou moedas! Toca nele {0} vezes em {1} segundos.");
+            Add("mission.Balloons.body", "Balloons are floating over the village. Pop {0} of them in {1} seconds!", "Nad wioską lecą balony. Przebij {0} w {1} sekund!", "Ballons schweben über dem Dorf. Lass {0} in {1} Sekunden platzen!", "Hay globos sobre el pueblo. ¡Revienta {0} en {1} segundos!", "Des ballons flottent sur le village. Éclates-en {0} en {1} secondes !", "Há balões sobre a vila. Rebenta {0} em {1} segundos!");
+            Add("mission.Cat.body", "A cat is hiding next to the buildings and keeps moving. Find it {0} times in {1} seconds!", "Kot chowa się przy budynkach i ciągle zmienia miejsce. Znajdź go {0} razy w {1} sekund!", "Eine Katze versteckt sich bei den Häusern. Finde sie {0}-mal in {1} Sekunden!", "Un gato se esconde junto a los edificios. ¡Encuéntralo {0} veces en {1} segundos!", "Un chat se cache près des bâtiments. Trouve-le {0} fois en {1} secondes !", "Um gato esconde-se junto aos edifícios. Encontra-o {0} vezes em {1} segundos!");
+            Add("mission.offer_chip", "Event: {0}", "Wydarzenie: {0}", "Ereignis: {0}", "Evento: {0}", "Événement : {0}", "Evento: {0}");
+            Add("mission.reward", "Reward: {0}", "Nagroda: {0}", "Belohnung: {0}", "Premio: {0}", "Récompense : {0}", "Prémio: {0}");
+            Add("mission.coins", "{0} coins", "{0} monet", "{0} Münzen", "{0} monedas", "{0} pièces", "{0} moedas");
+            Add("mission.supply", "{0} {1}", "{0} {1}", "{0} {1}", "{0} {1}", "{0} {1}", "{0} {1}");
+            Add("mission.start", "LET'S GO", "DO DZIEŁA", "LOS GEHT'S", "¡VAMOS!", "C'EST PARTI", "VAMOS");
+            Add("mission.time", "{0} s left", "Zostało {0} s", "Noch {0} s", "Quedan {0} s", "Encore {0} s", "Faltam {0} s");
+            Add("mission.success", "{0} - done!", "{0} - gotowe!", "{0} - geschafft!", "{0}: ¡hecho!", "{0} : réussi !", "{0} - feito!");
+            Add("mission.fail", "Out of time! Another event will come soon.", "Koniec czasu! Wkrótce pojawi się kolejne wydarzenie.", "Zeit abgelaufen! Bald gibt es ein neues Ereignis.", "¡Se acabó el tiempo! Pronto habrá otro evento.", "Temps écoulé ! Un autre événement arrive bientôt.", "Acabou o tempo! Outro evento vem já.");
             Add("city.full", "FULL", "PEŁNE", "VOLL", "LLENO", "PLEIN", "CHEIO");
             Add("city.intro",
                 "Win levels to earn coins and supplies, then build and upgrade your city. Buildings keep producing while you're away.",

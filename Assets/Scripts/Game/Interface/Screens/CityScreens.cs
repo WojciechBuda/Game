@@ -3,6 +3,7 @@ using JellyDrop.Audio;
 using JellyDrop.Core;
 using JellyDrop.Core.City;
 using JellyDrop.Core.Economy;
+using JellyDrop.Core.Loyalty;
 using JellyDrop.Services;
 using JellyDrop.Visuals;
 using UnityEngine;
@@ -98,6 +99,10 @@ namespace JellyDrop.Interface
         private Text _builders;
         private CandyButton _collect;
         private float _refreshTimer;
+        private CandyButton _missionChip;
+        private RectTransform _missionBanner;
+        private Text _missionText;
+        private Text _missionTime;
 
         protected override void Build()
         {
@@ -137,13 +142,30 @@ namespace JellyDrop.Interface
             _collect.ClickWhenDisabled = true;
             var market = UIKit.Button(Root, Loc.T("city.market"), ColorUtil.Blue, () => App.Market.Open(), new Vector2(470, 150), 54, CitySprites.SupplyIcon(Supply.Brick));
             market.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(255, 105), new Vector2(470, 150));
+
+            // Village mission: a chip pops up above the buttons when something happens in town.
+            _missionChip = UIKit.Button(Root, "", ColorUtil.Pink, OfferMission, new Vector2(700, 120), 42, SpriteFactory.Star());
+            _missionChip.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 300), new Vector2(700, 120));
+            _missionChip.gameObject.SetActive(false);
+
+            var banner = UIKit.Panel(Root, ColorUtil.Glass, 0.85f, true, "MissionBanner");
+            banner.rectTransform.At(UIKit.Top, new Vector2(0, -470), new Vector2(820, 150));
+            _missionBanner = banner.rectTransform;
+            _missionText = UIKit.Text(_missionBanner, "", 46, ColorUtil.Ink).Fit(24);
+            _missionText.rectTransform.At(UIKit.Top, new Vector2(0, -48), new Vector2(760, 70));
+            _missionTime = UIKit.Text(_missionBanner, "", 36, ColorUtil.Gold).Fit(20);
+            _missionTime.rectTransform.At(UIKit.Bottom, new Vector2(0, 38), new Vector2(760, 54));
+            _missionBanner.gameObject.SetActive(false);
         }
 
         protected override void OnShow()
         {
             _refreshTimer = 0f;
             App.CityWorld.PlotTapped += OnPlot;
+            App.CityWorld.MissionProgress += OnMissionProgress;
+            App.CityWorld.MissionEnded += OnMissionEnded;
             App.CityWorld.Show();
+            _missionBanner.gameObject.SetActive(false);
             if (App.City.Population == 0 && !App.Screens.HasModal)
                 App.Popup.ShowMessage(Loc.T("home.city"), Loc.T("city.intro"), CitySprites.Building("house"));
         }
@@ -169,17 +191,99 @@ namespace JellyDrop.Interface
             _bonus.text = bonus > 0 ? Loc.T("city.bonus_short", bonus) : "";
             _builders.text = Loc.T("city.builders", city.BusyBuilders, CityCatalog.Builders);
             _collect.Interactable = !city.PendingTotal().IsEmpty;
+            RefreshMissionChip();
             if (IsVisible) App.CityWorld.Sync();
         }
 
         protected override void OnHide()
         {
             App.CityWorld.PlotTapped -= OnPlot;
+            App.CityWorld.MissionProgress -= OnMissionProgress;
+            App.CityWorld.MissionEnded -= OnMissionEnded;
             App.CityWorld.Hide();
+        }
+
+        // ------------------------------------------------------------------ village missions
+
+        private void RefreshMissionChip()
+        {
+            var offer = App.CityMissions.Offer;
+            bool show = offer.HasValue && !App.CityWorld.MissionActive;
+            if (show)
+            {
+                _missionChip.SetLabel(Loc.T("mission.offer_chip", Loc.T("mission." + offer.Value)));
+                if (!_missionChip.gameObject.activeSelf) UIKit.Pop(_missionChip.transform, 0.8f, 0.3f);
+            }
+            _missionChip.gameObject.SetActive(show);
+        }
+
+        private void OfferMission()
+        {
+            var offer = App.CityMissions.Offer;
+            if (!offer.HasValue) { RefreshMissionChip(); return; }
+            var type = offer.Value;
+            var r = App.CityMissions.RewardFor(type);
+            string body = Loc.T("mission." + type + ".body", CityMissionService.TapsNeeded(type), (int)CityMissionService.TimeLimit(type)) +
+                          "\n\n" + Loc.T("mission.reward", RewardText(r));
+            App.Popup.ShowConfirm(Loc.T("mission." + type), body, Loc.T("mission.start"), () => StartMission(type));
+        }
+
+        private void StartMission(CityMissionType type)
+        {
+            _missionChip.gameObject.SetActive(false);
+            _missionBanner.gameObject.SetActive(true);
+            UIKit.Pop(_missionBanner, 0.8f, 0.3f);
+            App.CityWorld.BeginMission(type);
+            App.Audio.Play(Sfx.Pop);
+        }
+
+        private void OnMissionProgress(int hits, int needed)
+        {
+            var offer = App.CityMissions.Offer;
+            if (!offer.HasValue) return;
+            _missionText.text = Loc.T("mission." + offer.Value + ".do", hits, needed);
+            if (hits > 0)
+            {
+                App.Audio.Play(Sfx.Pop);
+                Haptics.Tap();
+                UIKit.Punch(_missionBanner, 0.08f);
+            }
+        }
+
+        private void OnMissionEnded(bool success)
+        {
+            _missionBanner.gameObject.SetActive(false);
+            var offer = App.CityMissions.Offer;
+            string title = offer.HasValue ? Loc.T("mission." + offer.Value) : "";
+            var reward = App.CityMissions.Finish(success);
+            App.Save.Save(App.Economy.Data);
+            if (success && reward != null)
+            {
+                App.Audio.Play(Sfx.Win);
+                App.Loyalty.AddPoints(LoyaltyService.PointsPerMission * 2);
+                App.Popup.ShowReward("+" + Loc.Number(reward.Coins), Loc.T("mission.success", title) + "\n" + RewardText(reward), SpriteFactory.Coin());
+            }
+            else
+            {
+                App.Audio.Play(Sfx.Error);
+                App.Popup.ShowMessage(title, Loc.T("mission.fail"), SpriteFactory.Star());
+            }
+            Refresh();
+        }
+
+        private static string RewardText(CityMissionReward r)
+        {
+            var parts = new System.Collections.Generic.List<string> { Loc.T("mission.coins", r.Coins) };
+            if (r.Wood > 0) parts.Add(Loc.T("mission.supply", r.Wood, Loc.T("supply.Wood")));
+            if (r.Brick > 0) parts.Add(Loc.T("mission.supply", r.Brick, Loc.T("supply.Brick")));
+            if (r.Glass > 0) parts.Add(Loc.T("mission.supply", r.Glass, Loc.T("supply.Glass")));
+            return string.Join(" · ", parts);
         }
 
         private void Update()
         {
+            if (App.CityWorld.MissionActive)
+                _missionTime.text = Loc.T("mission.time", Mathf.CeilToInt(Mathf.Max(0f, App.CityWorld.MissionTimeLeft)));
             // Production ticks in real time; refresh the storage bars now and then.
             _refreshTimer += Time.unscaledDeltaTime;
             if (_refreshTimer < 5f) return;
