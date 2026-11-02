@@ -14,6 +14,8 @@ namespace JellyDrop.Interface
     {
         private ResourceBar _resources;
         private Image _avatar;
+        private Image _dirt;
+        private CandyButton _energy;
         private Text _cityInfo;
         private CandyButton _play;
         private CandyButton _city;
@@ -53,9 +55,13 @@ namespace JellyDrop.Interface
             var mascotBob = _avatar.gameObject.AddComponent<Bobber>();
             mascotBob.Amplitude = 16f;
             mascotBob.Speed = 2f;
-            // Tap the mascot (or the STYLE chip) to dress it up.
+            _dirt = UIKit.Image(_avatar.rectTransform, PetSprites.Dirt(), Color.white, false, "Dirt");
+            _dirt.rectTransform.Fill();
+            // Tap the mascot (or the energy chip) to look after it; the STYLE chip dresses it up.
             _avatar.raycastTarget = true;
-            _avatar.gameObject.AddComponent<TapTarget>().OnTap = App.OpenWardrobe;
+            _avatar.gameObject.AddComponent<TapTarget>().OnTap = App.OpenPet;
+            _energy = UIKit.Button(Root, "", ColorUtil.Yellow, App.OpenPet, new Vector2(170, 66), 28, PetSprites.Bolt());
+            _energy.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(-120, 232), new Vector2(170, 66));
             var style = UIKit.Button(Root, Loc.T("home.style"), ColorUtil.Pink, App.OpenWardrobe, new Vector2(170, 66), 28);
             style.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(120, 232), new Vector2(170, 66));
 
@@ -95,7 +101,12 @@ namespace JellyDrop.Interface
         {
             var e = App.Economy;
             _resources.Refresh(App);
-            _avatar.sprite = SpriteFactory.Avatar(e.EquippedAvatar, AvatarMood.Happy);
+            var pet = App.Pet;
+            _avatar.sprite = SpriteFactory.Avatar(e.EquippedAvatar, PetUi.Face(pet.Mood));
+            _dirt.enabled = pet.Clean < 30f;
+            _energy.SetLabel(Mathf.RoundToInt(pet.Energy) + "%");
+            _energy.SetColor(pet.Energy < 30f ? ColorUtil.Red : ColorUtil.Yellow);
+            _energy.SetBadge(pet.NeedsAttention ? 1 : 0);
 
             int level = App.Progress.CurrentLevel;
             _play.SetLabel(LevelPath.IsBoost(level) ? Loc.T("level.boost_title", level) : Loc.T("home.play_level", level));

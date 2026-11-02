@@ -403,6 +403,45 @@ namespace JellyDrop.Core
             Add("city.speed_up", "FINISH NOW  {0}", "SKOŃCZ TERAZ  {0}", "SOFORT FERTIG  {0}", "TERMINAR YA  {0}", "TERMINER  {0}", "TERMINAR JÁ  {0}");
             Add("city.level_of", "LEVEL {0} / {1}", "POZIOM {0} / {1}", "STUFE {0} / {1}", "NIVEL {0} / {1}", "NIVEAU {0} / {1}", "NÍVEL {0} / {1}");
             Add("city.builders", "Builders {0} / {1}", "Budowniczowie {0} / {1}", "Bauarbeiter {0} / {1}", "Constructores {0} / {1}", "Ouvriers {0} / {1}", "Construtores {0} / {1}");
+            // Pet care
+            Add("pet.title", "MY PET", "MÓJ PUPIL", "MEIN TIER", "MI MASCOTA", "MON COMPAGNON", "MEU BICHINHO");
+            Add("pet.feed", "FEED", "KARM", "FÜTTERN", "COMIDA", "NOURRIR", "COMIDA");
+            Add("pet.wash", "WASH", "UMYJ", "WASCHEN", "BAÑAR", "LAVER", "LAVAR");
+            Add("pet.sleep", "SLEEP", "ŚPIJ", "SCHLAFEN", "DORMIR", "DODO", "DORMIR");
+            Add("pet.wake", "WAKE UP", "POBUDKA", "AUFWECKEN", "DESPERTAR", "RÉVEIL", "ACORDAR");
+            Add("pet.gift", "GIFTS", "PREZENTY", "GESCHENKE", "REGALOS", "CADEAUX", "PRENDAS");
+            Add("pet.dress", "DRESS", "UBIERZ", "ANZIEHEN", "VESTIR", "HABILLER", "VESTIR");
+            Add("pet.heal", "MEDICINE", "LEK", "MEDIZIN", "MEDICINA", "REMÈDE", "REMÉDIO");
+            Add("pet.play", "PLAY", "GRAJ", "SPIELEN", "JUGAR", "JOUER", "JOGAR");
+            Add("pet.hint", "Tap your pet to stroke it. Playing levels together is fun but tiring!", "Stuknij pupila, żeby go pogłaskać. Wspólna gra to frajda, ale męczy!", "Tippe dein Tier an, um es zu streicheln. Zusammen spielen macht Spaß, aber müde!", "Toca a tu mascota para acariciarla. ¡Jugar juntos divierte pero cansa!", "Touche ton compagnon pour le caresser. Jouer ensemble amuse mais fatigue !", "Toca no bichinho para lhe fazer festas. Jogar juntos diverte mas cansa!");
+            Add("pet.bonus", "Happy pet: +{0}% coins from levels", "Szczęśliwy pupil: +{0}% monet z poziomów", "Glückliches Tier: +{0}% Münzen", "Mascota feliz: +{0}% monedas", "Compagnon heureux : +{0}% de pièces", "Bichinho feliz: +{0}% moedas");
+            Add("pet.bonus_off", "Keep it happy for +{0}% coins", "Dbaj o niego, a dostaniesz +{0}% monet", "Halte es glücklich für +{0}% Münzen", "Hazla feliz para +{0}% monedas", "Rends-le heureux pour +{0}% de pièces", "Mantém-no feliz para +{0}% moedas");
+            Add("pet.full", "I'm full!", "Jestem najedzony!", "Ich bin satt!", "¡Estoy lleno!", "J'ai plus faim !", "Estou cheio!");
+            Add("pet.already_clean", "Already squeaky clean!", "Już lśni czystością!", "Schon blitzsauber!", "¡Ya está limpísimo!", "Déjà tout propre !", "Já está a brilhar!");
+            Add("pet.not_sleepy", "Not sleepy yet!", "Jeszcze nie chce spać!", "Noch nicht müde!", "¡Aún no tiene sueño!", "Pas encore sommeil !", "Ainda sem sono!");
+            Add("pet.shh", "Shh... sleeping", "Ciii... śpi", "Pssst... schläft", "Shh... duerme", "Chut... il dort", "Shh... a dormir");
+            Add("pet.mood.Happy", "Happy and full of energy!", "Szczęśliwy i pełen energii!", "Glücklich und voller Energie!", "¡Feliz y lleno de energía!", "Heureux et plein d'énergie !", "Feliz e cheio de energia!");
+            Add("pet.mood.Okay", "Feeling okay", "Czuje się nieźle", "Geht so", "Está bien", "Ça va", "Está bem");
+            Add("pet.mood.Hungry", "So hungry...", "Strasznie głodny...", "So hungrig...", "Tiene mucha hambre...", "Trop faim...", "Cheio de fome...");
+            Add("pet.mood.Tired", "Very tired...", "Bardzo zmęczony...", "Sehr müde...", "Muy cansado...", "Très fatigué...", "Muito cansado...");
+            Add("pet.mood.Bored", "Bored... play with me!", "Nudzi się... pobaw się ze mną!", "Langweilig... spiel mit mir!", "Aburrido... ¡juega conmigo!", "Il s'ennuie... joue avec moi !", "Aborrecido... brinca comigo!");
+            Add("pet.mood.Dirty", "Needs a bath!", "Potrzebuje kąpieli!", "Braucht ein Bad!", "¡Necesita un baño!", "Il faut un bain !", "Precisa de banho!");
+            Add("pet.mood.Lonely", "Missed you! Feels neglected", "Tęsknił! Czuje się zaniedbany", "Hat dich vermisst! Fühlt sich vernachlässigt", "¡Te echó de menos! Se siente olvidado", "Tu lui as manqué ! Il se sent délaissé", "Teve saudades! Sente-se esquecido");
+            Add("pet.mood.Sick", "Sick! Give it medicine", "Chory! Daj mu lekarstwo", "Krank! Gib ihm Medizin", "¡Enfermo! Dale medicina", "Malade ! Donne-lui un remède", "Doente! Dá-lhe o remédio");
+            Add("pet.mood.Sleeping", "Sleeping sweetly", "Słodko śpi", "Schläft süß", "Duerme tranquilo", "Dort paisiblement", "A dormir docemente");
+            Add("pet.need.Food", "food", "jedzenie", "Essen", "comida", "repas", "comida");
+            Add("pet.need.Energy", "energy", "energia", "Energie", "energía", "énergie", "energia");
+            Add("pet.need.Fun", "fun", "zabawa", "Spaß", "diversión", "fun", "diversão");
+            Add("pet.need.Clean", "clean", "czystość", "Sauber", "limpieza", "propreté", "limpeza");
+            Add("pet.item.apple", "Apple", "Jabłko", "Apfel", "Manzana", "Pomme", "Maçã");
+            Add("pet.item.sandwich", "Sandwich", "Kanapka", "Sandwich", "Sándwich", "Sandwich", "Sanduíche");
+            Add("pet.item.smoothie", "Smoothie", "Koktajl", "Smoothie", "Batido", "Smoothie", "Batido");
+            Add("pet.item.burger", "Burger", "Burger", "Burger", "Hamburguesa", "Burger", "Hambúrguer");
+            Add("pet.item.cake", "Cake", "Ciasto", "Kuchen", "Pastel", "Gâteau", "Bolo");
+            Add("pet.item.ball", "Ball", "Piłka", "Ball", "Pelota", "Ballon", "Bola");
+            Add("pet.item.teddy", "Teddy bear", "Miś", "Teddybär", "Osito", "Nounours", "Ursinho");
+            Add("pet.item.rocket", "Toy rocket", "Rakieta", "Spielzeugrakete", "Cohete", "Fusée", "Foguetão");
+
             // Village missions
             Add("mission.Chicken", "Runaway chicken!", "Uciekająca kura!", "Entlaufenes Huhn!", "¡Gallina fugitiva!", "Poule en fuite !", "Galinha fugitiva!");
             Add("mission.Thief", "Stop the thief!", "Złap złodzieja!", "Haltet den Dieb!", "¡Atrapa al ladrón!", "Arrêtez le voleur !", "Pega o ladrão!");

@@ -110,6 +110,7 @@ namespace JellyDrop.Interface
             _pausedState = false;
             int best = App.Economy.Data.runBest;
             int earned = App.Economy.ApplyRunResult(s.Coins, s.Distance);
+            App.Pet.OnGamePlayed();
             App.Save.Save(App.Economy.Data);
             bool record = (int)s.Distance > best;
             _resultCoins.text = "+" + Loc.Number(earned);

@@ -38,6 +38,8 @@ namespace JellyDrop
         public GameController Game { get; private set; }
         public CityService City { get; private set; }
         public CityMissionService CityMissions { get; private set; }
+        public JellyDrop.Core.Pet.PetService Pet { get; private set; }
+        public PetScreen PetView { get; private set; }
         /// <summary>The 3D village shown behind the city screen.</summary>
         public CityWorld CityWorld { get; private set; }
         /// <summary>The 3D Block Run bonus.</summary>
@@ -112,7 +114,8 @@ namespace JellyDrop
             CityMissions = new CityMissionService(Economy, City);
             Progress = new ProgressService(Economy);
             Loyalty = new LoyaltyService(Economy);
-            Economy.CoinBonusPercent = () => City.CoinBonusPercent + Loyalty.CoinBonusPercent;
+            Pet = new JellyDrop.Core.Pet.PetService(Economy);
+            Economy.CoinBonusPercent = () => City.CoinBonusPercent + Loyalty.CoinBonusPercent + Pet.CoinBonusPercent;
 #if PLAY_GAMES && UNITY_ANDROID && !UNITY_EDITOR
             Online = new JellyDrop.Online.PlayGamesService();
 #else
@@ -239,6 +242,7 @@ namespace JellyDrop
             CityView = AddScreen<CityScreen>("City");
             Season = AddScreen<SeasonScreen>("Season");
             WardrobeView = AddScreen<WardrobeScreen>("Wardrobe");
+            PetView = AddScreen<PetScreen>("Pet");
             Runner = AddScreen<RunnerScreen>("Runner");
             LevelResult = AddScreen<LevelResultScreen>("LevelResult");
             Hud = AddScreen<HudScreen>("Hud");
@@ -408,7 +412,18 @@ namespace JellyDrop
         public void OpenMissions() => Screens.Show(Missions);
         public void OpenArcade() => Screens.Show(Arcade);
         public void OpenSeason() => Screens.Show(Season);
-        public void OpenWardrobe() => Screens.Show(WardrobeView);
+        public void OpenWardrobe()
+        {
+            WardrobeView.ReturnToPet = false;
+            Screens.Show(WardrobeView);
+        }
+
+        public void OpenWardrobeFromPet()
+        {
+            WardrobeView.ReturnToPet = true;
+            Screens.Show(WardrobeView);
+        }
+        public void OpenPet() => Screens.Show(PetView);
 
         /// <summary>Sign in with the Google account (Google Play Games) from the Settings button.</summary>
         public void SignInWithGoogle()
@@ -512,6 +527,7 @@ namespace JellyDrop
                 if (outcome.Won)
                     Online.SubmitLevelScore(new LevelScore { playerId = Online.PlayerId, playerName = Online.PlayerName, level = result.LevelNumber, score = result.Score, stars = outcome.Stars }, _ => { });
             }
+            Pet.OnGamePlayed();
             var gain = Loyalty.AwardGame(result, outcome);
             Save.Save(Economy.Data);
 

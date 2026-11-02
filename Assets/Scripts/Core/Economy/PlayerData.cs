@@ -108,6 +108,15 @@ namespace JellyDrop.Core.Economy
         public long cityMissionNext;
         public int cityMissionsDone;
 
+        // Pet care (the avatar as a little pet, like Pou). Needs are 0..100.
+        public float petFood, petEnergy, petFun, petClean;
+        public long petUpdated;      // last time the needs were simulated (0 = never: start fresh)
+        public long petLastCare;     // last time the player looked after the pet
+        public bool petSleeping;
+        public bool petSick;
+        public int petDressDay = -1, petDressCount;
+        public int petCareTotal;
+
         // Block Run bonus: tickets (one free each day, more from Boost levels) and best distance
         public int runTickets;
         public int runTicketDay = -1;

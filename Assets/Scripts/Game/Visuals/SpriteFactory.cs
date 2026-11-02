@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace JellyDrop.Visuals
 {
-    public enum AvatarMood { Happy, Calm, Excited, Shocked, Sad }
+    public enum AvatarMood { Happy, Calm, Excited, Shocked, Sad, Sick, Sleepy }
 
     /// <summary>
     /// Draws and caches every sprite in the game (blocks, icons, avatars, UI shapes).
@@ -514,6 +514,7 @@ namespace JellyDrop.Visuals
                     break;
             }
 
+            if (mood == AvatarMood.Sick) body = Color.Lerp(body, ColorUtil.Hex("#8CD65E"), 0.75f);
             var outline = PixelCanvas.Darken(body, 0.35f);
             // Shadow
             c.Paint((x, y) => PixelCanvas.Ellipse(x, y, cx, 18, 80, 12), new Color(0, 0, 0, 0.15f), 4f);
@@ -649,6 +650,15 @@ namespace JellyDrop.Visuals
                         c.Paint((x, y) => PixelCanvas.Circle(x, y, ex, ey, 18f), Color.white);
                         c.Paint((x, y) => PixelCanvas.Circle(x, y, ex, ey, 9f), ink);
                         break;
+                    case AvatarMood.Sleepy:
+                        // closed eyes: lower half of a ring
+                        c.Paint((x, y) => Mathf.Max(Mathf.Abs(PixelCanvas.Circle(x, y, ex, ey + 6f, 14f)) - 3.5f, y - (ey + 6f)), ink);
+                        break;
+                    case AvatarMood.Sick:
+                        // dizzy > < eyes
+                        c.Paint((x, y) => Mathf.Min(PixelCanvas.Segment(x, y, ex - sx * 12f, ey + 10f, ex + sx * 10f, ey, 4.5f),
+                                                    PixelCanvas.Segment(x, y, ex - sx * 12f, ey - 10f, ex + sx * 10f, ey, 4.5f)), ink);
+                        break;
                     case AvatarMood.Sad:
                         c.Paint((x, y) => PixelCanvas.Ellipse(x, y, ex, ey - 2f, 10f, 13f), ink);
                         c.Paint((x, y) => PixelCanvas.Segment(x, y, ex - sx * 14f, ey + 22f, ex + sx * 10f, ey + 16f, 5f), ink);
@@ -674,6 +684,18 @@ namespace JellyDrop.Visuals
                     break;
                 case AvatarMood.Sad:
                     c.Paint((x, y) => Mathf.Max(Mathf.Abs(PixelCanvas.Circle(x, y, cx, cy - 34f, 18f)) - 3.5f, (cy - 34f) - y), ink);
+                    break;
+                case AvatarMood.Sleepy:
+                    c.Paint((x, y) => PixelCanvas.Ellipse(x, y, cx, cy - 16f, 8f, 9f), ink);
+                    break;
+                case AvatarMood.Sick:
+                    // wobbly mouth
+                    for (int k = 0; k < 4; k++)
+                    {
+                        float x0 = cx - 24f + k * 12f, x1 = x0 + 12f;
+                        float y0 = cy - 18f + (k % 2 == 0 ? 4f : -4f), y1 = cy - 18f + (k % 2 == 0 ? -4f : 4f);
+                        c.Paint((x, y) => PixelCanvas.Segment(x, y, x0, y0, x1, y1, 3.5f), ink);
+                    }
                     break;
                 default:
                     c.Paint((x, y) => Mathf.Max(Mathf.Abs(PixelCanvas.Circle(x, y, cx, cy - 4f, 18f)) - 4f, y - (cy - 4f)), ink);

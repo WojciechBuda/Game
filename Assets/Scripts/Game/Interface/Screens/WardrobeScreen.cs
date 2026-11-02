@@ -26,7 +26,7 @@ namespace JellyDrop.Interface
 
         protected override void Build()
         {
-            var back = UIKit.IconButton(Root, SpriteFactory.HomeIcon(), ColorUtil.Purple, App.GoHome, 120);
+            var back = UIKit.IconButton(Root, SpriteFactory.HomeIcon(), ColorUtil.Purple, () => OnBack(), 120);
             back.GetComponent<RectTransform>().At(UIKit.TopLeft, new Vector2(84, -84), new Vector2(120, 120));
             var title = UIKit.Text(Root, Loc.T("wardrobe.title"), 90, ColorUtil.Pink).Fit(40);
             title.rectTransform.At(UIKit.Top, new Vector2(-30, -84), new Vector2(460, 120));
@@ -154,6 +154,7 @@ namespace JellyDrop.Interface
                 b = UIKit.Button(card, worn ? Loc.T("wardrobe.worn") : Loc.T("wardrobe.wear"), worn ? ColorUtil.Mint : ColorUtil.Blue, () =>
                 {
                     e.ToggleWear(item.Id);
+                    if (e.IsWearing(item.Id)) App.Pet.OnDressed();
                     LookChanged();
                 }, new Vector2(280, 100), 34, worn ? SpriteFactory.CheckIcon() : null);
             }
@@ -183,9 +184,12 @@ namespace JellyDrop.Interface
 
         public override bool OnBack()
         {
-            App.GoHome();
+            if (ReturnToPet) App.OpenPet(); else App.GoHome();
             return true;
         }
+
+        /// <summary>Set when opened from the pet room, so "back" returns there.</summary>
+        public bool ReturnToPet;
     }
 
     /// <summary>Makes any graphic tappable (e.g. the mascot opens the wardrobe).</summary>
