@@ -352,7 +352,7 @@ namespace JellyDrop.Interface
             if (icon != null)
             {
                 Icon = UIKit.Image(_faceRt, icon, Color.white, false, "Icon");
-                if (string.IsNullOrEmpty(label))
+                if (label == null)
                 {
                     Icon.rectTransform.Fill(18, 18, 18, 18);
                 }
@@ -363,7 +363,8 @@ namespace JellyDrop.Interface
                 }
             }
 
-            if (!string.IsNullOrEmpty(label))
+            // An empty label ("") still gets a text, so buttons labelled later with SetLabel show their text.
+            if (label != null)
             {
                 Label = UIKit.Text(_faceRt, label, fontSize, Color.white, TextAnchor.MiddleCenter, false);
                 var lift = Label.gameObject.AddComponent<Shadow>();

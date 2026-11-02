@@ -122,6 +122,11 @@ namespace JellyDrop.Core.Economy
         public int towerCleared;                          // towers with a floor limit climbed so far
         public int towerScenery;
 
+        // Lucky wheel
+        public int wheelFreeDay = -1;        // day the daily free spin (home screen) was used
+        public int paidSpinDay = -1, paidSpinsToday;
+        public int coinBoostGames;           // games left with coins x2 (from the wheel)
+
         // Block Run bonus: tickets (one free each day, more from Boost levels) and best distance
         public int runTickets;
         public int runTicketDay = -1;

@@ -22,16 +22,12 @@ namespace JellyDrop.Interface
         private Text _missions;
         private Text _loyalty;
         private LoyaltyGain _gain;
-        private WheelView _wheel;
-        private CandyButton _spin;
-        private Text _spinInfo;
+        private WheelPanel _wheel;
         private Image _avatar;
 
         private GameResult _result;
         private GameRewards _rewards;
         private bool _spun;
-        private bool _spinning;
-        private readonly SystemRandom _rng = new SystemRandom();
 
         public GameOverScreen With(GameResult result, GameRewards rewards, LoyaltyGain gain = null)
         {
@@ -76,23 +72,23 @@ namespace JellyDrop.Interface
             _loyalty = UIKit.Text(c, "", 32, ColorUtil.Orange, TextAnchor.MiddleCenter, false).Fit(18);
             _loyalty.rectTransform.At(UIKit.Top, new Vector2(0, -775), new Vector2(900, 50));
 
-            // Lucky wheel
-            _wheel = UIKit.Node("Wheel", c).gameObject.AddComponent<WheelView>();
-            ((RectTransform)_wheel.transform).At(UIKit.Center, new Vector2(-180, -230), new Vector2(520, 520));
-            _wheel.Build(App.Economy.Wheel);
-
-            _spin = UIKit.Button(c, Loc.T("go.spin"), ColorUtil.Orange, Spin, new Vector2(330, 160), 64);
-            _spin.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(270, -170), new Vector2(330, 160));
-            _spinInfo = UIKit.Text(c, Loc.T("go.free_spin"), 32, ColorUtil.Ink, TextAnchor.MiddleCenter, false).Fit(20);
-            _spinInfo.rectTransform.At(UIKit.Center, new Vector2(270, -330), new Vector2(340, 110));
-            var odds = UIKit.Button(c, Loc.T("go.odds"), ColorUtil.Purple, ShowOdds, new Vector2(160, 80), 32);
-            odds.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(270, -440), new Vector2(160, 80));
+            // Lucky wheel: one free spin per game, then spins for coins
+            var wheelArea = UIKit.Node("WheelArea", c);
+            wheelArea.Fill();
+            _fx = UIKit.Node("Fx", Root);
+            _fx.Fill();
+            _wheel = WheelPanel.Create(App, wheelArea, _fx, new Vector2(-180, -230), 500, new Vector2(270, -150));
+            _wheel.HasFreeSpin = () => !_spun;
+            _wheel.UseFreeSpin = () => _spun = true;
 
             var home = UIKit.Button(c, Loc.T("go.home"), ColorUtil.Purple, App.GoHome, new Vector2(360, 160), 56, SpriteFactory.HomeIcon());
             home.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(-215, 120), new Vector2(360, 160));
             var again = UIKit.Button(c, Loc.T("go.again"), ColorUtil.Pink, App.RestartGame, new Vector2(400, 160), 60, SpriteFactory.PlayIcon());
             again.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(215, 120), new Vector2(400, 160));
+            _fx.SetAsLastSibling();
         }
+
+        private RectTransform _fx;
 
         protected override void OnShow()
         {
@@ -130,6 +126,7 @@ namespace JellyDrop.Interface
             if (_rewards.SprintBonus > 0) lines.Add($"{Loc.T("go.sprint_bonus")}  +{_rewards.SprintBonus}");
             if (_rewards.PremiumBonus > 0) lines.Add($"{Loc.T("go.premium_bonus", Loc.Decimal(e.Config.PremiumCoinMultiplier))}  +{Loc.Number(_rewards.PremiumBonus)}");
             if (_rewards.CityBonus > 0) lines.Add($"{Loc.T("go.bonus", _rewards.BonusPercent)}  +{Loc.Number(_rewards.CityBonus)}");
+            if (_rewards.BoosterBonus > 0) lines.Add($"{Loc.T("wheel.booster_line")}  +{Loc.Number(_rewards.BoosterBonus)}");
             _breakdown.text = string.Join("\n", lines);
             _loyalty.text = _gain != null && _gain.Points > 0 ? Loc.T("player.gain", _gain.Points) : "";
             UIKit.CountUp(_total, 0, _rewards.Total, 1.2f, "+");
@@ -138,139 +135,16 @@ namespace JellyDrop.Interface
             foreach (var m in _rewards.MissionsCompleted) done.Add("• " + Loc.MissionTitle(m));
             _missions.text = done.Count > 0 ? Loc.T("go.mission_done", string.Join("   ", done)) : "";
 
-            _wheel.ResetRotation();
-            _spinning = false;
-            UpdateSpinButton();
+            _wheel.ResetWheel();
             JellyDrop.Util.Tweener.Delay(0.4f, () => { if (IsVisible && _rewards.Total > 0) App.Audio.Play(Sfx.Coin); }, this);
         }
 
-        private void UpdateSpinButton()
-        {
-            _spin.Interactable = !_spun && !_spinning;
-            _spin.SetLabel(Loc.T(_spun ? "common.done" : "go.spin"));
-        }
-
-        private void Spin()
-        {
-            if (_spun || _spinning) return;
-            _spinning = true;
-            var result = App.Economy.SpinWheel(_rng);
-            _spun = true;
-            UpdateSpinButton();
-            _wheel.SpinTo(result.SegmentIndex, () => App.Audio.Play(Sfx.WheelTick, 0.6f), () =>
-            {
-                _spinning = false;
-                UpdateSpinButton();
-                App.Audio.Play(Sfx.Purchase);
-                var seg = result.Segment;
-                switch (seg.Kind)
-                {
-                    case WheelRewardKind.Coins:
-                        App.Popup.ShowReward($"+{Loc.Number(seg.Amount)}", Loc.T("go.lucky_spin"), SpriteFactory.Coin());
-                        break;
-                    case WheelRewardKind.Shard:
-                        App.Popup.ShowReward($"+{seg.Amount}", Loc.T("go.shard_body"), SpriteFactory.Shard());
-                        break;
-                    case WheelRewardKind.PowerUp:
-                        App.Popup.ShowReward($"+1 {Loc.PowerUpShortName(result.PowerUp)}", Loc.T("go.free_powerup"), SpriteFactory.PowerUpIcon(result.PowerUp));
-                        break;
-                }
-            });
-        }
-
-        /// <summary>Shows the exact chances (good practice for random rewards; required in some regions).</summary>
-        private void ShowOdds()
-        {
-            var w = App.Economy.Wheel;
-            var lines = new List<string>();
-            for (int i = 0; i < w.Segments.Count; i++)
-            {
-                var s = w.Segments[i];
-                string name = s.Kind == WheelRewardKind.Coins ? Loc.Coins(s.Amount) : Loc.T(s.Kind == WheelRewardKind.Shard ? "go.odds_shard" : "go.odds_powerup");
-                lines.Add($"{name}: {Loc.Decimal((float)System.Math.Round(w.ProbabilityOf(i) * 100.0, 1))}%");
-            }
-            App.Popup.ShowMessage(Loc.T("go.odds_title"), string.Join("\n", lines), null);
-        }
+        public override void Refresh() => _wheel?.Refresh();
 
         public override bool OnBack()
         {
-            if (!_spinning) App.GoHome();
+            App.GoHome();
             return true;
-        }
-    }
-
-    /// <summary>Colourful wheel built from radial-filled images, with an ease-out spin.</summary>
-    public sealed class WheelView : MonoBehaviour
-    {
-        private RectTransform _disc;
-        private int _count;
-        private float _angle;
-
-        public void Build(LuckyWheel wheel)
-        {
-            var rt = (RectTransform)transform;
-            _count = wheel.Segments.Count;
-            float size = rt.sizeDelta.x;
-
-            var glow = UIKit.Image(rt, SpriteFactory.SoftDot(), PixelCanvas.WithAlpha(ColorUtil.Pink, 0.6f), false, "Glow");
-            glow.rectTransform.Fill(-60, -60, -60, -60);
-            var rim = UIKit.Image(rt, SpriteFactory.Circle(), ColorUtil.Pink, false, "Rim");
-            rim.rectTransform.Fill(-14, -14, -14, -14);
-
-            _disc = UIKit.Node("Disc", rt).Fill();
-            float seg = 360f / _count;
-            for (int i = 0; i < _count; i++)
-            {
-                var s = wheel.Segments[i];
-                var slice = UIKit.Image(_disc, SpriteFactory.Circle(), ColorUtil.Hex(s.Color), false, "Slice");
-                slice.rectTransform.Fill();
-                slice.type = Image.Type.Filled;
-                slice.fillMethod = Image.FillMethod.Radial360;
-                slice.fillOrigin = (int)Image.Origin360.Top;
-                slice.fillClockwise = true;
-                slice.fillAmount = 1f / _count;
-                slice.rectTransform.localRotation = Quaternion.Euler(0, 0, -i * seg);
-
-                float mid = (i + 0.5f) * seg * Mathf.Deg2Rad;
-                float r = size * 0.33f;
-                string text = s.Kind == WheelRewardKind.PowerUp ? Loc.T("wheel.power") : s.Kind == WheelRewardKind.Shard ? Loc.T("wheel.shard") : s.Label;
-                var label = UIKit.Text(_disc, text, text.Length > 4 ? 30 : 42, ColorUtil.Night, TextAnchor.MiddleCenter, false).Fit(18);
-                label.rectTransform.At(UIKit.Center, new Vector2(Mathf.Sin(mid) * r, Mathf.Cos(mid) * r), new Vector2(150, 60));
-                label.rectTransform.localRotation = Quaternion.Euler(0, 0, -(i + 0.5f) * seg);
-            }
-
-            var hub = UIKit.Image(rt, SpriteFactory.Circle(), ColorUtil.Night, false, "Hub");
-            hub.rectTransform.At(UIKit.Center, Vector2.zero, new Vector2(size * 0.22f, size * 0.22f));
-            var star = UIKit.Image(hub.transform, SpriteFactory.Star(), ColorUtil.Yellow, false, "Star");
-            star.rectTransform.Fill(14, 14, 14, 14);
-
-            var pointer = UIKit.Image(rt, SpriteFactory.Triangle(), ColorUtil.Red, false, "Pointer");
-            pointer.rectTransform.At(UIKit.Top, new Vector2(0, 10), new Vector2(80, 80));
-        }
-
-        public void ResetRotation()
-        {
-            _angle = 0f;
-            _disc.localRotation = Quaternion.identity;
-        }
-
-        public void SpinTo(int index, System.Action onTick, System.Action onDone)
-        {
-            float seg = 360f / _count;
-            float jitter = Random.Range(-0.35f, 0.35f) * seg;
-            // Rotating the disc counter-clockwise by the slice's centre angle brings it under the pointer.
-            float target = (index + 0.5f) * seg + jitter;
-            float start = _angle % 360f;
-            float end = 360f * 5f + target;
-            int lastSlice = -1;
-            Tweener.Run(4f, k =>
-            {
-                if (_disc == null) return;
-                _angle = Mathf.LerpUnclamped(start, end, k);
-                _disc.localRotation = Quaternion.Euler(0, 0, _angle);
-                int slice = Mathf.FloorToInt(_angle / seg);
-                if (slice != lastSlice) { lastSlice = slice; onTick?.Invoke(); }
-            }, Ease.OutQuint, onDone, owner: this);
         }
     }
 }

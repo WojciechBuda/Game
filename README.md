@@ -18,6 +18,8 @@ The game includes:
 - **Season pass:** a new 28-day season with 30 tiers. Every tier has a free reward and a pass reward (coins, shards, power-ups, supplies). Each season has its own exclusive theme (free track), avatar and skin (pass track), rotating spring, summer, autumn and winter sets. The pass is a one-time purchase per season; unclaimed rewards are paid out automatically when a season ends.
 - **Arcade modes:** Classic (endless, with difficulty), Sprint 40 and a Daily Challenge (the same pieces for everyone each day, always on Normal).
 - **Difficulty levels:** Easy, Normal, Hard and Insane, picked on the home screen. Best scores are kept separately for each.
+- **Surprise pieces:** falling bombs (clear 3x3), single and double blocks, and row / column blasts that wipe a whole row or column where they land.
+- **Lucky wheel:** golden wheel with chasing lights, icons on every slice, confetti and a flash on big wins. One free spin after every game and once a day from the home screen, plus up to 5 spins a day for 60 coins. Prizes: coins, power-ups, shards, city supplies, Block Run bonus runs, pet energy, a coins x2 booster for 3 games and a 1000-coin jackpot; the exact odds are shown in the game.
 - **Lucky shots:** golden pieces (×5 coins), coin blocks, a random Rainbow bonus, a rare Jackpot, and a free lucky wheel after every game.
 - **Economy:** coins and skin shards, a shop (block skins, themes with music, avatars, power-ups), daily missions, and a 7-day login streak.
 - **Power-ups:** Bomb, Line Zap, Slow-Mo, Stick Swap. Max 2 per game, bought with coins.

@@ -170,9 +170,9 @@ namespace JellyDrop.Interface
             Add(card, Loc.T("pause.restart"), ColorUtil.Blue, () => { App.Screens.PopModal(this); App.RestartGame(); }, ref y);
             Add(card, Loc.T("pause.end"), ColorUtil.Orange, App.QuitGame, ref y, SpriteFactory.HomeIcon());
 
-            _music = UIKit.Button(card, "", ColorUtil.Purple, () => App.SetMusic(!App.Economy.Data.musicOn), new Vector2(330, 120), 40);
+            _music = UIKit.Button(card, "", ColorUtil.Purple, () => App.SetMusic(!App.Economy.Data.musicOn), new Vector2(330, 120), 36, SpriteFactory.MusicIcon(true));
             _music.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(-180, y - 20), new Vector2(330, 120));
-            _sfx = UIKit.Button(card, "", ColorUtil.Purple, () => App.SetSfx(!App.Economy.Data.sfxOn), new Vector2(330, 120), 40);
+            _sfx = UIKit.Button(card, "", ColorUtil.Purple, () => App.SetSfx(!App.Economy.Data.sfxOn), new Vector2(330, 120), 36, SpriteFactory.SoundIcon(true));
             _sfx.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(180, y - 20), new Vector2(330, 120));
 
             var hint = UIKit.Text(card, Loc.T("pause.hint"), 30, ColorUtil.Ink, TextAnchor.MiddleCenter, false).Fit(18);
@@ -190,8 +190,13 @@ namespace JellyDrop.Interface
 
         public override void Refresh()
         {
-            _music.SetLabel(Toggle("settings.music", App.Economy.Data.musicOn));
-            _sfx.SetLabel(Toggle("settings.sound", App.Economy.Data.sfxOn));
+            bool m = App.Economy.Data.musicOn, f = App.Economy.Data.sfxOn;
+            _music.SetLabel(Toggle("settings.music", m));
+            _sfx.SetLabel(Toggle("settings.sound", f));
+            _music.Icon.sprite = SpriteFactory.MusicIcon(m);
+            _sfx.Icon.sprite = SpriteFactory.SoundIcon(f);
+            _music.SetColor(m ? ColorUtil.Purple : Color.gray);
+            _sfx.SetColor(f ? ColorUtil.Purple : Color.gray);
         }
 
         public override bool OnBack()

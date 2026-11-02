@@ -41,6 +41,7 @@ namespace JellyDrop
         public JellyDrop.Core.Pet.PetService Pet { get; private set; }
         public PetScreen PetView { get; private set; }
         public PrivacyScreen PrivacyView { get; private set; }
+        public WheelScreen WheelView { get; private set; }
         public JellyDrop.Core.Tower.TowerService Tower { get; private set; }
         public TowerMenuScreen TowerMenu { get; private set; }
         public TowerScreen TowerView { get; private set; }
@@ -267,6 +268,7 @@ namespace JellyDrop
             Market = AddScreen<MarketPopup>("Market");
             Popup = AddScreen<Popup>("Popup");
             PrivacyView = AddScreen<PrivacyScreen>("Privacy");
+            WheelView = AddScreen<WheelScreen>("Wheel");
             LanguagePicker = AddScreen<LanguagePicker>("Language");
             AdOverlay = AddScreen<FakeAdOverlay>("FakeAd");
         }
@@ -544,6 +546,7 @@ namespace JellyDrop
             Screens.Show(CityView);
         }
         public void OpenSettings() => Screens.Show(Settings);
+        public void OpenWheel() => Screens.Show(WheelView);
 
         private void OnGameEnded(GameResult result)
         {
@@ -690,6 +693,7 @@ namespace JellyDrop
             Audio.ApplySettings(d.musicOn, d.sfxOn);
             if (d.musicOn && !musicWasOn) Audio.PlayThemeMusic(Economy.EquippedTheme);
             Save.MarkDirty();
+            Economy.NotifyChanged();
         }
 
         /// <summary>Smoothness: as fast as the screen allows (up to 120), 60, or 30 to save battery.</summary>

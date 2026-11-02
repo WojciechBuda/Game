@@ -209,7 +209,48 @@ namespace JellyDrop.Tests
             int powerUpsAfter = 0;
             foreach (PowerUpType t in System.Enum.GetValues(typeof(PowerUpType))) powerUpsAfter += e.PowerUpCount(t);
             bool gained = e.Coins > coins || e.Shards > shards || powerUpsAfter > powerUps;
-            Assert.IsTrue(gained, result.Segment.Label);
+            Assert.IsTrue(gained || result.Segment.Kind != WheelRewardKind.Coins && result.Segment.Kind != WheelRewardKind.PowerUp, result.Segment.Label);
+        }
+
+        [Test]
+        public void EverySliceGivesSomething()
+        {
+            var e = NewEconomy();
+            for (int seed = 0; seed < 300; seed++)
+            {
+                var d = e.Data;
+                long before = d.coins + d.shards + d.wood + d.brick + d.glass + d.runTickets + d.coinBoostGames;
+                foreach (PowerUpType t in System.Enum.GetValues(typeof(PowerUpType))) before += e.PowerUpCount(t);
+                var r = e.SpinWheel(new SystemRandom(seed));
+                long after = d.coins + d.shards + d.wood + d.brick + d.glass + d.runTickets + d.coinBoostGames;
+                foreach (PowerUpType t in System.Enum.GetValues(typeof(PowerUpType))) after += e.PowerUpCount(t);
+                if (r.Segment.Kind != WheelRewardKind.PetEnergy) Assert.Greater((int)(after - before), 0, r.Segment.Kind.ToString());
+            }
+        }
+
+        [Test]
+        public void SpinsForCoinsAreLimitedPerDay()
+        {
+            var e = NewEconomy();
+            e.AddCoins(10000);
+            int coins = e.Coins;
+            for (int i = 0; i < EconomyService.MaxPaidSpinsPerDay; i++) Assert.IsTrue(e.TryBuySpin());
+            Assert.IsFalse(e.TryBuySpin());
+            Assert.AreEqual(coins - EconomyService.MaxPaidSpinsPerDay * EconomyService.PaidSpinCost, e.Coins);
+            Assert.IsTrue(e.UseDailyFreeSpin());
+            Assert.IsFalse(e.UseDailyFreeSpin());
+        }
+
+        [Test]
+        public void CoinBoosterDoublesTheNextGames()
+        {
+            var e = NewEconomy();
+            e.Data.coinBoostGames = 1;
+            var r = Result(5000);
+            var rewards = e.ApplyGameResult(r);
+            Assert.Greater(rewards.BoosterBonus, 0);
+            Assert.AreEqual(0, e.CoinBoostGames);
+            Assert.AreEqual(0, e.ApplyGameResult(r).BoosterBonus);
         }
 
         [Test]

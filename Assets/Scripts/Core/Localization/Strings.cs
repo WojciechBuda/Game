@@ -227,6 +227,27 @@ namespace JellyDrop.Core
             Add("go.odds_title", "Wheel odds", "Szanse na kole", "Glücksrad-Chancen", "Probabilidades de la rueda", "Chances de la roue", "Chances da roleta");
             Add("go.odds_shard", "1 shard", "1 kryształ", "1 Splitter", "1 fragmento", "1 éclat", "1 fragmento");
             Add("go.odds_powerup", "1 power-up", "1 wzmocnienie", "1 Power-up", "1 potenciador", "1 bonus", "1 power-up");
+            Add("wheel.title", "LUCKY WHEEL", "KOŁO FORTUNY", "GLÜCKSRAD", "RUEDA DE LA SUERTE", "ROUE DE LA CHANCE", "RODA DA SORTE");
+            Add("wheel.free_now", "Free spin ready!", "Darmowy obrót gotowy!", "Gratis-Dreh bereit!", "¡Giro gratis listo!", "Tour gratuit prêt !", "Giro grátis pronto!");
+            Add("wheel.spin_for", "SPIN  {0}", "KRĘĆ  {0}", "DREHEN  {0}", "GIRAR  {0}", "TOURNER  {0}", "GIRAR  {0}");
+            Add("wheel.paid_left", "Spins for coins left today: {0}", "Obroty za monety na dziś: {0}", "Drehs für Münzen heute: {0}", "Giros por monedas hoy: {0}", "Tours payants aujourd'hui : {0}", "Giros por moedas hoje: {0}");
+            Add("wheel.paid_none", "No more spins today - come back tomorrow!", "Na dziś koniec obrotów - wróć jutro!", "Heute keine Drehs mehr - komm morgen wieder!", "No hay más giros hoy, ¡vuelve mañana!", "Plus de tours aujourd'hui, reviens demain !", "Sem mais giros hoje - volta amanhã!");
+            Add("wheel.booster_active", "Coins x2 for the next {0} games", "Monety x2 przez {0} następne gry", "Münzen x2 für die nächsten {0} Spiele", "Monedas x2 en las próximas {0} partidas", "Pièces x2 pour les {0} prochaines parties", "Moedas x2 nos próximos {0} jogos");
+            Add("wheel.booster", "Coins x2 for your next {0} games!", "Monety x2 w {0} następnych grach!", "Münzen x2 für deine nächsten {0} Spiele!", "¡Monedas x2 en tus próximas {0} partidas!", "Pièces x2 pour tes {0} prochaines parties !", "Moedas x2 nos próximos {0} jogos!");
+            Add("wheel.booster_line", "Wheel booster x2", "Booster z koła x2", "Glücksrad-Booster x2", "Potenciador de la rueda x2", "Bonus de la roue x2", "Bónus da roda x2");
+            Add("wheel.jackpot", "JACKPOT! The big prize is yours!", "JACKPOT! Główna nagroda jest twoja!", "JACKPOT! Der Hauptpreis gehört dir!", "¡PREMIO GORDO!", "JACKPOT ! Le gros lot est à toi !", "JACKPOT! O grande prémio é teu!");
+            Add("wheel.supplies", "Supplies for your city!", "Surowce dla twojego miasta!", "Material für deine Stadt!", "¡Materiales para tu ciudad!", "Des ressources pour ta ville !", "Materiais para a tua cidade!");
+            Add("wheel.supplies_big", "+{0} / +{1} / +{2}", "+{0} / +{1} / +{2}", "+{0} / +{1} / +{2}", "+{0} / +{1} / +{2}", "+{0} / +{1} / +{2}", "+{0} / +{1} / +{2}");
+            Add("wheel.pet_energy", "Energy for your pet!", "Energia dla pupila!", "Energie für dein Tier!", "¡Energía para tu mascota!", "De l'énergie pour ton compagnon !", "Energia para o teu bichinho!");
+            Add("wheel.kind.Coins", "{0} coins", "{0} monet", "{0} Münzen", "{0} monedas", "{0} pièces", "{0} moedas");
+            Add("wheel.kind.Jackpot", "Jackpot: {0} coins", "Jackpot: {0} monet", "Jackpot: {0} Münzen", "Premio gordo: {0} monedas", "Jackpot : {0} pièces", "Jackpot: {0} moedas");
+            Add("wheel.kind.PowerUp", "{0} power-up(s)", "{0} wzmocnienie(a)", "{0} Power-up(s)", "{0} potenciador(es)", "{0} bonus", "{0} power-up(s)");
+            Add("wheel.kind.Shard", "{0} shard", "{0} kryształ", "{0} Splitter", "{0} fragmento", "{0} éclat", "{0} fragmento");
+            Add("wheel.kind.Supplies", "Supplies (wood, bricks, glass)", "Surowce (drewno, cegły, szkło)", "Material (Holz, Ziegel, Glas)", "Materiales (madera, ladrillos, vidrio)", "Ressources (bois, briques, verre)", "Materiais (madeira, tijolos, vidro)");
+            Add("wheel.kind.RunTicket", "Block Run bonus (x2 coins)", "Bieg bonusowy Block Run (x2)", "Block-Run-Bonus (x2)", "Carrera bonus (x2)", "Course bonus (x2)", "Corrida bónus (x2)");
+            Add("wheel.kind.PetEnergy", "+{0} pet energy", "+{0} energii pupila", "+{0} Tier-Energie", "+{0} energía de mascota", "+{0} énergie du compagnon", "+{0} energia do bichinho");
+            Add("wheel.kind.CoinBooster", "Coins x2 for {0} games", "Monety x2 na {0} gry", "Münzen x2 für {0} Spiele", "Monedas x2 durante {0} partidas", "Pièces x2 pendant {0} parties", "Moedas x2 durante {0} jogos");
+            Add("wheel.odds_note", "A free spin after every game and once a day. Extra spins cost {0} coins (max {1} a day). Coins can't be bought with real money.", "Darmowy obrót po każdej grze i raz dziennie. Dodatkowe obroty kosztują {0} monet (maks. {1} dziennie). Monet nie da się kupić za prawdziwe pieniądze.", "Ein Gratis-Dreh nach jedem Spiel und einmal täglich. Extra-Drehs kosten {0} Münzen (max. {1} pro Tag). Münzen kann man nicht mit echtem Geld kaufen.", "Un giro gratis tras cada partida y una vez al día. Los giros extra cuestan {0} monedas (máx. {1} al día). Las monedas no se compran con dinero real.", "Un tour gratuit après chaque partie et une fois par jour. Les tours en plus coûtent {0} pièces (max {1} par jour). Les pièces ne s'achètent pas avec de l'argent réel.", "Um giro grátis após cada jogo e uma vez por dia. Giros extra custam {0} moedas (máx. {1} por dia). As moedas não se compram com dinheiro real.");
             Add("wheel.power", "POWER", "MOC", "POWER", "PODER", "BONUS", "PODER");
             Add("wheel.shard", "SHARD", "KRYSZTAŁ", "SPLITTER", "FRAGM.", "ÉCLAT", "FRAGM.");
 

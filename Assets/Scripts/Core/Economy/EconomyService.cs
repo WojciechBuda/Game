@@ -47,7 +47,9 @@ namespace JellyDrop.Core.Economy
         public int CityBonus;
         public int BonusPercent;
         public bool IsPersonalBest;
-        public int Total => ScoreCoins + CollectedCoins + PersonalBestBonus + SprintBonus + PremiumBonus + CityBonus;
+        /// <summary>Extra coins from a wheel booster (coins x2).</summary>
+        public int BoosterBonus;
+        public int Total => ScoreCoins + CollectedCoins + PersonalBestBonus + SprintBonus + PremiumBonus + CityBonus + BoosterBonus;
         public List<MissionDef> MissionsCompleted = new List<MissionDef>();
     }
 
@@ -624,6 +626,12 @@ namespace JellyDrop.Core.Economy
                 rewards.CityBonus = (int)Math.Round(baseTotal * cityPercent / 100.0);
             }
 
+            if (Data.coinBoostGames > 0)
+            {
+                rewards.BoosterBonus = rewards.ScoreCoins + rewards.CollectedCoins + rewards.PersonalBestBonus + rewards.SprintBonus;
+                Data.coinBoostGames--;
+            }
+
             rewards.MissionsCompleted = UpdateMissions(result);
 
             Data.totalGames++;
@@ -633,21 +641,71 @@ namespace JellyDrop.Core.Economy
             return rewards;
         }
 
+        public const int PaidSpinCost = 60;
+        public const int MaxPaidSpinsPerDay = 5;
+
+        /// <summary>Spins for coins still allowed today.</summary>
+        public int PaidSpinsLeft
+        {
+            get
+            {
+                if (Data.paidSpinDay != Today) { Data.paidSpinDay = Today; Data.paidSpinsToday = 0; }
+                return Math.Max(0, MaxPaidSpinsPerDay - Data.paidSpinsToday);
+            }
+        }
+
+        public bool DailyFreeSpinReady => Data.wheelFreeDay != Today;
+
+        /// <summary>Uses today's free spin from the home screen. False if already used.</summary>
+        public bool UseDailyFreeSpin()
+        {
+            if (!DailyFreeSpinReady) return false;
+            Data.wheelFreeDay = Today;
+            Notify();
+            return true;
+        }
+
+        /// <summary>Pays for one spin with coins. False when out of coins or out of spins for today.</summary>
+        public bool TryBuySpin()
+        {
+            if (PaidSpinsLeft <= 0 || Data.coins < PaidSpinCost) return false;
+            Data.coins -= PaidSpinCost;
+            Data.paidSpinsToday++;
+            Notify();
+            return true;
+        }
+
+        public int CoinBoostGames => Data.coinBoostGames;
+
         public WheelResult SpinWheel(IRandom rng)
         {
             var result = Wheel.Spin(rng);
+            int amount = result.Segment.Amount;
             switch (result.Segment.Kind)
             {
                 case WheelRewardKind.Coins:
-                    Data.coins += result.Segment.Amount;
-                    Data.totalCoinsEarned += result.Segment.Amount;
+                case WheelRewardKind.Jackpot:
+                    Data.coins += amount;
+                    Data.totalCoinsEarned += amount;
                     break;
                 case WheelRewardKind.PowerUp:
-                    AddPowerUp(result.PowerUp, result.Segment.Amount, notify: false);
+                    AddPowerUp(result.PowerUp, amount, notify: false);
                     break;
                 case WheelRewardKind.Shard:
-                    Data.shards += result.Segment.Amount;
+                    Data.shards += amount;
                     break;
+                case WheelRewardKind.Supplies:
+                    Data.wood += amount * 2;
+                    Data.brick += amount;
+                    Data.glass += Math.Max(1, amount / 2);
+                    break;
+                case WheelRewardKind.RunTicket:
+                    GrantRunTicket(amount);
+                    break;
+                case WheelRewardKind.CoinBooster:
+                    Data.coinBoostGames += amount;
+                    break;
+                // PetEnergy: paid by the app (see App.ApplyWheelExtras).
             }
             Notify();
             return result;

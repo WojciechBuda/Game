@@ -15,6 +15,7 @@ namespace JellyDrop.Interface
         private ResourceBar _resources;
         private Image _avatar;
         private Image _dirt;
+        private CandyButton _wheelButton;
         private CandyButton _energy;
         private Text _cityInfo;
         private CandyButton _play;
@@ -30,6 +31,10 @@ namespace JellyDrop.Interface
             _resources = ResourceBar.Create(Root, UIKit.TopLeft, new Vector2(440, -80));
             var gear = UIKit.IconButton(Root, SpriteFactory.GearIcon(), ColorUtil.Purple, App.OpenSettings, 110);
             gear.GetComponent<RectTransform>().At(UIKit.TopRight, new Vector2(-80, -80), new Vector2(110, 110));
+            // Lucky wheel: free spin once a day (badge), then spins for coins.
+            _wheelButton = UIKit.IconButton(Root, WheelArt.WheelIcon(), ColorUtil.Orange, App.OpenWheel, 110);
+            _wheelButton.GetComponent<RectTransform>().At(UIKit.TopRight, new Vector2(-80, -205), new Vector2(110, 110));
+            _wheelButton.gameObject.AddComponent<Bobber>().Amplitude = 5f;
 
             // Title: each letter its own colour and bob
             const string title = "STACKVILLE";
@@ -101,6 +106,7 @@ namespace JellyDrop.Interface
         {
             var e = App.Economy;
             _resources.Refresh(App);
+            _wheelButton.SetBadge(e.DailyFreeSpinReady ? 1 : 0);
             var pet = App.Pet;
             _avatar.sprite = SpriteFactory.Avatar(e.EquippedAvatar, PetUi.Face(pet.Mood));
             _dirt.enabled = pet.Clean < 30f;

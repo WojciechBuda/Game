@@ -360,6 +360,55 @@ namespace JellyDrop.Visuals
             return c.ToSprite(96);
         });
 
+        /// <summary>Music note (crossed out when off).</summary>
+        public static Sprite MusicIcon(bool on) => Cached("icon_music_" + on, () =>
+        {
+            var c = new PixelCanvas(128, 128);
+            c.Paint((x, y) => PixelCanvas.Ellipse(x, y, 40, 30, 18, 14), Color.white);
+            c.Paint((x, y) => PixelCanvas.Ellipse(x, y, 88, 42, 18, 14), Color.white);
+            c.Paint((x, y) => PixelCanvas.Segment(x, y, 55, 32, 55, 104, 6), Color.white);
+            c.Paint((x, y) => PixelCanvas.Segment(x, y, 103, 44, 103, 116, 6), Color.white);
+            c.Paint((x, y) => PixelCanvas.Polygon(x, y, new List<Vector2> { new Vector2(52, 96), new Vector2(106, 108), new Vector2(106, 122), new Vector2(52, 110) }), Color.white);
+            if (!on) CrossOut(c);
+            return c.ToSprite(128);
+        });
+
+        /// <summary>Speaker (crossed out when off).</summary>
+        public static Sprite SoundIcon(bool on) => Cached("icon_sound_" + on, () =>
+        {
+            var c = new PixelCanvas(128, 128);
+            c.Paint((x, y) => PixelCanvas.RoundedBox(x, y, 30, 64, 14, 18, 4), Color.white);
+            c.Paint((x, y) => PixelCanvas.Polygon(x, y, new List<Vector2> { new Vector2(38, 46), new Vector2(72, 18), new Vector2(72, 110), new Vector2(38, 82) }), Color.white);
+            if (on)
+            {
+                c.Paint((x, y) => Mathf.Max(Mathf.Abs(PixelCanvas.Circle(x, y, 72, 64, 24)) - 4f, 76 - x), Color.white);
+                c.Paint((x, y) => Mathf.Max(Mathf.Abs(PixelCanvas.Circle(x, y, 72, 64, 44)) - 4f, 80 - x), Color.white);
+            }
+            else CrossOut(c);
+            return c.ToSprite(128);
+        });
+
+        /// <summary>Vibrating phone.</summary>
+        public static Sprite VibrateIcon(bool on) => Cached("icon_vibe_" + on, () =>
+        {
+            var c = new PixelCanvas(128, 128);
+            c.Paint((x, y) => Mathf.Abs(PixelCanvas.RoundedBox(x, y, 64, 64, 26, 44, 10)) - 5f, Color.white);
+            c.Paint((x, y) => PixelCanvas.Circle(x, y, 64, 32, 5), Color.white);
+            if (on)
+                foreach (var sx in new[] { -1f, 1f })
+                {
+                    c.Paint((x, y) => PixelCanvas.Segment(x, y, 64 + sx * 40, 44, 64 + sx * 40, 84, 4), Color.white);
+                    c.Paint((x, y) => PixelCanvas.Segment(x, y, 64 + sx * 52, 52, 64 + sx * 52, 76, 4), Color.white);
+                }
+            else CrossOut(c);
+            return c.ToSprite(128);
+        });
+
+        private static void CrossOut(PixelCanvas c)
+        {
+            c.Paint((x, y) => PixelCanvas.Segment(x, y, 18, 18, 110, 110, 10), ColorUtil.Hex("#FF4F6E"));
+        }
+
         /// <summary>Row blast (horizontal arrows) or column blast (vertical arrows): a glowing block.</summary>
         public static Sprite BlastBlock(bool row) => Cached("blast_" + row, () =>
         {

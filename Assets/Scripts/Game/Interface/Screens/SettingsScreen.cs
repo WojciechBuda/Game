@@ -50,7 +50,7 @@ namespace JellyDrop.Interface
             _music = Slider(Loc.T("settings.music"), ColorUtil.Pink, v => App.SetVolumes(v, App.Economy.Data.sfxVolume));
             _sfx = Slider(Loc.T("settings.sound"), ColorUtil.Orange, v => App.SetVolumes(App.Economy.Data.musicVolume, v));
             _sfx.Released = () => App.Audio.Play(Sfx.Coin);
-            _haptics = Row(ColorUtil.Pink, ToggleHaptics);
+            _haptics = Row(ColorUtil.Pink, ToggleHaptics, "", SpriteFactory.VibrateIcon(true));
 
             Section("settings.general_section");
             _language = Row(ColorUtil.Blue, () => App.Screens.PushModal(App.LanguagePicker));
@@ -87,9 +87,9 @@ namespace JellyDrop.Interface
             _y -= 66;
         }
 
-        private CandyButton Row(Color color, System.Action onClick, string label = "")
+        private CandyButton Row(Color color, System.Action onClick, string label = "", Sprite icon = null)
         {
-            var b = UIKit.Button(_content, label, color, onClick, new Vector2(800, 112), 40);
+            var b = UIKit.Button(_content, label, color, onClick, new Vector2(800, 112), 40, icon);
             b.GetComponent<RectTransform>().At(UIKit.Top, new Vector2(0, _y - 56), new Vector2(800, 112));
             _y -= 128;
             return b;
@@ -139,6 +139,9 @@ namespace JellyDrop.Interface
             _sfx.Value = d.sfxOn ? d.sfxVolume : 0f;
             _haptics.SetLabel(OnOff("settings.vibration", d.hapticsOn));
             _haptics.SetColor(d.hapticsOn ? ColorUtil.Pink : Color.gray);
+            if (_haptics.Icon != null) _haptics.Icon.sprite = SpriteFactory.VibrateIcon(d.hapticsOn);
+            _music.Icon.sprite = SpriteFactory.MusicIcon(d.musicOn && d.musicVolume > 0.01f);
+            _sfx.Icon.sprite = SpriteFactory.SoundIcon(d.sfxOn && d.sfxVolume > 0.01f);
             _fps.SetLabel(Loc.T("settings.fps." + d.frameRateMode));
             _privacy.gameObject.SetActive(App.Ads != null && App.Ads.PrivacyOptionsRequired);
         }
@@ -155,6 +158,8 @@ namespace JellyDrop.Interface
     {
         public System.Action<float> Changed;
         public System.Action Released;
+        public Image Icon;
+        private float _beforeMute;
         private RectTransform _track;
         private Image _fill;
         private RectTransform _knob;
@@ -176,7 +181,19 @@ namespace JellyDrop.Interface
             var s = row.gameObject.AddComponent<VolumeSlider>();
             s._name = label;
             s._label = UIKit.Text(row, label, 38, ColorUtil.Ink, TextAnchor.MiddleLeft, false).Fit(20);
-            s._label.rectTransform.At(UIKit.Top, new Vector2(-150, -30), new Vector2(500, 56));
+            s._label.rectTransform.At(UIKit.Top, new Vector2(-90, -30), new Vector2(500, 56));
+            // Speaker / note icon: tap it to mute or unmute quickly.
+            var iconBg = UIKit.Image(row, SpriteFactory.Circle(), color, true, "IconBg");
+            iconBg.rectTransform.At(UIKit.Top, new Vector2(-350, -30), new Vector2(68, 68));
+            s.Icon = UIKit.Image(iconBg.rectTransform, null, Color.white, false, "Icon");
+            s.Icon.rectTransform.Fill(12, 12, 12, 12);
+            iconBg.gameObject.AddComponent<TapTarget>().OnTap = () =>
+            {
+                float v = s._value > 0.01f ? 0f : (s._beforeMute > 0.01f ? s._beforeMute : 0.8f);
+                if (s._value > 0.01f) s._beforeMute = s._value;
+                s.Value = v;
+                s.Changed?.Invoke(v);
+            };
             s._percent = UIKit.Text(row, "", 36, color, TextAnchor.MiddleRight, false);
             s._percent.rectTransform.At(UIKit.Top, new Vector2(300, -30), new Vector2(200, 56));
             var track = UIKit.Panel(row, PixelCanvas.WithAlpha(ColorUtil.Night, 0.35f), 2.5f, false, "Track");
