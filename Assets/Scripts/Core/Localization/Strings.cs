@@ -403,6 +403,48 @@ namespace JellyDrop.Core
             Add("city.speed_up", "FINISH NOW  {0}", "SKOŃCZ TERAZ  {0}", "SOFORT FERTIG  {0}", "TERMINAR YA  {0}", "TERMINER  {0}", "TERMINAR JÁ  {0}");
             Add("city.level_of", "LEVEL {0} / {1}", "POZIOM {0} / {1}", "STUFE {0} / {1}", "NIVEL {0} / {1}", "NIVEAU {0} / {1}", "NÍVEL {0} / {1}");
             Add("city.builders", "Builders {0} / {1}", "Budowniczowie {0} / {1}", "Bauarbeiter {0} / {1}", "Constructores {0} / {1}", "Ouvriers {0} / {1}", "Construtores {0} / {1}");
+            // Tower climb
+            Add("tower.title", "TOWER", "WIEŻA", "TURM", "TORRE", "TOUR", "TORRE");
+            Add("tower.endless", "Endless tower", "Nieskończona wieża", "Endloser Turm", "Torre infinita", "Tour infinie", "Torre infinita");
+            Add("tower.towers", "Towers", "Wieże", "Türme", "Torres", "Tours", "Torres");
+            Add("tower.mode.Classic", "CLASSIC", "KLASYK", "KLASSIK", "CLÁSICO", "CLASSIQUE", "CLÁSSICO");
+            Add("tower.mode.Speed", "SPEED", "SZYBKI", "TEMPO", "RÁPIDO", "VITESSE", "RÁPIDO");
+            Add("tower.mode.Ice", "ICE", "LÓD", "EIS", "HIELO", "GLACE", "GELO");
+            Add("tower.modes_info", "Speed: the tower rises fast. Ice: every floor is slippery.", "Szybki: wieża pędzi w górę. Lód: każde piętro jest śliskie.", "Tempo: der Turm steigt schnell. Eis: jede Etage ist glatt.", "Rápido: la torre sube deprisa. Hielo: todos los pisos resbalan.", "Vitesse : la tour monte vite. Glace : chaque étage glisse.", "Rápido: a torre sobe depressa. Gelo: todos os pisos escorregam.");
+            Add("tower.scenery.Ice", "Ice", "Lód", "Eis", "Hielo", "Glace", "Gelo");
+            Add("tower.scenery.Candy", "Candy", "Cukierki", "Bonbon", "Dulces", "Bonbons", "Doces");
+            Add("tower.scenery.Jungle", "Jungle", "Dżungla", "Dschungel", "Selva", "Jungle", "Selva");
+            Add("tower.scenery.Space", "Space", "Kosmos", "Weltall", "Espacio", "Espace", "Espaço");
+            Add("tower.scenery.Lava", "Lava", "Lawa", "Lava", "Lava", "Lave", "Lava");
+            Add("tower.best", "Best: floor {0}", "Rekord: piętro {0}", "Rekord: Etage {0}", "Récord: piso {0}", "Record : étage {0}", "Recorde: piso {0}");
+            Add("tower.name", "{0}. {1} tower", "{0}. Wieża: {1}", "{0}. {1}-Turm", "{0}. Torre {1}", "{0}. Tour {1}", "{0}. Torre {1}");
+            Add("tower.floors", "{0} floors", "{0} pięter", "{0} Etagen", "{0} pisos", "{0} étages", "{0} pisos");
+            Add("tower.locked", "LOCKED", "ZABLOKOWANA", "GESPERRT", "BLOQUEADA", "VERROUILLÉE", "BLOQUEADA");
+            Add("tower.climb", "CLIMB +{0}", "WSPINAJ +{0}", "KLETTERN +{0}", "SUBIR +{0}", "GRIMPER +{0}", "SUBIR +{0}");
+            Add("tower.replay", "AGAIN +{0}", "PONOWNIE +{0}", "NOCHMAL +{0}", "OTRA VEZ +{0}", "ENCORE +{0}", "OUTRA VEZ +{0}");
+            Add("tower.hz.none", "No obstacles - warm up!", "Bez przeszkód - rozgrzewka!", "Keine Hindernisse - zum Aufwärmen!", "Sin obstáculos: ¡calienta!", "Sans obstacles : échauffement !", "Sem obstáculos: aquece!");
+            Add("tower.hz.ice", "icy floors", "śliskie piętra", "glatte Etagen", "pisos de hielo", "étages glacés", "pisos de gelo");
+            Add("tower.hz.moving", "moving floors", "ruchome piętra", "bewegliche Etagen", "pisos móviles", "étages mobiles", "pisos móveis");
+            Add("tower.hz.crumble", "crumbling floors", "kruszące się piętra", "bröckelnde Etagen", "pisos que se rompen", "étages fragiles", "pisos que se partem");
+            Add("tower.hz.spring", "springs", "sprężyny", "Federn", "muelles", "ressorts", "molas");
+            Add("tower.hz.fast", "fast rise", "szybkie tempo", "schneller Anstieg", "subida rápida", "montée rapide", "subida rápida");
+            Add("tower.hz.narrow", "narrow floors", "wąskie piętra", "schmale Etagen", "pisos estrechos", "étages étroits", "pisos estreitos");
+            Add("tower.hint", "Hold the arrows to run, hold jump to bounce up. Run fast to jump higher - bounce off the walls!", "Trzymaj strzałki, żeby biec, trzymaj skok, żeby skakać. Im szybciej biegniesz, tym wyżej skaczesz - odbijaj się od ścian!", "Halte die Pfeile zum Laufen und Springen gedrückt. Je schneller, desto höher - prall von den Wänden ab!", "Mantén las flechas para correr y salto para saltar. ¡Cuanto más rápido, más alto! Rebota en las paredes.", "Maintiens les flèches pour courir et saut pour sauter. Plus tu cours vite, plus tu sautes haut - rebondis sur les murs !", "Segura as setas para correr e salto para saltar. Mais rápido = mais alto. Ressalta nas paredes!");
+            Add("tower.floor", "Floor {0}", "Piętro {0}", "Etage {0}", "Piso {0}", "Étage {0}", "Piso {0}");
+            Add("tower.floor_of", "Floor {0} / {1}", "Piętro {0} / {1}", "Etage {0} / {1}", "Piso {0} / {1}", "Étage {0} / {1}", "Piso {0} / {1}");
+            Add("tower.combo", "COMBO {0}", "COMBO {0}", "KOMBO {0}", "COMBO {0}", "COMBO {0}", "COMBO {0}");
+            Add("tower.combo_end", "Combo {0} floors! +{1}", "Combo {0} pięter! +{1}", "Kombo {0} Etagen! +{1}", "¡Combo de {0} pisos! +{1}", "Combo {0} étages ! +{1}", "Combo de {0} pisos! +{1}");
+            Add("tower.top", "TOP", "SZCZYT", "GIPFEL", "CIMA", "SOMMET", "TOPO");
+            Add("tower.again", "CLIMB AGAIN", "JESZCZE RAZ", "NOCHMAL", "OTRA VEZ", "ENCORE", "OUTRA VEZ");
+            Add("tower.won", "Top reached!", "Szczyt zdobyty!", "Gipfel erreicht!", "¡Cima alcanzada!", "Sommet atteint !", "Topo alcançado!");
+            Add("tower.fell", "You fell!", "Spadłeś!", "Abgestürzt!", "¡Te caíste!", "Tu es tombé !", "Caíste!");
+            Add("tower.record", "New record!", "Nowy rekord!", "Neuer Rekord!", "¡Nuevo récord!", "Nouveau record !", "Novo recorde!");
+            Add("tower.result", "Floor {0} · best combo {1} · score {2}", "Piętro {0} · najlepsze combo {1} · wynik {2}", "Etage {0} · bestes Kombo {1} · Punkte {2}", "Piso {0} · mejor combo {1} · puntos {2}", "Étage {0} · meilleur combo {1} · score {2}", "Piso {0} · melhor combo {1} · pontos {2}");
+            Add("tower.result_tower", "Floor {0} of {1}", "Piętro {0} z {1}", "Etage {0} von {1}", "Piso {0} de {1}", "Étage {0} sur {1}", "Piso {0} de {1}");
+            Add("tower.unlocked_next", "Next tower unlocked!", "Następna wieża odblokowana!", "Nächster Turm freigeschaltet!", "¡Siguiente torre desbloqueada!", "Tour suivante débloquée !", "Próxima torre desbloqueada!");
+            Add("tower.try_again", "So close - try again!", "Blisko - spróbuj jeszcze raz!", "Knapp - versuch es nochmal!", "¡Casi! Inténtalo otra vez", "Presque - réessaie !", "Quase - tenta outra vez!");
+            Add("tower.arcade_info", "Towers {0}/{1} · best floor {2}", "Wieże {0}/{1} · rekord {2}", "Türme {0}/{1} · Rekord {2}", "Torres {0}/{1} · récord {2}", "Tours {0}/{1} · record {2}", "Torres {0}/{1} · recorde {2}");
+
             // Pet care
             Add("pet.title", "MY PET", "MÓJ PUPIL", "MEIN TIER", "MI MASCOTA", "MON COMPAGNON", "MEU BICHINHO");
             Add("pet.feed", "FEED", "KARM", "FÜTTERN", "COMIDA", "NOURRIR", "COMIDA");

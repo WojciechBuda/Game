@@ -160,6 +160,7 @@ namespace JellyDrop.Interface
         private Text _dailyInfo;
         private CandyButton _run;
         private Text _runInfo;
+        private Text _towerInfo;
         private readonly Dictionary<Difficulty, CandyButton> _difficultyButtons = new Dictionary<Difficulty, CandyButton>();
 
         protected override void Build()
@@ -203,11 +204,16 @@ namespace JellyDrop.Interface
             _dailyInfo.rectTransform.At(UIKit.Center, new Vector2(200, -428), new Vector2(420, 50));
 
             // Block Run: the 3D runner bonus
-            _run = UIKit.Button(Root, Loc.T("run.title"), ColorUtil.Pink, () => App.StartRun(), new Vector2(700, 160), 58, SpriteFactory.PlayIcon());
-            _run.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(0, -560), new Vector2(700, 160));
+            _run = UIKit.Button(Root, Loc.T("run.title"), ColorUtil.Pink, () => App.StartRun(), new Vector2(440, 160), 46, SpriteFactory.PlayIcon());
+            _run.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(-235, -560), new Vector2(440, 160));
             _run.ClickWhenDisabled = true;
-            _runInfo = UIKit.Text(Root, "", 30, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(18);
-            _runInfo.rectTransform.At(UIKit.Center, new Vector2(0, -665), new Vector2(900, 50));
+            _runInfo = UIKit.Text(Root, "", 28, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(16);
+            _runInfo.rectTransform.At(UIKit.Center, new Vector2(-235, -665), new Vector2(460, 50));
+            // Tower climb (Icy Tower style): endless modes and towers with a floor limit.
+            var tower = UIKit.Button(Root, Loc.T("tower.title"), ColorUtil.Blue, App.OpenTowerMenu, new Vector2(440, 160), 46, PetSprites.Bolt());
+            tower.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(235, -560), new Vector2(440, 160));
+            _towerInfo = UIKit.Text(Root, "", 28, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(16);
+            _towerInfo.rectTransform.At(UIKit.Center, new Vector2(235, -665), new Vector2(460, 50));
         }
 
         public override void Refresh()
@@ -228,6 +234,7 @@ namespace JellyDrop.Interface
             _run.SetBadge(tickets);
             _run.Interactable = tickets > 0;
             _runInfo.text = tickets > 0 ? Loc.T("run.info", e.Data.runBest) : Loc.T("run.no_tickets_body");
+            _towerInfo.text = Loc.T("tower.arcade_info", App.Tower.Cleared, JellyDrop.Core.Tower.TowerCatalog.Count, App.Tower.Best(JellyDrop.Core.Tower.TowerMode.Classic));
             int dailyBest = e.DailyChallengeBestToday;
             _dailyInfo.text = dailyBest > 0 ? Loc.T("home.daily_today", Loc.Number(dailyBest)) : Loc.T("home.daily_info");
         }

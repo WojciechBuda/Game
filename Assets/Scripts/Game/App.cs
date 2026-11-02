@@ -40,6 +40,9 @@ namespace JellyDrop
         public CityMissionService CityMissions { get; private set; }
         public JellyDrop.Core.Pet.PetService Pet { get; private set; }
         public PetScreen PetView { get; private set; }
+        public JellyDrop.Core.Tower.TowerService Tower { get; private set; }
+        public TowerMenuScreen TowerMenu { get; private set; }
+        public TowerScreen TowerView { get; private set; }
         /// <summary>The 3D village shown behind the city screen.</summary>
         public CityWorld CityWorld { get; private set; }
         /// <summary>The 3D Block Run bonus.</summary>
@@ -115,6 +118,7 @@ namespace JellyDrop
             Progress = new ProgressService(Economy);
             Loyalty = new LoyaltyService(Economy);
             Pet = new JellyDrop.Core.Pet.PetService(Economy);
+            Tower = new JellyDrop.Core.Tower.TowerService(Economy);
             Economy.CoinBonusPercent = () => City.CoinBonusPercent + Loyalty.CoinBonusPercent + Pet.CoinBonusPercent;
 #if PLAY_GAMES && UNITY_ANDROID && !UNITY_EDITOR
             Online = new JellyDrop.Online.PlayGamesService();
@@ -243,6 +247,8 @@ namespace JellyDrop
             Season = AddScreen<SeasonScreen>("Season");
             WardrobeView = AddScreen<WardrobeScreen>("Wardrobe");
             PetView = AddScreen<PetScreen>("Pet");
+            TowerMenu = AddScreen<TowerMenuScreen>("TowerMenu");
+            TowerView = AddScreen<TowerScreen>("Tower");
             Runner = AddScreen<RunnerScreen>("Runner");
             LevelResult = AddScreen<LevelResultScreen>("LevelResult");
             Hud = AddScreen<HudScreen>("Hud");
@@ -424,6 +430,29 @@ namespace JellyDrop
             Screens.Show(WardrobeView);
         }
         public void OpenPet() => Screens.Show(PetView);
+
+        public void OpenTowerMenu()
+        {
+            Game.Leave();
+            Screens.Show(TowerMenu);
+        }
+
+        /// <summary>Endless tower climb (Icy Tower style) in the chosen mode and scenery.</summary>
+        public void StartTowerEndless(JellyDrop.Core.Tower.TowerMode mode)
+        {
+            Game.Leave();
+            Screens.Show(TowerView);
+            TowerView.BeginEndless(mode, Tower.Scenery);
+        }
+
+        /// <summary>A tower with a floor limit and obstacles.</summary>
+        public void StartTower(int index)
+        {
+            if (!Tower.IsUnlocked(index)) return;
+            Game.Leave();
+            Screens.Show(TowerView);
+            TowerView.BeginTower(index);
+        }
 
         /// <summary>Sign in with the Google account (Google Play Games) from the Settings button.</summary>
         public void SignInWithGoogle()

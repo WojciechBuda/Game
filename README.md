@@ -8,6 +8,10 @@ The game includes:
 - **City builder:** coins buy supplies at the market (wood, bricks, glass). Supplies plus coins build and upgrade 10 kinds of buildings on up to 12 plots. Houses, bakeries and windmills make coins over time; the sawmill, brickworks and glassworks make supplies; parks, the tower and the castle add a % bonus to coins from every game. Population raises the city level, which opens new plots and buildings. Buildings store up to 8 hours of production, so players come back to collect.
 - **3D village:** the city is a low-poly 3D island (in the spirit of Ikariam / Grepolis). Buildings rise with scaffolding when built or upgraded, the windmill turns, villagers walk the paths and floating icons show what is ready to collect. Drag to pan, pinch to zoom, tap a plot.
 - **Block Run (bonus):** a 3D three-lane runner starring your avatar block (swipe to change lanes, jump and slide). Collect coins; one free run per day and an extra run for every Boost level won.
+- **Village missions:** every 20–45 minutes something happens in the 3D village: a runaway chicken, a thief with a sack of coins, a balloon festival or a hide-and-seek cat. Tap it in time for coins and supplies (bigger cities pay more).
+- **Build times:** construction takes real time and grows with every level (seconds at first, up to 12 hours); 2 builders work at once and FINISH NOW speeds a build up for coins. The island grows as new rows of plots unlock (30 plots, city level up to 25, buildings up to level 10).
+- **Pet care (like Pou):** your avatar is also a pet with four needs (food, energy, fun, cleanliness) that drop in real time, even while the game is closed. Ignore it and it gets sad, lonely and finally sick (medicine cures it). Feed it, wash it, put it to bed, give presents, dress it up or stroke it. A happy pet gives +5% coins from levels. Tap the mascot on the home screen.
+- **Tower (like Icy Tower):** jump from floor to floor up a tower; run faster to jump higher and bounce off the walls for big combos. Endless tower in three modes (Classic, Speed, Ice) and five sceneries (ice, candy, jungle, space, lava), plus 12 towers with a floor limit (20–100 floors) and obstacles: icy, moving and crumbling floors, springs, narrow floors and a fast rise. Each tower unlocks the next.
 - **Wardrobe:** dress up your avatar with coins: body colours, hats (cap, beanie, party hat, headphones, cowboy hat, crown) and glasses.
 - **Controls:** tap a column to drop the piece there, tap the piece to rotate; swipes still work.
 - **Player level:** XP from every game, won level and mission. Each level-up pays coins (plus shards and supplies on milestones), unlocks exclusive items at levels 5, 10, 20, 30 and 50, and adds +1% coins from games every 5 levels (up to +20%). It never resets.
@@ -104,6 +108,8 @@ The game ships in English, Polish, German, Spanish, French and Portuguese.
 | Hold | flick up | C / Shift |
 | Pause | pause button / Android back | Esc / P |
 
+Tower: hold the on-screen arrows to run and hold the jump button (keyboard: ← → and Space / ↑).
+
 ## 3. Project structure
 
 ```
@@ -117,6 +123,8 @@ Assets/
       City/      CityCatalog (buildings, costs, production), CityService
       Loyalty/   Player level and season pass (points, tiers, rewards, season calendar)
       Runner/    Block Run rules (lanes, obstacles, coins), unit-tested
+      Pet/       Pet needs, moods, sickness and care actions
+      Tower/     Tower climb physics, endless modes, towers with a floor limit, demo bot
       Online/    IOnlineService + OfflineService (ready for leaderboards and challenges)
     Game/
       App.cs     Composition root and main flows (start game, game over, ads, purchases)

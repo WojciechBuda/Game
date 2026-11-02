@@ -91,6 +91,7 @@ namespace JellyDrop.GameInput
                 case GameKey.Left: return k.leftArrowKey.isPressed || k.aKey.isPressed;
                 case GameKey.Right: return k.rightArrowKey.isPressed || k.dKey.isPressed;
                 case GameKey.Down: return k.downArrowKey.isPressed || k.sKey.isPressed;
+                case GameKey.HardDrop: return k.spaceKey.isPressed || k.upArrowKey.isPressed || k.wKey.isPressed;
             }
             return false;
 #else
@@ -99,6 +100,7 @@ namespace JellyDrop.GameInput
                 case GameKey.Left: return Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A);
                 case GameKey.Right: return Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D);
                 case GameKey.Down: return Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S);
+                case GameKey.HardDrop: return Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);
             }
             return false;
 #endif

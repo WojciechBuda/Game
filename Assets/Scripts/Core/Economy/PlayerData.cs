@@ -117,6 +117,11 @@ namespace JellyDrop.Core.Economy
         public int petDressDay = -1, petDressCount;
         public int petCareTotal;
 
+        // Tower climb (Icy Tower style)
+        public List<int> towerBest = new List<int>();   // best floor per endless mode
+        public int towerCleared;                          // towers with a floor limit climbed so far
+        public int towerScenery;
+
         // Block Run bonus: tickets (one free each day, more from Boost levels) and best distance
         public int runTickets;
         public int runTicketDay = -1;
