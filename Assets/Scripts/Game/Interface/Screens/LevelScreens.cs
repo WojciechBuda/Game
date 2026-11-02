@@ -365,6 +365,11 @@ namespace JellyDrop.Interface
                 }
             }
 
+            if (won && def.IsBoost)
+            {
+                var ticket = UIKit.Text(_content, Loc.T("run.ticket_won"), 34, ColorUtil.Pink, TextAnchor.MiddleCenter, true).Fit(18);
+                ticket.rectTransform.At(UIKit.Bottom, new Vector2(0, 460), new Vector2(860, 50));
+            }
             if (_gain != null && _gain.Points > 0)
             {
                 var xp = UIKit.Text(_content, Loc.T("player.gain", _gain.Points), 32, ColorUtil.Orange, TextAnchor.MiddleCenter, false).Fit(18);

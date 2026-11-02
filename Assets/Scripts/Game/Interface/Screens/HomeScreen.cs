@@ -147,6 +147,8 @@ namespace JellyDrop.Interface
         private Text _best;
         private Text _difficultyInfo;
         private Text _dailyInfo;
+        private CandyButton _run;
+        private Text _runInfo;
         private readonly Dictionary<Difficulty, CandyButton> _difficultyButtons = new Dictionary<Difficulty, CandyButton>();
 
         protected override void Build()
@@ -188,6 +190,13 @@ namespace JellyDrop.Interface
             daily.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(200, -335), new Vector2(380, 130));
             _dailyInfo = UIKit.Text(Root, "", 28, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(16);
             _dailyInfo.rectTransform.At(UIKit.Center, new Vector2(200, -428), new Vector2(420, 50));
+
+            // Block Run: the 3D runner bonus
+            _run = UIKit.Button(Root, Loc.T("run.title"), ColorUtil.Pink, () => App.StartRun(), new Vector2(700, 160), 58, SpriteFactory.PlayIcon());
+            _run.GetComponent<RectTransform>().At(UIKit.Center, new Vector2(0, -560), new Vector2(700, 160));
+            _run.ClickWhenDisabled = true;
+            _runInfo = UIKit.Text(Root, "", 30, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(18);
+            _runInfo.rectTransform.At(UIKit.Center, new Vector2(0, -665), new Vector2(900, 50));
         }
 
         public override void Refresh()
@@ -204,6 +213,10 @@ namespace JellyDrop.Interface
                 kv.Value.SetColor(selected ? c : Color.Lerp(c, ColorUtil.Muted, 0.6f));
                 kv.Value.transform.localScale = Vector3.one * (selected ? 1.08f : 0.92f);
             }
+            int tickets = e.RunTickets;
+            _run.SetBadge(tickets);
+            _run.Interactable = tickets > 0;
+            _runInfo.text = tickets > 0 ? Loc.T("run.info", e.Data.runBest) : Loc.T("run.no_tickets_body");
             int dailyBest = e.DailyChallengeBestToday;
             _dailyInfo.text = dailyBest > 0 ? Loc.T("home.daily_today", Loc.Number(dailyBest)) : Loc.T("home.daily_info");
         }

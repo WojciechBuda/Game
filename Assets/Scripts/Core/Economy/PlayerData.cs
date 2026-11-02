@@ -98,6 +98,11 @@ namespace JellyDrop.Core.Economy
         public List<int> seasonFreeClaimed = new List<int>();
         public List<int> seasonPremiumClaimed = new List<int>();
 
+        // Block Run bonus: tickets (one free each day, more from Boost levels) and best distance
+        public int runTickets;
+        public int runTicketDay = -1;
+        public int runBest;
+
         // Avatar wardrobe (bought with coins) and what is worn
         public List<string> wardrobe = new List<string>();
         public string wearColor = "";

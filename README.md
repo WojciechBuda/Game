@@ -6,6 +6,10 @@ The game includes:
 - **Gameplay:** the full falling-block game with guideline rotation (SRS wall kicks), 7-bag randomizer, hold, ghost piece, combos and back-to-back bonuses.
 - **Level path:** a winding map of levels. Each level asks for an exact target score within a limited number of pieces, and gives 1–3 stars. Every 10th level is a **Boost level**: 90 seconds, points ×2, more lucky pieces, and score as much as you can for big rewards (lots of coins plus wood, bricks and glass).
 - **City builder:** coins buy supplies at the market (wood, bricks, glass). Supplies plus coins build and upgrade 10 kinds of buildings on up to 12 plots. Houses, bakeries and windmills make coins over time; the sawmill, brickworks and glassworks make supplies; parks, the tower and the castle add a % bonus to coins from every game. Population raises the city level, which opens new plots and buildings. Buildings store up to 8 hours of production, so players come back to collect.
+- **3D village:** the city is a low-poly 3D island (in the spirit of Ikariam / Grepolis). Buildings rise with scaffolding when built or upgraded, the windmill turns, villagers walk the paths and floating icons show what is ready to collect. Drag to pan, pinch to zoom, tap a plot.
+- **Block Run (bonus):** a 3D three-lane runner starring your avatar block (swipe to change lanes, jump and slide). Collect coins; one free run per day and an extra run for every Boost level won.
+- **Wardrobe:** dress up your avatar with coins: body colours, hats (cap, beanie, party hat, headphones, cowboy hat, crown) and glasses.
+- **Controls:** tap a column to drop the piece there, tap the piece to rotate; swipes still work.
 - **Player level:** XP from every game, won level and mission. Each level-up pays coins (plus shards and supplies on milestones), unlocks exclusive items at levels 5, 10, 20, 30 and 50, and adds +1% coins from games every 5 levels (up to +20%). It never resets.
 - **Season pass:** a new 28-day season with 30 tiers. Every tier has a free reward and a pass reward (coins, shards, power-ups, supplies). Each season has its own exclusive theme (free track), avatar and skin (pass track), rotating spring, summer, autumn and winter sets. The pass is a one-time purchase per season; unclaimed rewards are paid out automatically when a season ends.
 - **Arcade modes:** Classic (endless, with difficulty), Sprint 40 and a Daily Challenge (the same pieces for everyone each day, always on Normal).
@@ -18,7 +22,7 @@ The game includes:
   - Rewarded video: +100 coins, capped at 2 per day.
   - Premium: a one-time purchase that removes ads and adds +50% coins plus exclusive items.
 - **Languages:** English, Polish, German, Spanish, French and Portuguese. The game starts in the phone's language and can be switched in Settings.
-- **Look:** soft modern arcade: light pastel backgrounds, white cards with soft shadows, chunky rounded buttons and bright candy colours (the Daydream theme and Soft Arcade skin). The neon and candy looks are still in the shop as unlockable themes and skins.
+- **Look and sound:** modern dusk style: deep indigo backgrounds, dark glass cards, Poppins font, springy animations and haptics. Music is generated lo-fi and future-house loops (the old chiptune and synthwave styles remain on a few shop themes).
 - **Art and audio:** all graphics, music and sound effects are generated in code at startup, so there are no asset files to manage.
 
 Previews of the generated art are in `Docs/`.
@@ -112,13 +116,16 @@ Assets/
       Levels/    LevelPath (targets, piece limits, boost levels, rewards), ProgressService
       City/      CityCatalog (buildings, costs, production), CityService
       Loyalty/   Player level and season pass (points, tiers, rewards, season calendar)
+      Runner/    Block Run rules (lanes, obstacles, coins), unit-tested
       Online/    IOnlineService + OfflineService (ready for leaderboards and challenges)
     Game/
       App.cs     Composition root and main flows (start game, game over, ads, purchases)
       Gameplay/  GameController (game feel), BoardView, effects, mascot, background
       Interface/ UI built in code: UIKit (candy buttons), screens and popups
       Audio/     Chiptune synth, procedural music per theme, sound effects
-      Visuals/   Procedural sprite drawing (blocks, icons, avatars)
+      Visuals/   Procedural sprite drawing (blocks, icons, avatars, app icon)
+      City3D/    Low-poly mesh builder, building models and the 3D village
+      Runner3D/  The 3D Block Run view
       Input/     Touch gestures + keyboard (new Input System or legacy, both work)
       Monetization/ Ad/IAP interfaces, fake services, AdMob & Unity IAP implementations
       Services/  Save (PlayerPrefs JSON + backup), haptics

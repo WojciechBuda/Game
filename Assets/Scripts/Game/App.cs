@@ -1,6 +1,7 @@
 using System;
 using JellyDrop.Audio;
 using JellyDrop.City3D;
+using JellyDrop.Runner3D;
 using JellyDrop.Core;
 using JellyDrop.Core.City;
 using JellyDrop.Core.Economy;
@@ -38,6 +39,8 @@ namespace JellyDrop
         public CityService City { get; private set; }
         /// <summary>The 3D village shown behind the city screen.</summary>
         public CityWorld CityWorld { get; private set; }
+        /// <summary>The 3D Block Run bonus.</summary>
+        public RunnerWorld RunnerWorld { get; private set; }
         public ProgressService Progress { get; private set; }
         /// <summary>Player level and season pass.</summary>
         public LoyaltyService Loyalty { get; private set; }
@@ -67,6 +70,7 @@ namespace JellyDrop
         public MarketPopup Market { get; private set; }
         public SeasonScreen Season { get; private set; }
         public WardrobeScreen WardrobeView { get; private set; }
+        public RunnerScreen Runner { get; private set; }
 
         /// <summary>The level being played, or 0 for endless modes.</summary>
         public int CurrentLevel { get; private set; }
@@ -123,7 +127,11 @@ namespace JellyDrop
             CityWorld = new GameObject("CityWorld").AddComponent<CityWorld>();
             CityWorld.transform.SetParent(transform, false);
             CityWorld.Init(City, Camera);
+            RunnerWorld = new GameObject("RunnerWorld").AddComponent<RunnerWorld>();
+            RunnerWorld.transform.SetParent(transform, false);
             SetupUi();
+
+            RunnerWorld.Init(Audio, Camera);
 
             Game = new GameObject("Game").AddComponent<GameController>();
             Game.transform.SetParent(transform, false);
@@ -224,6 +232,7 @@ namespace JellyDrop
             CityView = AddScreen<CityScreen>("City");
             Season = AddScreen<SeasonScreen>("Season");
             WardrobeView = AddScreen<WardrobeScreen>("Wardrobe");
+            Runner = AddScreen<RunnerScreen>("Runner");
             LevelResult = AddScreen<LevelResultScreen>("LevelResult");
             Hud = AddScreen<HudScreen>("Hud");
             GameOver = AddScreen<GameOverScreen>("GameOver");
@@ -394,6 +403,22 @@ namespace JellyDrop
         public void OpenSeason() => Screens.Show(Season);
         public void OpenWardrobe() => Screens.Show(WardrobeView);
 
+        /// <summary>Starts a Block Run (uses a ticket: one free per day, more from Boost levels).</summary>
+        public void StartRun()
+        {
+            if (!Economy.TryStartRun())
+            {
+                Audio.Play(Sfx.Error);
+                Popup.ShowMessage(Loc.T("run.title"), Loc.T("run.no_tickets_body"), SpriteFactory.Coin());
+                return;
+            }
+            Save.Save(Economy.Data);
+            Game.Leave();
+            if (Screens.Current == Runner && Runner.IsVisible) Runner.PrepareRun();
+            else Screens.Show(Runner);
+            RunnerWorld.Begin(Environment.TickCount, SpriteFactory.Avatar(Economy.EquippedAvatar, AvatarMood.Excited));
+        }
+
         /// <summary>Applies the wardrobe (colour, hat, glasses) to the avatar everywhere.</summary>
         public void ApplyLook()
         {
@@ -451,6 +476,7 @@ namespace JellyDrop
             {
                 outcome = Progress.Apply(result);
                 Save.Save(Economy.Data);
+                if (outcome.Won && outcome.Level.IsBoost) Economy.GrantRunTicket(1);
                 if (outcome.Won)
                     Online.SubmitLevelScore(new LevelScore { playerId = Online.PlayerId, playerName = Online.PlayerName, level = result.LevelNumber, score = result.Score, stars = outcome.Stars }, _ => { });
             }

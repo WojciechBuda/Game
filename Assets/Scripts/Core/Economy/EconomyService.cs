@@ -200,6 +200,54 @@ namespace JellyDrop.Core.Economy
             Notify();
         }
 
+        // ------------------------------------------------------------ Block Run bonus
+
+        /// <summary>Coins per metre run, on top of the coins collected on the track.</summary>
+        public const int RunMetresPerCoin = 40;
+
+        /// <summary>Runs available now. Everyone gets one free run per day; Boost levels give more.</summary>
+        public int RunTickets
+        {
+            get
+            {
+                if (Data.runTicketDay != Today)
+                {
+                    Data.runTicketDay = Today;
+                    if (Data.runTickets < 1) Data.runTickets = 1;
+                }
+                return Data.runTickets;
+            }
+        }
+
+        public void GrantRunTicket(int count = 1)
+        {
+            if (count <= 0) return;
+            int _ = RunTickets; // make sure today's free run is counted first
+            Data.runTickets += count;
+            Notify();
+        }
+
+        /// <summary>Uses a ticket to start a run. False when none are left.</summary>
+        public bool TryStartRun()
+        {
+            if (RunTickets <= 0) return false;
+            Data.runTickets--;
+            Notify();
+            return true;
+        }
+
+        /// <summary>Pays out a finished run and returns the coins earned.</summary>
+        public int ApplyRunResult(int coinsCollected, float distance)
+        {
+            int coins = Math.Max(0, coinsCollected) + (int)(Math.Max(0f, distance) / RunMetresPerCoin);
+            if (Data.premium) coins = (int)Math.Round(coins * Config.PremiumCoinMultiplier);
+            Data.coins += coins;
+            Data.totalCoinsEarned += coins;
+            if ((int)distance > Data.runBest) Data.runBest = (int)distance;
+            Notify();
+            return coins;
+        }
+
         // ------------------------------------------------------------ wardrobe
 
         public bool OwnsWardrobe(string id) => id != null && Data.wardrobe.Contains(id);

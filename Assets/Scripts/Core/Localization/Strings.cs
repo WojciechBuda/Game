@@ -524,6 +524,32 @@ namespace JellyDrop.Core
                 "No se puede comprar. Vuelve en el pase de su temporada.",
                 "Impossible à acheter. Il revient dans le pass de sa saison.",
                 "Não dá para comprar. Ele volta no passe da sua temporada.");
+            // ---------------------------------------------------------------- Block Run bonus
+            Same("run.title", "BLOCK RUN");
+            Add("run.hint", "Swipe left / right to change lanes\nup to jump, down to slide", "Przesuń w lewo / prawo, by zmienić tor\nw górę: skok, w dół: ślizg",
+                "Wische links / rechts für die Spur\nhoch: springen, runter: rutschen", "Desliza izq. / der. para cambiar de carril\narriba: saltar, abajo: deslizar",
+                "Glisse à gauche / droite pour changer de voie\nhaut : sauter, bas : glisser", "Deslize esq. / dir. para trocar de faixa\ncima: pular, baixo: deslizar");
+            Add("run.paused", "PAUSED\ntap pause to continue", "PAUZA\nstuknij pauzę, by grać dalej", "PAUSE\nPause tippen zum Weiterspielen",
+                "PAUSA\ntoca pausa para seguir", "PAUSE\ntape pause pour continuer", "PAUSA\ntoque pausa para continuar");
+            Add("run.over", "RUN OVER!", "KONIEC BIEGU!", "LAUF VORBEI!", "¡FIN DE LA CARRERA!", "COURSE TERMINÉE !", "FIM DA CORRIDA!");
+            Add("run.result", "{0} m  ·  {1} coins picked up", "{0} m  ·  zebrane monety: {1}", "{0} m  ·  {1} Münzen eingesammelt",
+                "{0} m  ·  {1} monedas recogidas", "{0} m  ·  {1} pièces ramassées", "{0} m  ·  {1} moedas coletadas");
+            Add("run.record", "New record!", "Nowy rekord!", "Neuer Rekord!", "¡Nuevo récord!", "Nouveau record !", "Novo recorde!");
+            Add("run.best", "Best: {0} m", "Rekord: {0} m", "Bestwert: {0} m", "Récord: {0} m", "Record : {0} m", "Recorde: {0} m");
+            Add("run.again", "RUN AGAIN ({0})", "BIEGNIJ ZNOWU ({0})", "NOCHMAL ({0})", "OTRA VEZ ({0})", "ENCORE ({0})", "DE NOVO ({0})");
+            Add("run.no_tickets", "NO RUNS LEFT", "BRAK BIEGÓW", "KEINE LÄUFE MEHR", "SIN CARRERAS", "PLUS DE COURSES", "SEM CORRIDAS");
+            Add("run.no_tickets_body", "One free run every day. Win a Boost level for an extra run!",
+                "Jeden darmowy bieg dziennie. Wygraj poziom Boost, by dostać dodatkowy!",
+                "Ein Gratis-Lauf pro Tag. Gewinne ein Boost-Level für einen Extra-Lauf!",
+                "Una carrera gratis al día. ¡Gana un nivel Boost para una extra!",
+                "Une course gratuite par jour. Gagne un niveau Boost pour une course en plus !",
+                "Uma corrida grátis por dia. Vença um nível Boost para ganhar outra!");
+            Add("run.info", "3D bonus run: collect coins!  Best {0} m", "Bonusowy bieg 3D: zbieraj monety!  Rekord {0} m",
+                "3D-Bonuslauf: sammle Münzen!  Bestwert {0} m", "Carrera bonus 3D: ¡recoge monedas!  Récord {0} m",
+                "Course bonus 3D : ramasse des pièces !  Record {0} m", "Corrida bônus 3D: pegue moedas!  Recorde {0} m");
+            Add("run.back", "BACK", "WRÓĆ", "ZURÜCK", "VOLVER", "RETOUR", "VOLTAR");
+            Add("run.ticket_won", "+1 Block Run bonus!", "+1 bieg Block Run!", "+1 Block-Run-Lauf!", "¡+1 carrera Block Run!", "+1 course Block Run !", "+1 corrida Block Run!");
+
             // ---------------------------------------------------------------- wardrobe
             Add("home.style", "STYLE", "STYL", "STYLE", "ESTILO", "STYLE", "ESTILO");
             Add("wardrobe.title", "STYLE", "STYL", "STYLE", "ESTILO", "STYLE", "ESTILO");
