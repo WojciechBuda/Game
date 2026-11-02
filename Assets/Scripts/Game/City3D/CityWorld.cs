@@ -29,12 +29,10 @@ namespace JellyDrop.City3D
         private Camera _mainCamera;
         private Camera _cam;
         private Transform _root;
-        private Transform _lockLayer;
         private readonly PlotView[] _plots = new PlotView[Cols * Rows];
         private readonly List<Villager> _villagers = new List<Villager>();
         private readonly List<Vector3> _nodes = new List<Vector3>();
         private readonly List<List<int>> _links = new List<List<int>>();
-        private int _shownUnlocked = -1;
         private bool _synced;
         private float _iconTimer;
         private readonly System.Random _rng = new System.Random(7);
@@ -45,9 +43,12 @@ namespace JellyDrop.City3D
         private const float Pitch = 52f, Fov = 38f;
 
         // Input
-        private bool _pressed, _ignore, _dragging, _pinching;
+        private bool _pressed, _ignore, _dragging;
         private Vector2 _pressPos, _lastPos;
+#if ENABLE_LEGACY_INPUT_MANAGER
+        private bool _pinching;
         private float _pinchStart, _zoomStart;
+#endif
 
         private sealed class PlotView
         {
