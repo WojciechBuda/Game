@@ -40,6 +40,7 @@ namespace JellyDrop
         public CityMissionService CityMissions { get; private set; }
         public JellyDrop.Core.Pet.PetService Pet { get; private set; }
         public PetScreen PetView { get; private set; }
+        public PrivacyScreen PrivacyView { get; private set; }
         public JellyDrop.Core.Tower.TowerService Tower { get; private set; }
         public TowerMenuScreen TowerMenu { get; private set; }
         public TowerScreen TowerView { get; private set; }
@@ -99,11 +100,8 @@ namespace JellyDrop
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            // Smooth on 90/120 Hz screens, 60 elsewhere.
-            float hz = 60f;
-            try { hz = (float)Screen.currentResolution.refreshRateRatio.value; } catch { /* very old devices */ }
-            Application.targetFrameRate = Mathf.Clamp(Mathf.RoundToInt(hz), 60, 120);
             QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 60;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             Screen.orientation = ScreenOrientation.Portrait;
 #if ENABLE_LEGACY_INPUT_MANAGER
@@ -135,6 +133,8 @@ namespace JellyDrop
             Audio = new GameObject("Audio").AddComponent<AudioManager>();
             Audio.transform.SetParent(transform, false);
             Audio.ApplySettings(Economy.Data.musicOn, Economy.Data.sfxOn);
+            Audio.SetVolumes(Economy.Data.musicVolume, Economy.Data.sfxVolume);
+            ApplyFrameRate();
             UIKit.ClickSound = () => Audio.Play(Sfx.Button, 0.8f);
 
             SetupCamera();
@@ -166,6 +166,9 @@ namespace JellyDrop
         {
             Screens.Show(Home);
             Audio.PlayThemeMusic(Economy.EquippedTheme);
+            // First launch (or an updated policy): show the privacy policy once.
+            if (Economy.Data.privacyVersionSeen < PrivacyScreen.PolicyVersion)
+                JellyDrop.Util.Tweener.Delay(0.4f, () => OpenPrivacy(true), this);
             // A new season may have started while the game was closed; leftovers of the old one are paid out.
             Loyalty.SeasonRolledOver += reward => JellyDrop.Util.Tweener.Delay(0.3f, () =>
             {
@@ -262,6 +265,7 @@ namespace JellyDrop
             BuildMenu = AddScreen<BuildMenu>("BuildMenu");
             Market = AddScreen<MarketPopup>("Market");
             Popup = AddScreen<Popup>("Popup");
+            PrivacyView = AddScreen<PrivacyScreen>("Privacy");
             LanguagePicker = AddScreen<LanguagePicker>("Language");
             AdOverlay = AddScreen<FakeAdOverlay>("FakeAd");
         }
@@ -661,6 +665,7 @@ namespace JellyDrop
 
         public void SetMusic(bool on)
         {
+            if (on && Economy.Data.musicVolume < 0.01f) { Economy.Data.musicVolume = 0.8f; Audio.SetVolumes(0.8f, Economy.Data.sfxVolume); }
             Economy.SetMusic(on);
             Audio.ApplySettings(on, Economy.Data.sfxOn);
             if (on) Audio.PlayThemeMusic(Economy.EquippedTheme);
@@ -668,8 +673,68 @@ namespace JellyDrop
 
         public void SetSfx(bool on)
         {
+            if (on && Economy.Data.sfxVolume < 0.01f) { Economy.Data.sfxVolume = 1f; Audio.SetVolumes(Economy.Data.musicVolume, 1f); }
             Economy.SetSfx(on);
             Audio.ApplySettings(Economy.Data.musicOn, on);
+        }
+
+        /// <summary>Volume sliders (0..1). Turning a slider to zero also mutes it.</summary>
+        public void SetVolumes(float music, float sfx)
+        {
+            var d = Economy.Data;
+            bool musicWasOn = d.musicOn;
+            d.musicVolume = Mathf.Clamp01(music);
+            d.sfxVolume = Mathf.Clamp01(sfx);
+            d.musicOn = d.musicVolume > 0.01f;
+            d.sfxOn = d.sfxVolume > 0.01f;
+            Audio.SetVolumes(d.musicVolume, d.sfxVolume);
+            Audio.ApplySettings(d.musicOn, d.sfxOn);
+            if (d.musicOn && !musicWasOn) Audio.PlayThemeMusic(Economy.EquippedTheme);
+            Save.MarkDirty();
+        }
+
+        /// <summary>Smoothness: as fast as the screen allows (up to 120), 60, or 30 to save battery.</summary>
+        public void SetFrameRateMode(int mode)
+        {
+            Economy.Data.frameRateMode = ((mode % 3) + 3) % 3;
+            ApplyFrameRate();
+            Economy.NotifyChanged();
+        }
+
+        private void ApplyFrameRate()
+        {
+            float hz = 60f;
+            try { hz = (float)Screen.currentResolution.refreshRateRatio.value; } catch { /* very old devices */ }
+            switch (Economy.Data.frameRateMode)
+            {
+                case 1: Application.targetFrameRate = 60; break;
+                case 2: Application.targetFrameRate = 30; break;
+                default: Application.targetFrameRate = Mathf.Clamp(Mathf.RoundToInt(hz), 60, 120); break;
+            }
+        }
+
+        /// <summary>
+        /// Deletes every bit of saved data on this device (progress, coins, settings) and signs out.
+        /// Nothing is saved afterwards; the game closes so it starts fresh next time.
+        /// </summary>
+        public void DeleteAllData()
+        {
+            Save.DeleteAll();
+            Save.Disabled = true;
+            Popup.ShowMessage(Loc.T("privacy.deleted_title"), Loc.T("privacy.deleted_body"), SpriteFactory.CheckIcon(), () =>
+            {
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+#else
+                Application.Quit();
+#endif
+            });
+        }
+
+        public void OpenPrivacy(bool firstRun = false)
+        {
+            PrivacyView.FirstRun = firstRun;
+            Screens.PushModal(PrivacyView);
         }
 
         public void SetHaptics(bool on)

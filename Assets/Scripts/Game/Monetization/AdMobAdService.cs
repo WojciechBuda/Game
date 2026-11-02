@@ -25,6 +25,8 @@ namespace JellyDrop.Monetization
         public void Initialize(Action onReady)
         {
             MobileAds.RaiseAdEventsOnUnityMainThread = true;
+            // Many players are teenagers: never show ads rated above Teen.
+            MobileAds.SetRequestConfiguration(new RequestConfiguration { MaxAdContentRating = MaxAdContentRating.T });
 
             var request = new ConsentRequestParameters();
             ConsentInformation.Update(request, updateError =>

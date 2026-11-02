@@ -142,6 +142,10 @@ namespace JellyDrop.Core.Economy
         public bool musicOn = true;
         public bool sfxOn = true;
         public bool hapticsOn = true;
+        public float musicVolume = 0.8f;   // 0..1
+        public float sfxVolume = 1f;       // 0..1
+        public int frameRateMode;          // 0 = as smooth as the screen allows, 1 = 60 fps, 2 = battery saver (30 fps)
+        public int privacyVersionSeen;     // version of the privacy policy the player has seen
         public bool tutorialSeen;
     }
 }

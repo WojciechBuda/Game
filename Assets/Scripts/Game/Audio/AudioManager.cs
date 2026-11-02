@@ -19,7 +19,16 @@ namespace JellyDrop.Audio
         private System.Threading.Tasks.Task<float[]> _composing;
         private string _composingKey;
         private float _targetPitch = 1f;
-        private float _musicVolume = 0.55f;
+        private const float MusicBase = 0.55f;
+        private float _musicVolume = MusicBase;
+        private float _sfxVolume = 1f;
+
+        /// <summary>Player volume settings, 0..1.</summary>
+        public void SetVolumes(float music, float sfx)
+        {
+            _musicVolume = MusicBase * Mathf.Clamp01(music);
+            _sfxVolume = Mathf.Clamp01(sfx);
+        }
         private float _duck = 1f;
 
         public bool MusicOn { get; private set; } = true;
@@ -101,7 +110,7 @@ namespace JellyDrop.Audio
             var v = _voices[_nextVoice];
             _nextVoice = (_nextVoice + 1) % _voices.Count;
             v.pitch = 1f + Random.Range(-pitchVariance, pitchVariance);
-            v.volume = volume;
+            v.volume = volume * _sfxVolume;
             v.clip = clip;
             v.Play();
         }

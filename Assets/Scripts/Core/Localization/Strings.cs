@@ -403,6 +403,26 @@ namespace JellyDrop.Core
             Add("city.speed_up", "FINISH NOW  {0}", "SKOŃCZ TERAZ  {0}", "SOFORT FERTIG  {0}", "TERMINAR YA  {0}", "TERMINER  {0}", "TERMINAR JÁ  {0}");
             Add("city.level_of", "LEVEL {0} / {1}", "POZIOM {0} / {1}", "STUFE {0} / {1}", "NIVEL {0} / {1}", "NIVEAU {0} / {1}", "NÍVEL {0} / {1}");
             Add("city.builders", "Builders {0} / {1}", "Budowniczowie {0} / {1}", "Bauarbeiter {0} / {1}", "Constructores {0} / {1}", "Ouvriers {0} / {1}", "Construtores {0} / {1}");
+            // Settings & privacy
+            Add("settings.sound_section", "SOUND", "DŹWIĘK", "TON", "SONIDO", "SON", "SOM");
+            Add("settings.general_section", "GENERAL", "OGÓLNE", "ALLGEMEIN", "GENERAL", "GÉNÉRAL", "GERAL");
+            Add("settings.account_section", "ACCOUNT", "KONTO", "KONTO", "CUENTA", "COMPTE", "CONTA");
+            Add("settings.privacy_section", "PRIVACY", "PRYWATNOŚĆ", "DATENSCHUTZ", "PRIVACIDAD", "CONFIDENTIALITÉ", "PRIVACIDADE");
+            Add("settings.help_section", "HELP", "POMOC", "HILFE", "AYUDA", "AIDE", "AJUDA");
+            Add("settings.fps.0", "Smoothness: max", "Płynność: maks.", "Flüssigkeit: max", "Fluidez: máx.", "Fluidité : max", "Fluidez: máx.");
+            Add("settings.fps.1", "Smoothness: 60 FPS", "Płynność: 60 FPS", "Flüssigkeit: 60 FPS", "Fluidez: 60 FPS", "Fluidité : 60 FPS", "Fluidez: 60 FPS");
+            Add("settings.fps.2", "Battery saver: 30 FPS", "Oszczędzanie baterii: 30 FPS", "Akku sparen: 30 FPS", "Ahorro de batería: 30 FPS", "Économie de batterie : 30 FPS", "Poupança de bateria: 30 FPS");
+            Add("settings.contact", "Contact support", "Kontakt z pomocą", "Support kontaktieren", "Contactar con soporte", "Contacter le support", "Contactar o suporte");
+            Add("privacy.intro", "Welcome to Stackville! Please take a moment to read how the game uses data.", "Witaj w Stackville! Poświęć chwilę, żeby przeczytać, jak gra korzysta z danych.", "Willkommen in Stackville! Lies kurz, wie das Spiel Daten nutzt.", "¡Bienvenido a Stackville! Lee cómo usa el juego los datos.", "Bienvenue dans Stackville ! Prends un instant pour lire comment le jeu utilise les données.", "Bem-vindo ao Stackville! Lê como o jogo usa os dados.");
+            Add("privacy.online", "OPEN ONLINE", "OTWÓRZ ONLINE", "ONLINE ÖFFNEN", "ABRIR ONLINE", "OUVRIR EN LIGNE", "ABRIR ONLINE");
+            Add("privacy.accept", "OK, GOT IT", "OK, ROZUMIEM", "OK, VERSTANDEN", "VALE, ENTENDIDO", "OK, COMPRIS", "OK, PERCEBI");
+            Add("privacy.english_only", "The full policy is available in English and Polish.", "Pełna polityka jest dostępna po angielsku i po polsku.", "Die vollständige Richtlinie gibt es auf Englisch und Polnisch.", "La política completa está en inglés y polaco.", "La politique complète est disponible en anglais et en polonais.", "A política completa está disponível em inglês e polaco.");
+            Add("privacy.delete", "Delete my data", "Usuń moje dane", "Meine Daten löschen", "Borrar mis datos", "Supprimer mes données", "Apagar os meus dados");
+            Add("privacy.delete_body", "This permanently deletes all your progress, coins, city, pet and settings on this device. Purchases can be restored later. This cannot be undone.", "To trwale usunie cały postęp, monety, miasto, pupila i ustawienia na tym urządzeniu. Zakupy można później przywrócić. Tego nie da się cofnąć.", "Dadurch werden Fortschritt, Münzen, Stadt, Tier und Einstellungen auf diesem Gerät dauerhaft gelöscht. Käufe können wiederhergestellt werden. Das kann nicht rückgängig gemacht werden.", "Se borrarán para siempre tu progreso, monedas, ciudad, mascota y ajustes en este dispositivo. Las compras se pueden restaurar. No se puede deshacer.", "Cela supprime définitivement ta progression, tes pièces, ta ville, ton compagnon et tes réglages sur cet appareil. Les achats peuvent être restaurés. Action irréversible.", "Isto apaga para sempre o progresso, moedas, cidade, bichinho e definições neste dispositivo. As compras podem ser restauradas. Não pode ser desfeito.");
+            Add("privacy.delete_confirm", "DELETE", "USUŃ", "LÖSCHEN", "BORRAR", "SUPPRIMER", "APAGAR");
+            Add("privacy.deleted_title", "Data deleted", "Dane usunięte", "Daten gelöscht", "Datos borrados", "Données supprimées", "Dados apagados");
+            Add("privacy.deleted_body", "Everything was deleted. The game will now close and start fresh next time.", "Wszystko zostało usunięte. Gra się teraz zamknie i następnym razem zacznie od nowa.", "Alles wurde gelöscht. Das Spiel wird jetzt beendet und startet beim nächsten Mal neu.", "Se ha borrado todo. El juego se cerrará y empezará de cero la próxima vez.", "Tout a été supprimé. Le jeu va se fermer et repartira de zéro.", "Tudo foi apagado. O jogo vai fechar e recomeçar da próxima vez.");
+
             // Tower climb
             Add("tower.title", "TOWER", "WIEŻA", "TURM", "TORRE", "TOUR", "TORRE");
             Add("tower.endless", "Endless tower", "Nieskończona wieża", "Endloser Turm", "Torre infinita", "Tour infinie", "Torre infinita");

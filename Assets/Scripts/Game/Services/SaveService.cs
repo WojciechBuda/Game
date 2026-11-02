@@ -33,8 +33,12 @@ namespace JellyDrop.Services
             Save(data);
         }
 
+        /// <summary>Set after the player deletes their data, so nothing is written again this session.</summary>
+        public bool Disabled;
+
         public void Save(PlayerData data)
         {
+            if (Disabled) return;
             try
             {
                 string json = JsonUtility.ToJson(data);

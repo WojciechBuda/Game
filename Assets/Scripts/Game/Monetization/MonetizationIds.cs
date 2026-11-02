@@ -25,7 +25,10 @@ namespace JellyDrop.Monetization
         public const string InterstitialAdUnit = "ca-app-pub-3940256099942544/1033173712";
 #endif
 
-        /// <summary>Replace with your hosted privacy policy (required by both stores).</summary>
-        public const string PrivacyPolicyUrl = "https://example.com/jellydrop/privacy";
+        /// <summary>
+        /// The hosted privacy policy (required by both stores): privacy-policy.html in the repo root, published with
+        /// GitHub Pages (Settings > Pages > Deploy from branch: main, / (root)). Change it if you host it elsewhere.
+        /// </summary>
+        public const string PrivacyPolicyUrl = "https://wojciechbuda.github.io/Game/privacy-policy.html";
     }
 }
