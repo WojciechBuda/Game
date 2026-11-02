@@ -142,6 +142,17 @@ namespace JellyDrop.Core.Economy
         public long forestHoneyFrom;
         public long forestFoxNext;
 
+        // Garden island
+        public List<int> gardenBedCrop = new List<int>();       // -1 = empty, else CropType
+        public List<long> gardenBedReady = new List<long>();
+        public List<long> gardenBedPlanted = new List<long>();
+        public List<int> gardenBedWatered = new List<int>();
+        public List<int> gardenBedCompost = new List<int>();
+        public List<int> crops = new List<int>();               // harvested crops per CropType
+        public List<int> gardenBuildings = new List<int>();
+        public int gardenXp, compost, dishesCooked;
+        public long gardenEggsFrom, gardenCrowsNext;
+
         // Block Run bonus: tickets (one free each day, more from Boost levels) and best distance
         public int runTickets;
         public int runTicketDay = -1;

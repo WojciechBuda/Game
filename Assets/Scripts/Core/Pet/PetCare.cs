@@ -333,6 +333,21 @@ namespace JellyDrop.Core.Pet
             Cared();
         }
 
+        /// <summary>Dishes from the garden kitchen.</summary>
+        public void AddFood(float amount)
+        {
+            Tick();
+            Data.petFood = Clamp(Data.petFood + amount);
+            Cared();
+        }
+
+        public void AddFun(float amount)
+        {
+            Tick();
+            Data.petFun = Clamp(Data.petFun + amount);
+            Cared();
+        }
+
         /// <summary>Energy drinks picked up in the tower.</summary>
         public void AddEnergy(float amount)
         {

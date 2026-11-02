@@ -51,6 +51,9 @@ namespace JellyDrop
         public ForestWorld ForestWorld { get; private set; }
         public ForestScreen ForestView { get; private set; }
         public ActionPopup Actions { get; private set; }
+        public JellyDrop.Core.Islands.GardenService Garden { get; private set; }
+        public GardenWorld GardenWorld { get; private set; }
+        public GardenScreen GardenView { get; private set; }
         /// <summary>The 3D Block Run bonus.</summary>
         public RunnerWorld RunnerWorld { get; private set; }
         public ProgressService Progress { get; private set; }
@@ -124,6 +127,7 @@ namespace JellyDrop
             Pet = new JellyDrop.Core.Pet.PetService(Economy);
             Tower = new JellyDrop.Core.Tower.TowerService(Economy);
             Forest = new JellyDrop.Core.Islands.ForestService(Economy);
+            Garden = new JellyDrop.Core.Islands.GardenService(Economy);
             Economy.CoinBonusPercent = () => City.CoinBonusPercent + Loyalty.CoinBonusPercent + Pet.CoinBonusPercent;
 #if PLAY_GAMES && UNITY_ANDROID && !UNITY_EDITOR
             Online = new JellyDrop.Online.PlayGamesService();
@@ -152,6 +156,10 @@ namespace JellyDrop
             ForestWorld.transform.SetParent(transform, false);
             ForestWorld.Setup(Forest);
             ForestWorld.Init(Camera, ForestWorld.WorldOrigin, ColorUtil.Hex("#3E6FA8"));
+            GardenWorld = new GameObject("GardenWorld").AddComponent<GardenWorld>();
+            GardenWorld.transform.SetParent(transform, false);
+            GardenWorld.Setup(Garden);
+            GardenWorld.Init(Camera, GardenWorld.WorldOrigin, ColorUtil.Hex("#5C8FD6"));
             RunnerWorld = new GameObject("RunnerWorld").AddComponent<RunnerWorld>();
             RunnerWorld.transform.SetParent(transform, false);
             SetupUi();
@@ -279,6 +287,7 @@ namespace JellyDrop
             PrivacyView = AddScreen<PrivacyScreen>("Privacy");
             WheelView = AddScreen<WheelScreen>("Wheel");
             ForestView = AddScreen<ForestScreen>("Forest");
+            GardenView = AddScreen<GardenScreen>("Garden");
             Actions = AddScreen<ActionPopup>("Actions");
             LanguagePicker = AddScreen<LanguagePicker>("Language");
             AdOverlay = AddScreen<FakeAdOverlay>("FakeAd");
@@ -569,8 +578,8 @@ namespace JellyDrop
 
         public void OpenGarden()
         {
-            Audio.Play(Sfx.Error);
-            Popup.ShowMessage(Loc.T("island.garden"), Loc.T("island.soon"), JellyDrop.Visuals.IslandSprites.Crop(4));
+            Game.Leave();
+            Screens.Show(GardenView);
         }
 
         public void OpenSettings() => Screens.Show(Settings);
