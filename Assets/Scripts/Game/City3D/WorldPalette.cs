@@ -5,37 +5,54 @@ namespace JellyDrop.City3D
 {
     /// <summary>
     /// Colour grading and lighting for the 3D town and the islands. Every mesh colour goes through
-    /// <see cref="Grade"/> when the mesh is built, so the hand-picked palette stays readable in code while
-    /// the worlds render deeper and with more contrast: pale, large surfaces (grass, sand, roofs) are muted and
-    /// darkened, mid tones sink, and strong accents (mushrooms, flowers, coins) keep most of their punch.
+    /// <see cref="Grade"/> when the mesh is built, so the hand-picked palette stays readable in code while the
+    /// worlds render like the Arcade board: rich, saturated colours with deep shadows and warm light. Mid tones
+    /// sink (contrast), greens get deeper and lusher, and everything that isn't water or sky leans warm.
     /// </summary>
     public static class WorldPalette
     {
         /// <summary>Overall brightness of graded colours (1 = unchanged).</summary>
-        public const float Gain = 0.86f;
+        public const float Gain = 0.92f;
         /// <summary>Above 1 darkens mid tones more than highlights (more contrast).</summary>
-        public const float Gamma = 1.65f;
+        public const float Gamma = 1.45f;
         /// <summary>Keeps the darkest colours from going pitch black.</summary>
-        public const float Lift = 0.035f;
+        public const float Lift = 0.025f;
+        /// <summary>Saturation boost for coloured surfaces (greys stay grey).</summary>
+        public const float Saturation = 1.2f;
 
-        public static readonly Color Ambient = ColorUtil.Hex("#5E6390");
-        public static readonly Color SunColor = ColorUtil.Hex("#FFE4BE");
-        public const float SunIntensity = 1.22f;
-        public const float ShadowStrength = 0.72f;
+        public static readonly Color Ambient = ColorUtil.Hex("#4A4C78");
+        public static readonly Color SunColor = ColorUtil.Hex("#FFD49A");
+        public const float SunIntensity = 1.38f;
+        public const float ShadowStrength = 0.82f;
 
-        public static readonly Color CitySky = ColorUtil.Hex("#2C3768");
-        public static readonly Color ForestSky = ColorUtil.Hex("#22415F");
-        public static readonly Color GardenSky = ColorUtil.Hex("#2F5684");
+        public static readonly Color CitySky = ColorUtil.Hex("#1E2554");
+        public static readonly Color ForestSky = ColorUtil.Hex("#172F45");
+        public static readonly Color GardenSky = ColorUtil.Hex("#22406A");
 
         public static Color Grade(Color c)
         {
             ToHsv(c, out float h, out float s, out float v);
-            // Mute soft colours more than vivid ones, so accents still stand out against the ground.
-            s *= 0.84f + 0.16f * s;
+            // Vivid: boost colour, leave near-greys alone (stone, paths, metal).
+            bool blue = h > 0.47f && h < 0.75f;        // water, sky-ish, glass: keep them cool and calm
+            bool green = h > 0.2f && h <= 0.47f;
+            if (s > 0.08f && !blue) s = Mathf.Min(0.9f, s * Saturation + 0.04f);
             v = Lift + Gain * Mathf.Pow(v, Gamma);
-            // Neon-bright colours (pond water, pastel flowers) come down a little too.
-            v *= 1f - 0.12f * s;
-            var o = FromHsv(h, Mathf.Clamp01(s), Mathf.Clamp01(v));
+            if (blue) v *= 0.88f;
+            if (green)
+            {
+                // Lush greens: a touch towards yellow-green, a little more saturated, a little deeper.
+                // Big green areas (grass, trees) go deep, so buildings and paths pop on top of them.
+                h = Mathf.Lerp(h, 0.3f, 0.25f);
+                s = Mathf.Min(0.85f, s * 1.05f);
+                v *= 0.8f;
+            }
+            var o = FromHsv(h, s, Mathf.Clamp01(v));
+            if (!blue)
+            {
+                // Warm light on everything else (wood, roofs, flowers, sand).
+                o.r = Mathf.Clamp01(o.r * 1.06f);
+                o.b = Mathf.Clamp01(o.b * 0.88f);
+            }
             o.a = c.a;
             return o;
         }

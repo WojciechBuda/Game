@@ -348,15 +348,15 @@ namespace JellyDrop.Runner3D
             float z = s.Distance;
             _laneX = Mathf.Lerp(_laneX, LaneX(s.Lane), 1f - Mathf.Exp(-dt * 16f));
 
-            // Player: hop while running, squash on slide, tumble on crash.
+            // Player: hop while running, tumble on crash.
             float run = s.IsJumping || s.IsSliding || s.IsOver ? 0f : Mathf.Abs(Mathf.Sin(s.Time * 11f)) * 0.12f;
             float y = s.Height + run;
             _player.localPosition = new Vector3(_laneX, 0.75f + y, z);
-            float squash = s.IsSliding ? 0.5f : s.IsJumping ? 1.08f : 1f - run * 0.4f;
-            _player.localScale = new Vector3(1f / Mathf.Sqrt(squash), squash, 1f);
+            // No squashing: the 3D hero itself crouches, tucks and stretches (see RunnerHero.Pose).
+            _player.localScale = Vector3.one;
             if (s.IsOver) _player.localRotation = Quaternion.Euler(0f, 0f, Mathf.Min(1f, Math.Max(0f, _crashTime)) * 75f);
             else _player.localRotation = Quaternion.Euler(0f, 0f, (_laneX - LaneX(s.Lane)) * -12f);
-            _hero.Pose(s.Time * 11f, s.IsJumping, s.IsSliding, s.IsOver);
+            _hero.Pose(s.Time * 11f, s.IsJumping, s.IsSliding, s.IsOver, dt);
             // Blink while invincible after losing a life.
             _hero.SetVisible(s.Invincible <= 0f || Mathf.Repeat(s.Invincible * 10f, 1f) < 0.55f);
             _sky.Tick(dt, s.Speed);

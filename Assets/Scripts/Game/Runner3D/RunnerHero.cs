@@ -122,21 +122,43 @@ namespace JellyDrop.Runner3D
             return go.transform;
         }
 
-        /// <summary>Animates the limbs. <paramref name="runPhase"/> grows with time while running.</summary>
-        public void Pose(float runPhase, bool jumping, bool sliding, bool crashed)
+        // Smoothed pose weights (0..1), so the hero eases between running, jumping, sliding and crashing.
+        private float _jumpW, _slideW, _crashW;
+
+        /// <summary>
+        /// Animates the hero in 3D: arms and legs swing while running, a tuck in the air, and a real slide
+        /// (body drops and leans back, legs go forward) instead of squashing the model flat. Poses blend smoothly.
+        /// </summary>
+        public void Pose(float runPhase, bool jumping, bool sliding, bool crashed, float dt)
         {
+            float k = 1f - Mathf.Exp(-Mathf.Max(0f, dt) * 14f);
+            _jumpW = Mathf.Lerp(_jumpW, jumping && !crashed ? 1f : 0f, k);
+            _slideW = Mathf.Lerp(_slideW, sliding && !crashed ? 1f : 0f, k);
+            _crashW = Mathf.Lerp(_crashW, crashed ? 1f : 0f, k);
+            float run = Mathf.Clamp01(1f - _jumpW - _slideW - _crashW);
             float swing = Mathf.Sin(runPhase);
-            float legA, armA, lean;
-            if (crashed) { legA = 0f; armA = 150f; lean = 0f; }
-            else if (jumping) { legA = 35f; armA = 140f; lean = -8f; swing = 1f; }
-            else if (sliding) { legA = -70f; armA = 60f; lean = -25f; swing = 1f; }
-            else { legA = 42f; armA = 48f; lean = 10f; }
-            _legL.localRotation = Quaternion.Euler(swing * legA, 0, 0);
-            _legR.localRotation = Quaternion.Euler(jumping || sliding ? legA * -0.6f : -swing * legA, 0, 0);
-            _armL.localRotation = Quaternion.Euler(jumping ? -armA : -swing * armA, 0, jumping ? -25f : -6f);
-            _armR.localRotation = Quaternion.Euler(jumping ? -armA : swing * armA, 0, jumping ? 25f : 6f);
-            _body.localRotation = Quaternion.Euler(lean, 0, 0);
-            _antenna.localRotation = Quaternion.Euler(-lean * 1.5f + swing * 8f, 0, swing * 6f);
+
+            // Legs: swing while running, tuck in the air, stretch forward in the slide.
+            float legL = swing * 42f * run + 35f * _jumpW - 82f * _slideW;
+            float legR = -swing * 42f * run - 20f * _jumpW - 74f * _slideW;
+            // Arms: swing opposite the legs, up in the air, back for balance in the slide.
+            float armL = -swing * 48f * run - 140f * _jumpW + 55f * _slideW + 150f * _crashW;
+            float armR = swing * 48f * run - 140f * _jumpW + 65f * _slideW + 150f * _crashW;
+            float spread = 6f + 19f * _jumpW + 20f * _slideW + 30f * _crashW;
+            // Body: leans into the run, upright in the air, drops and leans back in the slide.
+            float lean = 10f * run - 8f * _jumpW - 52f * _slideW;
+            float drop = 0.36f * _slideW;
+            float bob = Mathf.Abs(swing) * 0.04f * run;
+
+            _body.localPosition = new Vector3(0f, -drop + bob, -0.1f * _slideW);
+            _body.localRotation = Quaternion.Euler(lean, 0f, swing * 4f * run);
+            _legL.localPosition = LegLPos + new Vector3(0f, -drop * 0.9f, 0f);
+            _legR.localPosition = LegRPos + new Vector3(0f, -drop * 0.9f, 0f);
+            _legL.localRotation = Quaternion.Euler(legL, 0f, -4f * _slideW);
+            _legR.localRotation = Quaternion.Euler(legR, 0f, 4f * _slideW);
+            _armL.localRotation = Quaternion.Euler(armL, 0f, -spread);
+            _armR.localRotation = Quaternion.Euler(armR, 0f, spread);
+            _antenna.localRotation = Quaternion.Euler(-lean * 1.2f + swing * 10f * run + 25f * _jumpW, 0f, swing * 6f * run);
         }
 
         public void SetVisible(bool visible)
