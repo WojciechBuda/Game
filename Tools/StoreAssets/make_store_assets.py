@@ -115,7 +115,8 @@ def jelly_cell(d, x, y, s, color):
 
 def arcade_board(w, h):
     """A neon Arcade board: a stack with nearly full rows, a falling T piece and a big 3x3 square."""
-    cols, rows = 10, 20
+    cols = 10
+    rows = max(20, round(cols * (h - 12) / (w - 12)))  # fill the card's shape
     s = min((w - 12) // cols, (h - 12) // rows)
     w, h = cols * s + 12, rows * s + 12
     img = gradient((w, h), "#1B1040", "#0E0A26").convert("RGBA")
@@ -128,6 +129,11 @@ def arcade_board(w, h):
     # the stack (bottom rows), '.' = empty; letters pick a colour
     stack = [
         "..........",
+        "......f...",
+        ".....ff..d",
+        "g....fc.dd",
+        "gg..cccbbd",
+        "ag.eeebbcc",
         "....bb....",
         "a..bbcc..e",
         "aa.ddcc.ee",
@@ -142,14 +148,16 @@ def arcade_board(w, h):
             if ch != ".":
                 jelly_cell(d, ox + gx * s, oy + gy * s, s, JELLY["abcdefg".index(ch)])
     # falling T piece with its ghost
-    for gx, gy in [(6, 6), (7, 6), (8, 6), (7, 5)]:
+    fy = rows // 3
+    for gx, gy in [(1, fy), (2, fy), (3, fy), (2, fy - 1)]:
         jelly_cell(d, ox + gx * s, oy + gy * s, s, "#B48CFF")
-    for gx, gy in [(6, 11), (7, 11), (8, 11), (7, 10)]:
+    gyh = rows - 13
+    for gx, gy in [(1, gyh), (2, gyh), (3, gyh), (2, gyh - 1)]:
         d.rounded_rectangle([ox + gx * s + 2, oy + gy * s + 2, ox + gx * s + s - 2, oy + gy * s + s - 2], radius=4, outline=hex2rgb("#B48CFF"), width=2)
     # big 3x3 square coming next
     for gx in range(3):
         for gy in range(3):
-            jelly_cell(d, ox + (1 + gx) * s, oy + (1 + gy) * s, s, "#FFC93C")
+            jelly_cell(d, ox + (6 + gx) * s, oy + (2 + gy) * s, s, "#FFC93C")
     return img
 
 
@@ -172,8 +180,13 @@ def feature_graphic(lang):
 
     # the Arcade block puzzle (big card) and the 3D town on the right
     city = Image.open(os.path.join(SRC, "city3d.png")).convert("RGBA")
-    card(base, city.crop((40, 160, 500, 820)), (600, 120, 180, 300), 22)
-    card(base, arcade_board(232, 472), (796, 24, 212, 452), 24, "#FF4FA3")
+    towers = Image.open(os.path.join(SRC, "towers.png")).convert("RGBA")
+    jungle = towers.crop((1080, 0, 1620, 960))
+    space = towers.crop((0, 960, 540, 1920))
+    card(base, space, (572, 30, 122, 210), 20)
+    card(base, jungle, (572, 262, 122, 210), 20)
+    card(base, city.crop((60, 160, 480, 820)), (706, 96, 128, 300), 20)
+    card(base, arcade_board(332, 912), (846, 22, 166, 456), 22, "#FF4FA3")
 
     # mascot
     mascot = Image.open(os.path.join(SRC, "icon-src.png")).convert("RGBA").resize((230, 230), Image.LANCZOS)
@@ -181,10 +194,13 @@ def feature_graphic(lang):
     card(base, mascot, (50, 345, 120, 120), 30)
 
     d = ImageDraw.Draw(base)
-    title = ImageFont.truetype(FONT_TITLE, 92)
-    rainbow_title(d, (44, 96), "STACKVILLE", title)
+    tsize = 92
+    while tsize > 50 and sum(d.textlength(ch, font=ImageFont.truetype(FONT_TITLE, tsize)) - 2 for ch in "STACKVILLE") > 500:
+        tsize -= 2
+    title = ImageFont.truetype(FONT_TITLE, tsize)
+    rainbow_title(d, (44, 96 + (92 - tsize) // 2), "STACKVILLE", title)
     line1, line2 = TAGLINES[lang]
-    def fit(text, size, max_w=520):
+    def fit(text, size, max_w=490):
         while size > 16:
             f = ImageFont.truetype(FONT_MAIN, size)
             if d.textlength(text, font=f) <= max_w:
