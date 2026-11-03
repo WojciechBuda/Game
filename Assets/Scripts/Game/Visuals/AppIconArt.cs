@@ -15,17 +15,37 @@ namespace JellyDrop.Visuals
 
         public static PixelCanvas Draw(int size = 1024)
         {
-            var c = new PixelCanvas(size, size);
-            float s = size / 1024f;
+            var c = DrawBackground(size);
+            Block(c, size / 1024f);
+            return c;
+        }
 
-            // Clean background: a soft diagonal gradient, so the block is the only thing in the icon.
+        /// <summary>Clean background: a soft diagonal gradient, so the block is the only thing in the icon.</summary>
+        public static PixelCanvas DrawBackground(int size = 1024)
+        {
+            var c = new PixelCanvas(size, size);
             var top = ColorUtil.Hex("#6C7BFF");
             var low = ColorUtil.Hex("#7FD8FF");
             for (int y = 0; y < size; y++)
                 for (int x = 0; x < size; x++)
                     c.Set(x, y, Color.Lerp(low, top, Mathf.Clamp01((y + (size - x) * 0.3f) / (size * 1.3f))));
+            return c;
+        }
 
-            Block(c, s);
+        /// <summary>
+        /// Android adaptive icon foreground: only the block, on transparency, shrunk into the middle so it stays
+        /// inside the safe zone whatever shape (circle, squircle...) the phone's launcher cuts the icon into.
+        /// </summary>
+        public static PixelCanvas DrawForeground(int size = 1024, float scale = 0.7f)
+        {
+            int n = Mathf.RoundToInt(size * scale);
+            var inner = new PixelCanvas(n, n);
+            Block(inner, n / 1024f);
+            var c = new PixelCanvas(size, size);
+            int off = (size - n) / 2;
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                    c.Set(x + off, y + off, inner.Get(x, y));
             return c;
         }
 

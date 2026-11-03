@@ -128,6 +128,9 @@ namespace JellyDrop.EditorTools
                 AssetDatabase.ImportAsset(IconPath);
                 var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(IconPath);
                 PlayerSettings.SetIcons(NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
+#if UNITY_ANDROID
+                SetAndroidIcons(icon, size);
+#endif
                 Debug.Log("[Stackville] App icon written to " + IconPath);
             }
             finally
@@ -136,6 +139,36 @@ namespace JellyDrop.EditorTools
                 SpriteFactory.ClearCache();
             }
         }
+
+#if UNITY_ANDROID
+        private const string IconBackgroundPath = "Assets/Art/AppIconBackground.png";
+        private const string IconForegroundPath = "Assets/Art/AppIconForeground.png";
+
+        /// <summary>
+        /// Android launchers cut icons into circles / squircles (adaptive icons). Without these layers some
+        /// phones show a generic icon or a tiny icon in a white circle. Also fills the round and legacy slots.
+        /// </summary>
+        private static void SetAndroidIcons(Texture2D full, int size)
+        {
+            File.WriteAllBytes(IconBackgroundPath, AppIconArt.DrawBackground(size).ToTexture().EncodeToPNG());
+            File.WriteAllBytes(IconForegroundPath, AppIconArt.DrawForeground(size).ToTexture().EncodeToPNG());
+            AssetDatabase.ImportAsset(IconBackgroundPath);
+            AssetDatabase.ImportAsset(IconForegroundPath);
+            var bg = AssetDatabase.LoadAssetAtPath<Texture2D>(IconBackgroundPath);
+            var fg = AssetDatabase.LoadAssetAtPath<Texture2D>(IconForegroundPath);
+
+            var android = NamedBuildTarget.Android;
+            var adaptive = PlayerSettings.GetPlatformIcons(android, UnityEditor.Android.AndroidPlatformIconKind.Adaptive);
+            foreach (var i in adaptive) i.SetTextures(bg, fg);
+            PlayerSettings.SetPlatformIcons(android, UnityEditor.Android.AndroidPlatformIconKind.Adaptive, adaptive);
+            foreach (var kind in new[] { UnityEditor.Android.AndroidPlatformIconKind.Round, UnityEditor.Android.AndroidPlatformIconKind.Legacy })
+            {
+                var icons = PlayerSettings.GetPlatformIcons(android, kind);
+                foreach (var i in icons) i.SetTextures(full);
+                PlayerSettings.SetPlatformIcons(android, kind, icons);
+            }
+        }
+#endif
 
         // ------------------------------------------------------------------ SDK switches
 
