@@ -8,13 +8,13 @@ namespace JellyDrop.Monetization
     public static class MonetizationIds
     {
         /// <summary>Non-consumable "Remove ads + Premium pack". Create the same ID in Play Console and App Store Connect.</summary>
-        public const string PremiumProductId = "jellydrop_premium";
+        public const string PremiumProductId = "stackville_premium";
 
         /// <summary>Shown when the store price cannot be loaded (editor, offline).</summary>
         public const string PremiumFallbackPrice = "12,99 zł";
 
         /// <summary>Consumable season pass, bought again each season. Create it as a consumable product in both stores.</summary>
-        public const string SeasonPassProductId = "jellydrop_season_pass";
+        public const string SeasonPassProductId = "stackville_season_pass";
         public const string SeasonPassFallbackPrice = "19,99 zł";
 
 #if UNITY_IOS

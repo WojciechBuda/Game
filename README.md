@@ -184,8 +184,8 @@ Until this is set up, the game shows **fake test ads**, so the whole reward flow
 
 1. Install **In-App Purchasing** from Window → Package Manager → Unity Registry. The code targets version **4.12.x**.
 2. Create these products in both stores (Google Play Console and App Store Connect):
-   - `jellydrop_premium`: **non-consumable** (no ads + Premium pack).
-   - `jellydrop_season_pass`: **consumable** (the season pass, bought again each season).
+   - `stackville_premium`: **non-consumable** (no ads + Premium pack).
+   - `stackville_season_pass`: **consumable** (the season pass, bought again each season).
 3. Run the menu **Stackville → IAP: enable Unity IAP**. This adds the `UNITY_PURCHASING` define.
 4. Test it:
    - **Android:** use license testers in the Play Console, with an internal-testing build.
@@ -217,6 +217,8 @@ Both stores require a public privacy policy. It lives in `Tools/PrivacyPolicy/po
 To change the contact e-mail or the text, edit `policy.py` and run `python3 Tools/PrivacyPolicy/policy.py`. Then publish the page with GitHub Pages (repo Settings > Pages > Deploy from a branch > `main` / root). The address, `https://wojciechbuda.github.io/Game/privacy-policy.html`, is already set in `MonetizationIds.PrivacyPolicyUrl`; paste it into the Play Console (App content > Privacy policy) too. If you change what the game collects, update the policy and raise `VERSION` so players see it again.
 
 ## 6. Publishing checklist
+
+**Full Google Play guide (Polish, step by step), store texts and graphics: see [Store/README.md](Store/README.md).** Listing texts are in `fastlane/metadata/android/`, graphics in `Store/graphics/`, terms of use in `terms.html`, release build tools under the Unity menu *Stackville > Release*.
 
 - [ ] Final name. Don't use "Tetris" or "-tris" in the name, icon or store text: The Tetris Company enforces its trademark.
 - [ ] Bundle id, company name and version set in `JellyDropSetup.cs`.

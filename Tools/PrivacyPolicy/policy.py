@@ -6,7 +6,7 @@ import html, os
 
 DEVELOPER = "Wojciech Buda"
 CONTACT = "wojciech.buda6@gmail.com"
-DATE = {"en": "2 November 2026", "pl": "2 listopada 2026"}
+DATE = {"en": "3 November 2026", "pl": "3 listopada 2026"}
 VERSION = 1
 
 EN = [
@@ -17,7 +17,7 @@ EN = [
  "The free version shows ads from Google AdMob. Google may use your advertising ID to show and measure ads. Where the law requires it, you are asked for consent first and can change your choice in Settings at any time.",
  "Signing in with Google is optional. We never sell your data."]),
 ("Data saved on your device", [
- "Your progress (levels, scores, coins, shards, supplies, city, pet, wardrobe, towers, season pass) and your settings (volume, vibration, language) are stored only on your device.",
+ "Your progress (levels, scores, coins, shards, supplies, city, forest and garden islands, mushrooms, pet, wardrobe, towers, lucky wheel, season pass) and your settings (volume, vibration, language) are stored only on your device.",
  "This data is not sent to us. It is removed when you uninstall the game or tap Settings > Delete my data."]),
 ("Google sign-in (optional)", [
  "If you choose to sign in with Google Play Games, Google shares your Play Games player ID, display name and profile picture with the game. We use them only to sign you in and, in future versions, for leaderboards and challenges with friends.",
@@ -55,7 +55,7 @@ PL = [
  "Darmowa wersja wyświetla reklamy Google AdMob. Google może używać Twojego identyfikatora reklamowego do wyświetlania i mierzenia reklam. Tam, gdzie wymaga tego prawo, najpierw prosimy o zgodę, którą możesz zmienić w Ustawieniach w dowolnej chwili.",
  "Logowanie kontem Google jest dobrowolne. Nigdy nie sprzedajemy Twoich danych."]),
 ("Dane zapisane na urządzeniu", [
- "Twój postęp (poziomy, wyniki, monety, odłamki, surowce, miasto, pupil, garderoba, wieże, przepustka sezonowa) i ustawienia (głośność, wibracje, język) są przechowywane wyłącznie na Twoim urządzeniu.",
+ "Twój postęp (poziomy, wyniki, monety, odłamki, surowce, miasto, wyspy las i ogród, grzyby, pupil, garderoba, wieże, koło fortuny, przepustka sezonowa) i ustawienia (głośność, wibracje, język) są przechowywane wyłącznie na Twoim urządzeniu.",
  "Te dane nie są do nas wysyłane. Usuwasz je, odinstalowując grę lub wybierając Ustawienia > Usuń moje dane."]),
 ("Logowanie Google (dobrowolne)", [
  "Jeśli zalogujesz się przez Google Play Games, Google przekaże grze Twój identyfikator gracza, nazwę i zdjęcie profilowe. Używamy ich tylko do logowania, a w przyszłych wersjach do rankingów i wyzwań ze znajomymi.",

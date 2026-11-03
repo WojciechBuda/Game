@@ -36,7 +36,7 @@ namespace JellyDrop.EditorTools
         {
             PlayerSettings.companyName = Company;
             PlayerSettings.productName = Product;
-            PlayerSettings.bundleVersion = "0.1.0";
+            PlayerSettings.bundleVersion = ReleaseTools.VersionName;
 
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, BundleId);
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.iOS, BundleId);
@@ -53,7 +53,9 @@ namespace JellyDrop.EditorTools
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             // Android 8.0+ (API 26); newer Unity versions dropped the older levels.
             PlayerSettings.Android.minSdkVersion = (AndroidSdkVersions)26;
-            PlayerSettings.Android.bundleVersionCode = 1;
+            // Google Play: new apps and updates must target Android 16 (API 36) from 31 Aug 2026.
+            PlayerSettings.Android.targetSdkVersion = (AndroidSdkVersions)ReleaseTools.TargetApi;
+            if (PlayerSettings.Android.bundleVersionCode < 1) PlayerSettings.Android.bundleVersionCode = 1;
             EditorUserBuildSettings.buildAppBundle = true;
 
             // iOS
