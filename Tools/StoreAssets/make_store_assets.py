@@ -20,8 +20,8 @@ FONT_MAIN = os.path.join(ROOT, "Assets", "Resources", "Fonts", "MainFont.ttf")
 RAINBOW = ["#FF6F91", "#FF9F43", "#FFC93C", "#2ED3A0", "#3FB6FF", "#8E7CFF"]
 
 TAGLINES = {
-    "pl-PL": ("Układaj klocki. Buduj miasto.", "Las, ogród, wieża i bieg 3D!"),
-    "en-US": ("Stack blocks. Build a town.", "Forest, garden, tower and a 3D run!"),
+    "pl-PL": ("Układaj klocki. Buduj miasto.", "Graj w Arcade i rozwijaj swoją wyspę!"),
+    "en-US": ("Stack blocks. Build a town.", "Play Arcade and grow your island!"),
 }
 
 # Captions for the framed screenshots, in the order of your raw files (01.png, 02.png, ...).
@@ -99,6 +99,60 @@ def rainbow_title(draw, xy, text, font):
         x += draw.textlength(ch, font=font) - 2
 
 
+JELLY = ["#FF5A6E", "#3FB6FF", "#FFC93C", "#2ED3A0", "#B48CFF", "#FF9F43", "#FF4FA3"]
+
+
+def jelly_cell(d, x, y, s, color):
+    """One glossy jelly block, like the game's Jelly skin."""
+    c = hex2rgb(color)
+    dark = tuple(int(v * 0.72) for v in c)
+    light = tuple(min(255, int(v + (255 - v) * 0.45)) for v in c)
+    r = max(3, s // 5)
+    d.rounded_rectangle([x + 1, y + 2, x + s - 1, y + s], radius=r, fill=dark)
+    d.rounded_rectangle([x + 1, y + 1, x + s - 1, y + s - 3], radius=r, fill=c)
+    d.rounded_rectangle([x + s * 0.18, y + s * 0.14, x + s * 0.62, y + s * 0.34], radius=max(2, s // 8), fill=light)
+
+
+def arcade_board(w, h):
+    """A neon Arcade board: a stack with nearly full rows, a falling T piece and a big 3x3 square."""
+    cols, rows = 10, 20
+    s = min((w - 12) // cols, (h - 12) // rows)
+    w, h = cols * s + 12, rows * s + 12
+    img = gradient((w, h), "#1B1040", "#0E0A26").convert("RGBA")
+    d = ImageDraw.Draw(img)
+    ox, oy = 6, 6
+    for gx in range(cols):
+        for gy in range(rows):
+            cx, cy = ox + gx * s + s // 2, oy + gy * s + s // 2
+            d.ellipse([cx - 1, cy - 1, cx + 1, cy + 1], fill=(70, 60, 120))
+    # the stack (bottom rows), '.' = empty; letters pick a colour
+    stack = [
+        "..........",
+        "....bb....",
+        "a..bbcc..e",
+        "aa.ddcc.ee",
+        "afddggg.ee",
+        "affdgbbbca",
+        "cfaaagbcca",
+        "ccaeeebbdd",
+    ]
+    for i, line in enumerate(stack):
+        gy = rows - len(stack) + i
+        for gx, ch in enumerate(line):
+            if ch != ".":
+                jelly_cell(d, ox + gx * s, oy + gy * s, s, JELLY["abcdefg".index(ch)])
+    # falling T piece with its ghost
+    for gx, gy in [(6, 6), (7, 6), (8, 6), (7, 5)]:
+        jelly_cell(d, ox + gx * s, oy + gy * s, s, "#B48CFF")
+    for gx, gy in [(6, 11), (7, 11), (8, 11), (7, 10)]:
+        d.rounded_rectangle([ox + gx * s + 2, oy + gy * s + 2, ox + gx * s + s - 2, oy + gy * s + s - 2], radius=4, outline=hex2rgb("#B48CFF"), width=2)
+    # big 3x3 square coming next
+    for gx in range(3):
+        for gy in range(3):
+            jelly_cell(d, ox + (1 + gx) * s, oy + (1 + gy) * s, s, "#FFC93C")
+    return img
+
+
 def icon():
     src = Image.open(os.path.join(SRC, "icon-src.png")).convert("RGBA").resize((512, 512), Image.LANCZOS)
     path = os.path.join(OUT, "icon-512.png")
@@ -116,14 +170,10 @@ def feature_graphic(lang):
     gd.ellipse([-150, 260, 420, 700], fill=hex2rgb("#3FB6FF") + (60,))
     base.alpha_composite(glow.filter(ImageFilter.GaussianBlur(70)))
 
-    # real game renders as cards on the right
+    # the Arcade block puzzle (big card) and the 3D town on the right
     city = Image.open(os.path.join(SRC, "city3d.png")).convert("RGBA")
-    towers = Image.open(os.path.join(SRC, "towers.png")).convert("RGBA")
-    jungle = towers.crop((1080, 0, 1620, 960))
-    space = towers.crop((0, 960, 540, 1920))
-    card(base, space, (630, 70, 170, 260), 22)
-    card(base, jungle, (820, 40, 170, 300), 22)
-    card(base, city.crop((40, 160, 500, 820)), (700, 230, 210, 240), 22)
+    card(base, city.crop((40, 160, 500, 820)), (600, 120, 180, 300), 22)
+    card(base, arcade_board(232, 472), (796, 24, 212, 452), 24, "#FF4FA3")
 
     # mascot
     mascot = Image.open(os.path.join(SRC, "icon-src.png")).convert("RGBA").resize((230, 230), Image.LANCZOS)
@@ -134,7 +184,7 @@ def feature_graphic(lang):
     title = ImageFont.truetype(FONT_TITLE, 92)
     rainbow_title(d, (44, 96), "STACKVILLE", title)
     line1, line2 = TAGLINES[lang]
-    def fit(text, size, max_w=560):
+    def fit(text, size, max_w=520):
         while size > 16:
             f = ImageFont.truetype(FONT_MAIN, size)
             if d.textlength(text, font=f) <= max_w:
