@@ -88,6 +88,28 @@ namespace JellyDrop.EditorTools
             return true;
         }
 
+        /// <summary>
+        /// Rewrites the .meta files of imported plugins (Google Mobile Ads etc.) in the current Unity format.
+        /// Fixes "contains a PluginImporter object at version 1, below the supported minimum (2)".
+        /// </summary>
+        [MenuItem("Stackville/Release/Upgrade plugin files (.meta)", priority = 106)]
+        public static void UpgradePluginMetas()
+        {
+            var paths = new System.Collections.Generic.List<string>();
+            foreach (var root in new[] { "Assets/Plugins", "Assets/GoogleMobileAds", "Assets/ExternalDependencyManager" })
+            {
+                if (!Directory.Exists(root)) continue;
+                foreach (var f in Directory.GetFiles(root, "*", SearchOption.AllDirectories))
+                {
+                    if (f.EndsWith(".meta")) continue;
+                    paths.Add(f.Replace('\\', '/'));
+                }
+            }
+            AssetDatabase.ForceReserializeAssets(paths, ForceReserializeAssetsOptions.ReserializeMetadata);
+            AssetDatabase.Refresh();
+            Debug.Log($"[Stackville] Re-saved {paths.Count} plugin .meta files in the current format.");
+        }
+
         [MenuItem("Stackville/Release/2. Bump version code (+1)", priority = 101)]
         public static void BumpVersionCode()
         {
