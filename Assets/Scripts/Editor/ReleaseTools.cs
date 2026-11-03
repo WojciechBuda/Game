@@ -14,7 +14,9 @@ namespace JellyDrop.EditorTools
     /// </summary>
     public static class ReleaseTools
     {
-        public const string VersionName = "1.0.0";
+        public const string VersionName = "1.0.1";
+        /// <summary>Lowest version code the next build uses (Google Play needs a higher one for every upload).</summary>
+        public const int VersionCode = 2;
         public const int TargetApi = 36;
         private const string BuildDir = "Builds";
         private const string ScreenshotDir = "Store/screenshots/raw";
@@ -124,6 +126,8 @@ namespace JellyDrop.EditorTools
         {
             JellyDropSetup.ApplySettings();
             ApplyAdMobAppId();
+            PlayerSettings.bundleVersion = VersionName;
+            if (PlayerSettings.Android.bundleVersionCode < VersionCode) PlayerSettings.Android.bundleVersionCode = VersionCode;
             EditorUserBuildSettings.buildAppBundle = true;
             EditorUserBuildSettings.development = false;
             Directory.CreateDirectory(BuildDir);
