@@ -220,7 +220,7 @@ Polityka prywatności, regulamin i `app-ads.txt` są na darmowej stronie **https
 **Pierwsze uruchomienie:**
 
 1. Wejdź na https://app.netlify.com/signup i załóż konto przez **e-mail**: stackville.info@gmail.com (nie przez GitHub, żeby nie łączyć strony z Twoim kontem).
-2. Przed wgraniem otwórz `Site/app-ads.txt` i wpisz swoje ID wydawcy AdMob zamiast `pub-0000000000000000`. Linie zaczynające się od `#` mogą zostać.
+2. `Site/app-ads.txt` ma już Twoje ID wydawcy AdMob (`pub-1930401474155411`), nic nie trzeba zmieniać.
 3. Wejdź na https://app.netlify.com/drop i przeciągnij **cały folder `Site`** na stronę. Po kilku sekundach strona działa pod losowym adresem typu `cheerful-otter-123.netlify.app`.
 4. Ustaw adres: **Site configuration → Change site name** → wpisz `stackville` → Save.
 5. Sprawdź w przeglądarce, czy działają:
