@@ -18,7 +18,7 @@ W tym folderze jest wszystko, czego potrzebujesz do Play Console. Teksty możesz
 
 Dane aplikacji:
 
-- **Nazwa pakietu:** `com.stackville.game`. Po pierwszym wgraniu nie da się jej już zmienić.
+- **Nazwa pakietu:** `com.stackville`. Po pierwszym wgraniu nie da się jej już zmienić.
 - **Wersja:** 1.0.0, kod wersji 1 (przy każdym kolejnym wgraniu musi być wyższy).
 - **Kontakt:** stackville.info@gmail.com. Ten adres jest publiczny w sklepie; jeśli wolisz inny, zmień go też w `Tools/PrivacyPolicy/policy.py`.
 

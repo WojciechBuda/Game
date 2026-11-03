@@ -18,7 +18,7 @@ namespace JellyDrop.EditorTools
         // Change these before publishing. The package name can't be changed after the first upload.
         private const string Company = "Stackville";
         private const string Product = "Stackville";
-        private const string BundleId = "com.stackville.game";
+        private const string BundleId = "com.stackville";
         public const string ScenePath = "Assets/Scenes/Main.unity";
         private const string IconPath = "Assets/Art/AppIcon.png";
 

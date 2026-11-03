@@ -68,14 +68,14 @@ The APK is signed with Unity's debug key: fine for testing, not for the Play Sto
    - **iOS Build Support**. iOS builds need a Mac with Xcode.
 2. Clone this repo. In Unity Hub choose **Add → Add project from disk** and select the repo folder. The first import takes a few minutes.
 3. Run the menu **Stackville → Setup Project**. It does the following:
-   - Sets the app name, bundle id (`com.stackville.game`) and portrait orientation.
+   - Sets the app name, bundle id (`com.stackville`) and portrait orientation.
    - Configures Android for IL2CPP + ARM64 and App Bundle (.aab) output, which Google Play requires.
    - Creates `Assets/Scenes/Main.unity` and adds it to the build.
    - Generates the app icon at `Assets/Art/AppIcon.png`.
 4. Open `Assets/Scenes/Main.unity` and press **Play**. The game builds itself from code; the scene itself contains nothing.
 5. To build an APK locally instead of in GitHub: **File → Build Profiles → Android → Switch Platform**, untick "Build App Bundle", then **Build**, or run the menu-free command `Unity -batchmode -quit -projectPath . -executeMethod JellyDrop.EditorTools.CiBuild.BuildAndroid`.
 
-> The bundle id `com.stackville.game` is set in `Assets/Scripts/Editor/JellyDropSetup.cs`. Change it before your first store upload if you want a different one: it can't change after you publish.
+> The bundle id `com.stackville` is set in `Assets/Scripts/Editor/JellyDropSetup.cs`. Change it before your first store upload if you want a different one: it can't change after you publish.
 
 ### Difficulty levels
 
@@ -199,7 +199,7 @@ Restore Purchases is in **Settings** and on the **Premium** shop tab. Apple requ
 The game signs players in with their Google account through Google Play Games Services (Android). Until it is set up, the game runs offline and the Settings button explains that sign-in is not available yet.
 
 1. In **Play Console**: your app > **Grow > Play Games Services > Setup and management > Configuration**. Create a Play Games Services project.
-2. Add an **Android credential**: package `com.stackville.game` and the SHA-1 of your signing keys (Play Console > Setup > App signing shows both the upload key and the app signing key; add both).
+2. Add an **Android credential**: package `com.stackville` and the SHA-1 of your signing keys (Play Console > Setup > App signing shows both the upload key and the app signing key; add both).
 3. Under **Leaderboards**, create "Highest level" (integer, larger is better) and put its ID in `Game/Online/OnlineIds.cs`.
 4. Add your Google account under **Testers** while the game is unpublished.
 5. Download the **Play Games plugin for Unity** (`GooglePlayGamesPlugin-x.y.z.unitypackage`) from github.com/playgameservices/play-games-plugin-for-unity and import it.
