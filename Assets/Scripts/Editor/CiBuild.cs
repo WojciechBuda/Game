@@ -47,6 +47,29 @@ namespace JellyDrop.EditorTools
             if (summary.result != BuildResult.Succeeded && Application.isBatchMode) EditorApplication.Exit(1);
         }
 
+        /// <summary>
+        /// Writes the iOS Xcode project (build/iOS by default). The GitHub workflow ios.yml then compiles it on a
+        /// Mac runner into an unsigned .ipa for sideloading. Uses whatever SDK switches the project has (in CI:
+        /// none, so fake ads and the fake store, which is fine for a test install).
+        /// </summary>
+        public static void BuildIos()
+        {
+            JellyDropSetup.ApplySettings();
+            string path = Arg("-customBuildPath") ?? "build/iOS";
+            Directory.CreateDirectory(Path.GetFullPath(path));
+            var options = new BuildPlayerOptions
+            {
+                scenes = new[] { JellyDropSetup.ScenePath },
+                locationPathName = path,
+                target = BuildTarget.iOS,
+                targetGroup = BuildTargetGroup.iOS,
+                options = BuildOptions.None
+            };
+            var summary = BuildPipeline.BuildPlayer(options).summary;
+            Debug.Log($"[Stackville] iOS Xcode project {summary.result}: {path} ({summary.totalErrors} errors)");
+            if (summary.result != BuildResult.Succeeded && Application.isBatchMode) EditorApplication.Exit(1);
+        }
+
         private static string Arg(string name)
         {
             var args = Environment.GetCommandLineArgs();

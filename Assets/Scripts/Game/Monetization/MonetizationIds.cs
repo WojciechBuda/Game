@@ -29,6 +29,12 @@ namespace JellyDrop.Monetization
         public const string AndroidAdMobAppId = "ca-app-pub-1930401474155411~6208060865";
 
         /// <summary>
+        /// AdMob app id (iOS). Until you add an iOS app in AdMob this is Google's sample id, which only
+        /// serves test ads (fine for local test installs). Put the real one here before the App Store.
+        /// </summary>
+        public const string IosAdMobAppId = "ca-app-pub-3940256099942544~1458002511";
+
+        /// <summary>
         /// The hosted privacy policy (required by both stores), on the neutral Stackville website: the files in Site/
         /// dropped onto Netlify as the site "stackville" (see Store/README.md, step 9).
         /// Change it (and SITE in Tools/PrivacyPolicy/policy.py) if you host it elsewhere.

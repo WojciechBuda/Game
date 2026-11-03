@@ -17,6 +17,8 @@ namespace JellyDrop.EditorTools
         public const string VersionName = "1.0.1";
         /// <summary>Lowest version code the next build uses (Google Play needs a higher one for every upload).</summary>
         public const int VersionCode = 2;
+        /// <summary>Apple Developer Team ID (developer.apple.com > Membership). Empty until you have an Apple account.</summary>
+        public const string AppleTeamId = "";
         public const int TargetApi = 36;
         private const string BuildDir = "Builds";
         private const string ScreenshotDir = "Store/screenshots/raw";
@@ -74,6 +76,14 @@ namespace JellyDrop.EditorTools
                 found = true;
                 string indent = lines[i].Substring(0, lines[i].Length - t.Length);
                 string wanted = indent + "adMobAndroidAppId: " + id;
+                if (lines[i] != wanted) { lines[i] = wanted; changed = true; }
+            }
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var t = lines[i].TrimStart();
+                if (!t.StartsWith("adMobIOSAppId:")) continue;
+                string indent = lines[i].Substring(0, lines[i].Length - t.Length);
+                string wanted = indent + "adMobIOSAppId: " + JellyDrop.Monetization.MonetizationIds.IosAdMobAppId;
                 if (lines[i] != wanted) { lines[i] = wanted; changed = true; }
             }
             if (!found)

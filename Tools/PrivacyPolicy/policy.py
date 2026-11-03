@@ -26,6 +26,7 @@ EN = [
  "You can sign out or disconnect the game at any time in the Google Play Games app. Google's privacy policy applies: https://policies.google.com/privacy"]),
 ("Advertising (free version)", [
  "The free version shows ads served by Google AdMob. To show ads, limit how often you see them, measure them and prevent fraud, Google may collect your device's advertising ID, IP address, device and app information, and how you interact with ads.",
+ "On iPhone, the game asks for permission to track (App Tracking Transparency) before personalised ads can use your device's advertising identifier; if you say no, you still get ads, just not personalised ones.",
  "If you are in the EEA, the UK or Switzerland, Google's consent form asks whether ads may be personalised. You can change your choice in Settings > Privacy choices. You can also reset or delete your advertising ID in your phone's settings.",
  "Ads in the game are limited to content rated suitable for teenagers. Buying Premium removes ads.",
  "How Google uses data: https://policies.google.com/technologies/partner-sites"]),
@@ -64,6 +65,7 @@ PL = [
  "W każdej chwili możesz się wylogować lub odłączyć grę w aplikacji Google Play Games. Obowiązuje polityka prywatności Google: https://policies.google.com/privacy"]),
 ("Reklamy (wersja darmowa)", [
  "Darmowa wersja wyświetla reklamy Google AdMob. Aby wyświetlać reklamy, ograniczać ich częstotliwość, mierzyć je i zapobiegać oszustwom, Google może zbierać identyfikator reklamowy urządzenia, adres IP, informacje o urządzeniu i aplikacji oraz to, jak korzystasz z reklam.",
+ "Na iPhonie gra pyta o zgodę na śledzenie (App Tracking Transparency), zanim spersonalizowane reklamy użyją identyfikatora reklamowego urządzenia; jeśli odmówisz, reklamy nadal będą, ale niespersonalizowane.",
  "Jeśli jesteś w EOG, Wielkiej Brytanii lub Szwajcarii, formularz zgody Google zapyta, czy reklamy mogą być spersonalizowane. Wybór zmienisz w Ustawienia > Wybory prywatności. Identyfikator reklamowy możesz też zresetować lub usunąć w ustawieniach telefonu.",
  "Reklamy w grze są ograniczone do treści odpowiednich dla nastolatków. Zakup Premium usuwa reklamy.",
  "Jak Google używa danych: https://policies.google.com/technologies/partner-sites"]),

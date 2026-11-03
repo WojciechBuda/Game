@@ -58,9 +58,13 @@ namespace JellyDrop.EditorTools
             if (PlayerSettings.Android.bundleVersionCode < 1) PlayerSettings.Android.bundleVersionCode = 1;
             EditorUserBuildSettings.buildAppBundle = true;
 
-            // iOS
-            PlayerSettings.iOS.buildNumber = "1";
-            PlayerSettings.iOS.targetOSVersionString = "13.0";
+            // iOS: iPhone only (no iPad screenshots needed in the App Store), iOS 15+, 64-bit IL2CPP.
+            PlayerSettings.iOS.buildNumber = ReleaseTools.VersionCode.ToString();
+            PlayerSettings.iOS.targetOSVersionString = "15.0";
+            PlayerSettings.iOS.targetDevice = iOSTargetDevice.iPhoneOnly;
+            PlayerSettings.SetScriptingBackend(NamedBuildTarget.iOS, ScriptingImplementation.IL2CPP);
+            PlayerSettings.iOS.appleEnableAutomaticSigning = true;
+            if (!string.IsNullOrEmpty(ReleaseTools.AppleTeamId)) PlayerSettings.iOS.appleDeveloperTeamID = ReleaseTools.AppleTeamId;
 
             PlayerSettings.SplashScreen.backgroundColor = ColorUtil.Night;
 
