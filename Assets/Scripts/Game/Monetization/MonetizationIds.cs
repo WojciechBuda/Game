@@ -27,9 +27,9 @@ namespace JellyDrop.Monetization
 
         /// <summary>
         /// The hosted privacy policy (required by both stores), on the neutral Stackville website: the files in Site/
-        /// uploaded to the repo "stackville.github.io" of the GitHub organisation "stackville" (see Store/README.md, step 9).
+        /// dropped onto Netlify as the site "stackville" (see Store/README.md, step 9).
         /// Change it (and SITE in Tools/PrivacyPolicy/policy.py) if you host it elsewhere.
         /// </summary>
-        public const string PrivacyPolicyUrl = "https://stackville.github.io/privacy-policy.html";
+        public const string PrivacyPolicyUrl = "https://stackville.netlify.app/privacy-policy.html";
     }
 }

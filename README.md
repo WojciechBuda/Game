@@ -214,7 +214,7 @@ Both stores require a public privacy policy. It lives in `Tools/PrivacyPolicy/po
 - `privacy-policy.html` in the repo root (the public page for the store listing),
 - `Assets/Scripts/Game/Interface/PrivacyPolicyText.cs` (shown in the game: on first launch and in Settings > Privacy policy).
 
-To change the contact e-mail or the text, edit `policy.py` and run `python3 Tools/PrivacyPolicy/policy.py`. It also refreshes `Site/` (privacy policy, terms, app-ads.txt and a small home page); upload those files to the `stackville.github.io` repo of a GitHub organisation called `stackville` (see Store/README.md, step 9), so the public pages carry no personal name. The address, `https://stackville.github.io/privacy-policy.html`, is already set in `MonetizationIds.PrivacyPolicyUrl`; paste it into the Play Console (App content > Privacy policy) too. If you change what the game collects, update the policy and raise `VERSION` so players see it again.
+To change the contact e-mail or the text, edit `policy.py` and run `python3 Tools/PrivacyPolicy/policy.py`. It also refreshes `Site/` (privacy policy, terms, app-ads.txt and a small home page); drag that folder onto Netlify (site name `stackville`, see Store/README.md step 9), so the public pages carry no personal name. The address, `https://stackville.netlify.app/privacy-policy.html`, is already set in `MonetizationIds.PrivacyPolicyUrl`; paste it into the Play Console (App content > Privacy policy) too. If you change what the game collects, update the policy and raise `VERSION` so players see it again.
 
 ## 6. Publishing checklist
 

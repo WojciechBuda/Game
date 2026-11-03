@@ -1,5 +1,5 @@
 # Source of the Stackville privacy policy. Run `python3 policy.py` to regenerate:
-#   - privacy-policy.html (repo root, for GitHub Pages / the store listing)
+#   - privacy-policy.html (repo root) and Site/ (the public website on Netlify)
 #   - Assets/Scripts/Game/Interface/PrivacyPolicyText.cs (shown inside the game)
 # Edit CONTACT and DEVELOPER below before publishing. No personal names: the game is published as "Stackville".
 import html, os
@@ -8,8 +8,8 @@ DEVELOPER = {"en": "the Stackville team", "pl": "zespół Stackville"}
 CONTACT = "stackville.info@gmail.com"
 DATE = {"en": "3 November 2026", "pl": "3 listopada 2026"}
 VERSION = 1
-# Neutral web address (GitHub organisation "stackville", repo "stackville.github.io"); see Store/README.md step 9.
-SITE = "https://stackville.github.io"
+# Neutral web address: the Site/ folder on Netlify (site name "stackville"); see Store/README.md step 9.
+SITE = "https://stackville.netlify.app"
 
 EN = [
 ("Who we are", [
@@ -166,7 +166,7 @@ section {{ background:var(--card); border-radius:16px; padding:8px 20px 16px; ma
 '''
 open(os.path.join(root, "privacy-policy.html"), "w", encoding="utf-8").write(page)
 
-# Site/ is everything for the neutral website (upload the folder's files to the stackville.github.io repo).
+# Site/ is everything for the public website (drag the folder onto Netlify, see Store/README.md step 9).
 site = os.path.join(root, "Site")
 os.makedirs(site, exist_ok=True)
 open(os.path.join(site, "privacy-policy.html"), "w", encoding="utf-8").write(page)

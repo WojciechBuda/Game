@@ -32,5 +32,5 @@ A free daily spin, boosters, seasonal rewards and dozens of skins, themes and ou
 
 The game is free to play. It contains ads and optional in-app purchases (such as ad-free Premium). Everything in the game can also be earned just by playing.
 
-Privacy policy: https://stackville.github.io/privacy-policy.html
+Privacy policy: https://stackville.netlify.app/privacy-policy.html
 Contact: stackville.info@gmail.com
