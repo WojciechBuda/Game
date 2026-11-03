@@ -76,10 +76,7 @@ namespace JellyDrop.City3D
             _sun.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
             var l = _sun.AddComponent<Light>();
             l.type = LightType.Directional;
-            l.color = ColorUtil.Hex("#FFE9C8");
-            l.intensity = 1.1f;
-            l.shadows = LightShadows.Soft;
-            l.shadowStrength = 0.5f;
+            WorldPalette.SetupSun(l);
 
             BuildWorld();
             _sun.SetActive(false);
@@ -103,7 +100,7 @@ namespace JellyDrop.City3D
             Cam.enabled = true;
             if (_main != null) _main.enabled = false;
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = ColorUtil.Hex("#8C93C8");
+            RenderSettings.ambientLight = WorldPalette.Ambient;
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogColor = _sky;

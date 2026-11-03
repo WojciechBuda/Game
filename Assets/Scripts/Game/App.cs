@@ -155,11 +155,11 @@ namespace JellyDrop
             ForestWorld = new GameObject("ForestWorld").AddComponent<ForestWorld>();
             ForestWorld.transform.SetParent(transform, false);
             ForestWorld.Setup(Forest);
-            ForestWorld.Init(Camera, ForestWorld.WorldOrigin, ColorUtil.Hex("#3E6FA8"));
+            ForestWorld.Init(Camera, ForestWorld.WorldOrigin, WorldPalette.ForestSky);
             GardenWorld = new GameObject("GardenWorld").AddComponent<GardenWorld>();
             GardenWorld.transform.SetParent(transform, false);
             GardenWorld.Setup(Garden);
-            GardenWorld.Init(Camera, GardenWorld.WorldOrigin, ColorUtil.Hex("#5C8FD6"));
+            GardenWorld.Init(Camera, GardenWorld.WorldOrigin, WorldPalette.GardenSky);
             RunnerWorld = new GameObject("RunnerWorld").AddComponent<RunnerWorld>();
             RunnerWorld.transform.SetParent(transform, false);
             SetupUi();

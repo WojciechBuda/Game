@@ -17,6 +17,12 @@ namespace JellyDrop.City3D
         /// <summary>Applied to every shape added (lets models be built in local space and placed/rotated).</summary>
         public Matrix4x4 Transform = Matrix4x4.identity;
 
+        /// <summary>
+        /// When true (the default) colours go through <see cref="WorldPalette.Grade"/> when the mesh is built.
+        /// Block Run uses its own neon palette and turns this off.
+        /// </summary>
+        public bool Graded = true;
+
         public int VertexCount => _v.Count;
         public IReadOnlyList<Vector3> Vertices => _v;
         public IReadOnlyList<Color> Colors => _c;
@@ -151,7 +157,13 @@ namespace JellyDrop.City3D
             if (_v.Count > 65000) m.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             m.SetVertices(_v);
             m.SetNormals(_n);
-            m.SetColors(_c);
+            if (Graded)
+            {
+                var graded = new List<Color>(_c.Count);
+                foreach (var c in _c) graded.Add(WorldPalette.Grade(c));
+                m.SetColors(graded);
+            }
+            else m.SetColors(_c);
             m.SetTriangles(_t, 0);
             m.RecalculateBounds();
             return m;

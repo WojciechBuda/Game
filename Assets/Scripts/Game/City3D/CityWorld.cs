@@ -96,7 +96,7 @@ namespace JellyDrop.City3D
             camGo.transform.SetParent(transform, false);
             _cam = camGo.AddComponent<Camera>();
             _cam.clearFlags = CameraClearFlags.SolidColor;
-            _cam.backgroundColor = ColorUtil.Hex("#4B5BA6");
+            _cam.backgroundColor = WorldPalette.CitySky;
             _cam.fieldOfView = Fov;
             _cam.nearClipPlane = 0.3f;
             _cam.farClipPlane = 250f;
@@ -108,10 +108,7 @@ namespace JellyDrop.City3D
             sunGo.transform.rotation = Quaternion.Euler(48f, -35f, 0f);
             var sun = sunGo.AddComponent<Light>();
             sun.type = LightType.Directional;
-            sun.color = ColorUtil.Hex("#FFE2B8");
-            sun.intensity = 1.15f;
-            sun.shadows = LightShadows.Soft;
-            sun.shadowStrength = 0.55f;
+            WorldPalette.SetupSun(sun);
             sunGo.SetActive(false);
             _sun = sunGo;
 
@@ -150,7 +147,7 @@ namespace JellyDrop.City3D
             if (_mainCamera != null) _mainCamera.enabled = false;
 
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = ColorUtil.Hex("#8C93C8");
+            RenderSettings.ambientLight = WorldPalette.Ambient;
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogColor = _cam.backgroundColor;

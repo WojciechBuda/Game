@@ -103,7 +103,7 @@ namespace JellyDrop.Runner3D
 
         private void BuildMeshes()
         {
-            var mb = new MeshBuilder();
+            var mb = new MeshBuilder { Graded = false };
             // Coin: a gold disc standing up (axis along z), with a darker rim
             mb.Transform = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(90f, 0f, 0f), Vector3.one);
             mb.Cylinder(new Vector3(0, -0.06f, 0), 0.34f, 0.12f, ColorUtil.Hex("#FFC93C"), 14);
@@ -139,7 +139,7 @@ namespace JellyDrop.Runner3D
         private Transform BuildChunk(int index)
         {
             var rng = new System.Random(index * 97 + 13);
-            var mb = new MeshBuilder();
+            var mb = new MeshBuilder { Graded = false };
             float half = ChunkLength / 2f;
             mb.Box(new Vector3(0, -0.2f, half), new Vector3(LaneWidth * 3f + 0.4f, 0.2f, ChunkLength), ColorUtil.Hex("#1F2240"), ColorUtil.Hex("#272B4F"));
             for (int k = 0; k < 2; k++)
@@ -167,7 +167,7 @@ namespace JellyDrop.Runner3D
                     if (r < 0.45)
                     {
                         // A house turned to face the street
-                        var house = new MeshBuilder();
+                        var house = new MeshBuilder { Graded = false };
                         string[] ids = { "house", "bakery", "house", "tower" };
                         BuildingModels.Build(house, ids[rng.Next(ids.Length)], 1 + rng.Next(3));
                         var v = house.Vertices; var c = house.Colors; var t = house.Triangles;
@@ -277,7 +277,7 @@ namespace JellyDrop.Runner3D
             get
             {
                 if (_mushroomMesh != null) return _mushroomMesh;
-                var mb = new MeshBuilder();
+                var mb = new MeshBuilder { Graded = false };
                 mb.Cylinder(new Vector3(0, -0.3f, 0), 0.14f, 0.32f, ColorUtil.Hex("#F2E6D0"), 8);
                 mb.Sphere(new Vector3(0, 0.06f, 0), 0.34f, ColorUtil.Hex("#E0483E"), 4, 10);
                 mb.Disc(new Vector3(0, 0.0f, 0), 0.34f, ColorUtil.Hex("#A82A2A"), 12);
