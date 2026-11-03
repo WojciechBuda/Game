@@ -71,7 +71,7 @@ namespace JellyDrop.Core.City
         public int MissionsDone => Data.cityMissionsDone;
 
         public static float TimeLimit(CityMissionType t) =>
-            t == CityMissionType.Chicken ? 20f : t == CityMissionType.Thief ? 25f : t == CityMissionType.Balloons ? 20f :
+            t == CityMissionType.Chicken ? 20f : t == CityMissionType.Thief ? 5f : t == CityMissionType.Balloons ? 20f :
             t == CityMissionType.Mushrooms ? 22f : 18f;
 
         public static int TapsNeeded(CityMissionType t) =>

@@ -34,6 +34,12 @@ namespace JellyDrop.City3D
         }
         public IReadOnlyList<int> Triangles => _t;
 
+        /// <summary>Sets the colour of every vertex added since <paramref name="first"/> from its position (gradients).</summary>
+        public void PaintVertices(int first, System.Func<Vector3, Color> paint)
+        {
+            for (int i = first; i < _c.Count; i++) _c[i] = paint(_v[i]);
+        }
+
         public void Clear()
         {
             _v.Clear(); _n.Clear(); _c.Clear(); _t.Clear();

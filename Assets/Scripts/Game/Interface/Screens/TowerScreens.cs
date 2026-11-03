@@ -221,7 +221,7 @@ namespace JellyDrop.Interface
     /// <summary>
     /// The tower climb itself, drawn with UI images: a painted backdrop per scenery (scrolling with parallax),
     /// textured walls, styled platforms, items to grab, animated critters and the avatar.
-    /// Touch: slide a finger left / right to run (like a joystick that follows the finger), tap to jump;
+    /// Touch: slide a finger left / right to run (like a joystick that follows the finger), tap to jump, double tap to double jump;
     /// while steering, a tap with a second finger jumps instantly. Arrow keys and space work in the editor.
     /// </summary>
     public sealed class TowerScreen : UIScreen
@@ -387,6 +387,7 @@ namespace JellyDrop.Interface
             _session.Landed += OnLanded;
             _session.ComboEnded += OnComboEnded;
             _session.Bounced += () => Haptics.Tap();
+            _session.DoubleJumped += () => { App.Audio.Play(Sfx.Move); Haptics.Tap(); _spin = 1f; };
             _session.ItemCollected += OnItem;
             _paused = false;
             _finished = false;
@@ -567,11 +568,29 @@ namespace JellyDrop.Interface
 
             if (PointerInput.KeyHeld(GameKey.Left)) move = -1f;
             if (PointerInput.KeyHeld(GameKey.Right)) move = 1f;
+            // Keyboard (editor): space jumps, space again in the air is the double jump.
+            if (PointerInput.KeyDown(GameKey.HardDrop) && _session != null && _session.CanAirJump) _session.AirJump();
             jump = _jumpBuffer > 0f || PointerInput.KeyHeld(GameKey.HardDrop);
         }
 
-        /// <summary>Remembers a jump for a moment, so a tap just before landing still counts.</summary>
-        private void Jump() => _jumpBuffer = 0.3f;
+        /// <summary>
+        /// A tap jumps (remembered for a moment, so a tap just before landing still counts).
+        /// A second tap soon after, while in the air, is the double jump.
+        /// </summary>
+        private void Jump()
+        {
+            float now = Time.unscaledTime;
+            bool doubleTap = now - _lastTap < DoubleTapWindow;
+            _lastTap = now;
+            if (doubleTap && _session != null && _session.CanAirJump)
+            {
+                if (_session.AirJump()) { _jumpBuffer = 0f; _lastTap = -1f; return; }
+            }
+            _jumpBuffer = 0.3f;
+        }
+
+        private const float DoubleTapWindow = 0.4f;
+        private float _lastTap = -1f;
 
         /// <summary>The steering finger (the first one down), or the mouse in the editor.</summary>
         private bool TryGetSteeringPointer(out Vector2 pos)

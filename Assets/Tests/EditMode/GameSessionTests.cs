@@ -435,6 +435,7 @@ namespace JellyDrop.Tests
             config.Lucky.LineBlastChance = wanted == PieceType.RowBlast || wanted == PieceType.ColumnBlast ? 0.5 : 0;
             config.Lucky.SmallPieceChance = wanted == PieceType.Mono || wanted == PieceType.Domino ? 1 : 0;
             config.Lucky.BombPieceChance = wanted == PieceType.Bomb ? 1 : 0;
+            config.Lucky.BigPieceChance = wanted == PieceType.Big ? 1 : 0;
             for (int seed = 1; seed < 200; seed++)
             {
                 var s = NewSession(config: config, rng: new SystemRandom(seed));
@@ -496,6 +497,36 @@ namespace JellyDrop.Tests
             }
             Assert.Greater(surprises, 50);
             foreach (var kv in counts) Assert.Less(System.Math.Abs(kv.Value - counts[PieceType.I]), 2, "the bag stays balanced");
+        }
+
+        [Test]
+        public void BigSquareIsThreeByThreeAndLandsWhole()
+        {
+            Assert.AreEqual(9, PieceData.GetCells(PieceType.Big, 0).Length);
+            Assert.IsFalse(PieceData.CanRotate(PieceType.Big));
+            var s = SurpriseSession(PieceType.Big);
+            s.HardDrop();
+            int filled = 0;
+            for (int x = 0; x < s.Board.Width; x++)
+                for (int y = 0; y < 3; y++)
+                    if (!s.Board[x, y].IsEmpty) filled++;
+            Assert.AreEqual(9, filled);
+        }
+
+        [Test]
+        public void ArcadeGetsMoreSmallPiecesAndBigSquares()
+        {
+            var lucky = new LuckyConfig().WithSurprisePieces().WithArcadePieces();
+            var gen = new PieceGenerator(new SystemRandom(9), lucky, 3);
+            int small = 0, big = 0;
+            for (int i = 0; i < 1000; i++)
+            {
+                var t = gen.Next().Type;
+                if (t == PieceType.Mono || t == PieceType.Domino) small++;
+                if (t == PieceType.Big) big++;
+            }
+            Assert.Greater(small, 80);
+            Assert.Greater(big, 15);
         }
     }
 }

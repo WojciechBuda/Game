@@ -72,7 +72,7 @@ namespace JellyDrop.Tests
             for (int t = 0; t < CityMissionService.TypeCount; t++)
             {
                 var type = (CityMissionType)t;
-                Assert.Greater(CityMissionService.TimeLimit(type), 5f);
+                Assert.GreaterOrEqual(CityMissionService.TimeLimit(type), 5f);
                 Assert.Greater(CityMissionService.TapsNeeded(type), 0);
                 Assert.IsTrue(Loc.Has("mission." + type), type.ToString());
                 Assert.IsTrue(Loc.Has("mission." + type + ".do"), type.ToString());

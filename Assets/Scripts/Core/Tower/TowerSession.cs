@@ -39,10 +39,10 @@ namespace JellyDrop.Core.Tower
         public int Floors;                 // 0 = endless
         public TowerScenery Scenery;
         public bool CycleScenery;          // endless: the look changes every 50 floors
-        public float ScrollStart = 1.1f;   // units per second once the tower starts moving
-        public float ScrollAccel = 0.025f; // per second
-        public float ScrollMax = 6f;
-        public float MaxWidth = 5.2f, MinWidth = 2.4f;
+        public float ScrollStart = 0.95f;   // units per second once the tower starts moving
+        public float ScrollAccel = 0.022f; // per second
+        public float ScrollMax = 5.2f;
+        public float MaxWidth = 4.1f, MinWidth = 2.2f;
         public int NarrowAfter = 200;      // floors until platforms reach MinWidth
         public float IceChance, MovingChance, CrumbleChance, SpringChance;
         public bool AllIce;
@@ -52,8 +52,9 @@ namespace JellyDrop.Core.Tower
         public static TowerConfig Endless(TowerMode mode, TowerScenery scenery)
         {
             var c = new TowerConfig { Scenery = scenery, CycleScenery = true, MovingChance = 0.08f, CrumbleChance = 0.05f, SpringChance = 0.04f, IceChance = 0.08f };
-            if (mode == TowerMode.Speed) { c.ScrollStart = 2.2f; c.ScrollAccel = 0.04f; c.ScrollMax = 7f; }
-            if (mode == TowerMode.Ice) { c.AllIce = true; c.IceChance = 1f; c.ScrollStart = 0.9f; }
+            // Scroll speeds are in units; floors are 2.6 apart, so these keep the same floors-per-second pace as before.
+            if (mode == TowerMode.Speed) { c.ScrollStart = 1.9f; c.ScrollAccel = 0.035f; c.ScrollMax = 6.1f; }
+            if (mode == TowerMode.Ice) { c.AllIce = true; c.IceChance = 1f; c.ScrollStart = 0.8f; }
             return c;
         }
     }
@@ -70,13 +71,15 @@ namespace JellyDrop.Core.Tower
         public const int SceneryCount = 6;
         public const float Width = 10f;
         public const float PickupRadius = 0.85f;
-        public const float Gap = 3f;
+        public const float Gap = 2.6f;
         public const float ViewHeight = 16f;
         public const float HalfBody = 0.4f;
         public const float Gravity = -40f;
         public const float JumpBase = 17.5f;
         public const float JumpPerSpeed = 1.0f;
-        public const float MaxSpeed = 12f;
+        public const float MaxSpeed = 15f;
+        /// <summary>Upward speed of the double jump (double tap while in the air).</summary>
+        public const float AirJumpBase = 14f;
         public const float SpringJump = 30f;
         public const float ComboTime = 3f;
         private const float StepDt = 1f / 120f;
@@ -106,6 +109,7 @@ namespace JellyDrop.Core.Tower
         public event Action<int, int> Landed;
         public event Action<int> ComboEnded;
         public event Action Bounced;
+        public event Action DoubleJumped;
         public event Action Finished;
         public event Action<TowerItem> ItemCollected;
 
@@ -119,6 +123,7 @@ namespace JellyDrop.Core.Tower
         private readonly Random _rng;
         private int _generatedTo = -1;
         private int _jumpFrom;
+        private bool _airJumped;
         private float _acc;
 
         public IReadOnlyList<TowerPlatform> Platforms => _platforms;
@@ -178,7 +183,7 @@ namespace JellyDrop.Core.Tower
             }
             float t = Math.Min(1f, floor / (float)Math.Max(1, c.NarrowAfter));
             p.Width = c.MaxWidth + (c.MinWidth - c.MaxWidth) * t + Rand(-0.4f, 0.4f);
-            p.Width = Math.Max(1.8f, Math.Min(Width - 1f, p.Width));
+            p.Width = Math.Max(1.5f, Math.Min(Width - 1f, p.Width));
             p.X = Rand(p.Width / 2f, Width - p.Width / 2f);
             p.Kind = c.AllIce ? PlatformKind.Ice : PlatformKind.Normal;
             if (floor > 4)
@@ -266,14 +271,14 @@ namespace JellyDrop.Core.Tower
             // Horizontal: build up speed, slide on ice, steer a bit in the air.
             if (move != 0f)
             {
-                float accel = Grounded ? (ice ? 10f : 34f) : 20f;
+                float accel = Grounded ? (ice ? 14f : 52f) : 32f;
                 // Turning around is quicker than speeding up.
                 if (Math.Sign(move) != Math.Sign(Vx) && Vx != 0f) accel *= 1.8f;
                 Vx = Toward(Vx, move * MaxSpeed, accel * dt);
             }
             else if (Grounded)
             {
-                Vx = Toward(Vx, 0f, (ice ? 2.5f : 30f) * dt);
+                Vx = Toward(Vx, 0f, (ice ? 2.5f : 40f) * dt);
             }
 
             if (Grounded && Ground != null && Ground.Kind == PlatformKind.Moving) X += Ground.Vx * dt;
@@ -325,6 +330,20 @@ namespace JellyDrop.Core.Tower
             }
         }
 
+        /// <summary>True while a double jump is still available (in the air, not used yet).</summary>
+        public bool CanAirJump => !Grounded && !_airJumped && !IsOver && !IsWon;
+
+        /// <summary>The double jump: a second, smaller jump in mid-air. Once per jump; resets on landing.</summary>
+        public bool AirJump()
+        {
+            if (!CanAirJump) return false;
+            Vy = Math.Max(Vy, 0f) * 0.25f + AirJumpBase + Math.Abs(Vx) * 0.35f;
+            _airJumped = true;
+            Jumps++;
+            DoubleJumped?.Invoke();
+            return true;
+        }
+
         private void MovePlatforms(float dt)
         {
             foreach (var p in _platforms)
@@ -365,12 +384,14 @@ namespace JellyDrop.Core.Tower
                 Grounded = false;
                 Ground = null;
                 _jumpFrom = best.Floor;
+                _airJumped = false;
             }
             else
             {
                 Vy = 0f;
                 Grounded = true;
                 Ground = best;
+                _airJumped = false;
             }
 
             if (best.Floor > HighestFloor) HighestFloor = best.Floor;
@@ -469,6 +490,8 @@ namespace JellyDrop.Core.Tower
             }
             else
             {
+                // Falling short of the next floor: use the double jump.
+                if (s.CanAirJump && s.Vy < 0f && s.Y < target.Floor * TowerSession.Gap + 0.3f) s.AirJump();
                 // Steer toward the target; brake near it.
                 if (Math.Abs(dx) > 0.25f) move = Math.Sign(dx);
                 else move = -Math.Sign(s.Vx) * 0.5f;

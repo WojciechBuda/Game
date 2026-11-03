@@ -40,6 +40,24 @@ namespace JellyDrop.Tests
         }
 
         [Test]
+        public void DoubleJumpOncePerJumpAndResetsOnLanding()
+        {
+            var s = new TowerSession(TowerConfig.Endless(TowerMode.Classic, TowerScenery.Ice), 1);
+            Assert.IsFalse(s.AirJump(), "no double jump while standing");
+            s.Step(1f / 60f, 0f, true);
+            for (int i = 0; i < 20; i++) s.Step(1f / 60f, 0f, false);
+            float before = s.Vy;
+            Assert.IsTrue(s.AirJump());
+            Assert.Greater(s.Vy, before);
+            Assert.IsFalse(s.AirJump(), "only one double jump per jump");
+            for (int i = 0; i < 400 && !s.Grounded && !s.IsOver; i++) s.Step(1f / 60f, 0f, false);
+            Assert.IsTrue(s.Grounded);
+            s.Step(1f / 60f, 0f, true);
+            s.Step(1f / 60f, 0f, false);
+            Assert.IsTrue(s.CanAirJump);
+        }
+
+        [Test]
         public void WallsBounceTheAvatarBack()
         {
             var s = new TowerSession(TowerConfig.Endless(TowerMode.Classic, TowerScenery.Ice), 1);

@@ -377,6 +377,7 @@ namespace JellyDrop
             int seed = mode == GameMode.Daily ? Economy.DailyChallengeSeed : 0;
             var difficulty = Economy.DifficultyFor(mode);
             var config = DifficultySettings.For(difficulty).Apply(GameConfig);
+            if (mode == GameMode.Classic) config.Lucky.WithArcadePieces();
             Launch(mode, seed, config);
         }
 
@@ -522,7 +523,7 @@ namespace JellyDrop
             Game.Leave();
             if (Screens.Current == Runner && Runner.IsVisible) Runner.PrepareRun();
             else Screens.Show(Runner);
-            RunnerWorld.Begin(Environment.TickCount, SpriteFactory.Avatar(Economy.EquippedAvatar, AvatarMood.Excited), lives);
+            RunnerWorld.Begin(Environment.TickCount, SpriteFactory.AvatarBodyColor(Economy.EquippedAvatar), lives);
         }
 
         /// <summary>Applies the wardrobe (colour, hat, glasses) to the avatar everywhere.</summary>

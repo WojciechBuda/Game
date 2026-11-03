@@ -562,6 +562,10 @@ namespace JellyDrop.Visuals
         /// <summary>The avatar wearing the player's wardrobe items.</summary>
         public static Sprite Avatar(ShopItem avatar, AvatarMood mood) => Avatar(avatar, mood, PlayerLook);
 
+        /// <summary>The body colour the player's avatar is drawn in (wardrobe colour first).</summary>
+        public static Color AvatarBodyColor(ShopItem avatar) =>
+            ColorUtil.Hex(string.IsNullOrEmpty(PlayerLook.BodyColor) ? avatar.BodyColor : PlayerLook.BodyColor);
+
         public static Sprite Avatar(ShopItem avatar, AvatarMood mood, AvatarLook look) =>
             Cached($"avatar_{avatar.Id}_{mood}_{look.Key}", () => DrawAvatar(
                 ColorUtil.Hex(string.IsNullOrEmpty(look.BodyColor) ? avatar.BodyColor : look.BodyColor), avatar.AvatarShape, mood, look));

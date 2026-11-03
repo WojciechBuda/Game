@@ -154,6 +154,22 @@ namespace JellyDrop.Interface
     }
 
     /// <summary>A labelled 0..100% slider: drag or tap anywhere on the track.</summary>
+    /// <summary>
+    /// The mute icon inside a volume row. It takes the press itself (down + drag), otherwise the slider row
+    /// would grab the touch and the tap would just drag the volume to 0.
+    /// </summary>
+    public sealed class MuteButton : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerClickHandler
+    {
+        public System.Action OnTap;
+        public void OnPointerDown(PointerEventData e) { }
+        public void OnDrag(PointerEventData e) { }
+        public void OnPointerClick(PointerEventData e)
+        {
+            UIKit.ClickSound?.Invoke();
+            OnTap?.Invoke();
+        }
+    }
+
     public sealed class VolumeSlider : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
     {
         public System.Action<float> Changed;
@@ -180,14 +196,16 @@ namespace JellyDrop.Interface
             hit.rectTransform.Fill();
             var s = row.gameObject.AddComponent<VolumeSlider>();
             s._name = label;
+            // Layout (row is 800 x 140): big mute icon on the left, label + percentage on top, track below,
+            // all to the right of the icon so the knob never slides under it.
             s._label = UIKit.Text(row, label, 38, ColorUtil.Ink, TextAnchor.MiddleLeft, false).Fit(20);
-            s._label.rectTransform.At(UIKit.Top, new Vector2(-90, -30), new Vector2(500, 56));
+            s._label.rectTransform.At(UIKit.Top, new Vector2(-10, -34), new Vector2(480, 56));
             // Speaker / note icon: tap it to mute or unmute quickly.
             var iconBg = UIKit.Image(row, SpriteFactory.Circle(), color, true, "IconBg");
-            iconBg.rectTransform.At(UIKit.Top, new Vector2(-350, -30), new Vector2(68, 68));
+            iconBg.rectTransform.At(UIKit.Top, new Vector2(-344, -70), new Vector2(96, 96));
             s.Icon = UIKit.Image(iconBg.rectTransform, null, Color.white, false, "Icon");
-            s.Icon.rectTransform.Fill(12, 12, 12, 12);
-            iconBg.gameObject.AddComponent<TapTarget>().OnTap = () =>
+            s.Icon.rectTransform.Fill(18, 18, 18, 18);
+            iconBg.gameObject.AddComponent<MuteButton>().OnTap = () =>
             {
                 float v = s._value > 0.01f ? 0f : (s._beforeMute > 0.01f ? s._beforeMute : 0.8f);
                 if (s._value > 0.01f) s._beforeMute = s._value;
@@ -195,9 +213,9 @@ namespace JellyDrop.Interface
                 s.Changed?.Invoke(v);
             };
             s._percent = UIKit.Text(row, "", 36, color, TextAnchor.MiddleRight, false);
-            s._percent.rectTransform.At(UIKit.Top, new Vector2(300, -30), new Vector2(200, 56));
+            s._percent.rectTransform.At(UIKit.Top, new Vector2(290, -34), new Vector2(200, 56));
             var track = UIKit.Panel(row, PixelCanvas.WithAlpha(ColorUtil.Night, 0.35f), 2.5f, false, "Track");
-            track.rectTransform.At(UIKit.Bottom, new Vector2(0, 34), new Vector2(760, 30));
+            track.rectTransform.At(UIKit.Bottom, new Vector2(70, 36), new Vector2(620, 30));
             s._track = track.rectTransform;
             s._fill = UIKit.Panel(track.transform, color, 2.5f, false, "Fill");
             s._fill.rectTransform.Fill(0, 0, 0, 0);

@@ -36,7 +36,8 @@ namespace JellyDrop.Runner3D
         private GameObject _light;
         private Transform _root;
         private Transform _player;
-        private SpriteRenderer _avatar;
+        private RunnerHero _hero;
+        private RunnerSky _sky;
         private Transform _shadow;
         private readonly List<Transform> _chunks = new List<Transform>();
         private readonly Dictionary<RunRow, GameObject> _rowObjects = new Dictionary<RunRow, GameObject>();
@@ -87,11 +88,8 @@ namespace JellyDrop.Runner3D
 
             _player = new GameObject("Player").transform;
             _player.SetParent(_root, false);
-            var av = new GameObject("Avatar");
-            av.transform.SetParent(_player, false);
-            av.transform.localScale = Vector3.one * 1.45f; // avatar sprites are 1 unit tall
-            _avatar = av.AddComponent<SpriteRenderer>();
-            _avatar.sortingOrder = 20;
+            _hero = RunnerHero.Create(_player);
+            _sky = RunnerSky.Create(_cam, _cam.backgroundColor);
             var sh = new GameObject("Shadow");
             sh.transform.SetParent(_root, false);
             sh.AddComponent<MeshFilter>().sharedMesh = _shadowMesh;
@@ -188,7 +186,7 @@ namespace JellyDrop.Runner3D
 
         // ------------------------------------------------------------------ run lifecycle
 
-        public void Begin(int seed, Sprite avatar, int lives = RunnerSession.StartLives)
+        public void Begin(int seed, Color bodyColor, int lives = RunnerSession.StartLives)
         {
             End();
             Session = new RunnerSession(seed, lives);
@@ -197,7 +195,7 @@ namespace JellyDrop.Runner3D
             Session.CoinCollected += OnCoin;
             Session.Crashed += OnCrash;
             Session.Hit += OnHit;
-            _avatar.sprite = avatar;
+            _hero.SetColor(bodyColor);
             _laneX = 0f;
             _crashTime = -1f;
             _paused = false;
@@ -358,9 +356,10 @@ namespace JellyDrop.Runner3D
             _player.localScale = new Vector3(1f / Mathf.Sqrt(squash), squash, 1f);
             if (s.IsOver) _player.localRotation = Quaternion.Euler(0f, 0f, Mathf.Min(1f, Math.Max(0f, _crashTime)) * 75f);
             else _player.localRotation = Quaternion.Euler(0f, 0f, (_laneX - LaneX(s.Lane)) * -12f);
-            _avatar.transform.rotation = _cam.transform.rotation;
+            _hero.Pose(s.Time * 11f, s.IsJumping, s.IsSliding, s.IsOver);
             // Blink while invincible after losing a life.
-            _avatar.enabled = s.Invincible <= 0f || Mathf.Repeat(s.Invincible * 10f, 1f) < 0.55f;
+            _hero.SetVisible(s.Invincible <= 0f || Mathf.Repeat(s.Invincible * 10f, 1f) < 0.55f);
+            _sky.Tick(dt, s.Speed);
             _shadow.localPosition = new Vector3(_laneX, 0.02f, z);
             _shadow.localScale = Vector3.one * (1f - Mathf.Min(0.5f, s.Height * 0.25f));
 

@@ -34,7 +34,7 @@ namespace JellyDrop.Gameplay
             _ring.size = new Vector2(boxSize, boxSize);
             _ring.sortingOrder = 5;
             SetAccent(ColorUtil.Blue);
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < PieceData.MaxCells; i++)
             {
                 var go = new GameObject("cell");
                 go.transform.SetParent(transform, false);
@@ -70,6 +70,8 @@ namespace JellyDrop.Gameplay
             }
             var center = new Vector2((minX + maxX) / 2f + 0.5f, (minY + maxY) / 2f + 0.5f);
             var sprite = look.SpriteFor(type.Value, golden);
+            // The big 3x3 square is taller than any other piece: shrink it a little to fit the box.
+            float k = cells.Length > 4 ? 0.8f : 1f;
 
             for (int i = 0; i < _cells.Count; i++)
             {
@@ -78,8 +80,8 @@ namespace JellyDrop.Gameplay
                 r.enabled = true;
                 r.sprite = sprite;
                 r.color = dimmed ? new Color(1f, 1f, 1f, 0.45f) : Color.white;
-                r.transform.localPosition = new Vector3(cells[i].x + 0.5f - center.x, cells[i].y + 0.5f - center.y, 0f) * _cellScale;
-                r.transform.localScale = Vector3.one * _cellScale;
+                r.transform.localPosition = new Vector3(cells[i].x + 0.5f - center.x, cells[i].y + 0.5f - center.y, 0f) * _cellScale * k;
+                r.transform.localScale = Vector3.one * _cellScale * k;
             }
         }
 

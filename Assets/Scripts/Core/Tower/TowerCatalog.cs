@@ -17,18 +17,18 @@ namespace JellyDrop.Core.Tower
         {
             var c = new TowerConfig { Floors = Floors, Scenery = Scenery, CycleScenery = false };
             float k = Index / (float)(TowerCatalog.Count - 1);   // 0..1 difficulty
-            c.ScrollStart = 0.9f + 0.6f * k;
-            c.ScrollAccel = 0.012f + 0.012f * k;
-            c.ScrollMax = 2.6f + 0.9f * k;
-            c.MaxWidth = 5.2f - 1.2f * k;
-            c.MinWidth = 3.2f - 0.8f * k;
+            c.ScrollStart = 0.8f + 0.5f * k;
+            c.ScrollAccel = 0.010f + 0.010f * k;
+            c.ScrollMax = 2.25f + 0.8f * k;
+            c.MaxWidth = 4.1f - 0.9f * k;
+            c.MinWidth = 2.5f - 0.6f * k;
             c.NarrowAfter = Floors;
             if (Hazards.Contains("ice")) c.IceChance = 0.25f + 0.15f * k;
             if (Hazards.Contains("moving")) c.MovingChance = 0.18f + 0.12f * k;
             if (Hazards.Contains("crumble")) c.CrumbleChance = 0.15f + 0.1f * k;
             if (Hazards.Contains("spring")) c.SpringChance = 0.12f;
-            if (Hazards.Contains("fast")) { c.ScrollStart += 0.4f; c.ScrollMax += 0.4f; }
-            if (Hazards.Contains("narrow")) { c.MaxWidth -= 0.6f; c.MinWidth = Math.Max(2.1f, c.MinWidth - 0.5f); }
+            if (Hazards.Contains("fast")) { c.ScrollStart += 0.35f; c.ScrollMax += 0.35f; }
+            if (Hazards.Contains("narrow")) { c.MaxWidth -= 0.5f; c.MinWidth = Math.Max(1.7f, c.MinWidth - 0.4f); }
             return c;
         }
     }

@@ -111,7 +111,7 @@ namespace JellyDrop.Gameplay
 
             SetAccent(_accent);
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < PieceData.MaxCells; i++)
             {
                 var a = NewRenderer("active", null, OrderActive);
                 var o = NewRenderer("activeOverlay", null, OrderOverlay);
@@ -145,6 +145,7 @@ namespace JellyDrop.Gameplay
             if (type == PieceType.Garbage) return ColorUtil.Junk;
             if (type == PieceType.Mono) type = PieceType.T;     // small pieces borrow colours from the skin
             if (type == PieceType.Domino) type = PieceType.S;
+            if (type == PieceType.Big) type = PieceType.O;
             return _palette == null || (int)type >= _palette.Length ? ColorUtil.Pink : _palette[(int)type];
         }
 
@@ -293,7 +294,7 @@ namespace JellyDrop.Gameplay
             var sprite = SpriteFor(piece.Type, piece.Golden);
             bool showGhost = session.Config.ShowGhost && ghostOrigin.y != piece.Origin.y;
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < PieceData.MaxCells; i++)
             {
                 var r = _active[i];
                 var o = _activeOverlays[i];

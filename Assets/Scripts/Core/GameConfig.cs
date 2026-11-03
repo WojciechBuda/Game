@@ -17,6 +17,8 @@ namespace JellyDrop.Core
 
         /// <summary>Chance a piece is a small one (single or double block) instead of the next one from the bag.</summary>
         public double SmallPieceChance = 0;
+        /// <summary>Chance for a big 3x3 square to slip into the queue.</summary>
+        public double BigPieceChance = 0;
         /// <summary>Chance a falling bomb shows up (explodes a 3x3 area where it lands).</summary>
         public double BombPieceChance = 0;
         /// <summary>Chance of a row blast and of a column blast (each).</summary>
@@ -31,6 +33,14 @@ namespace JellyDrop.Core
             BombPieceChance = 0.02;
             LineBlastChance = 0.015;
             MushroomPieceChance = 0.04;
+            return this;
+        }
+
+        /// <summary>Arcade: many more single and double blocks, plus the occasional big 3x3 square.</summary>
+        public LuckyConfig WithArcadePieces()
+        {
+            SmallPieceChance = 0.16;
+            BigPieceChance = 0.045;
             return this;
         }
 

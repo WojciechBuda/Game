@@ -36,7 +36,9 @@ namespace JellyDrop.Core
         /// <summary>Special one-cell piece: when it lands, the whole row it lands in disappears.</summary>
         RowBlast = 11,
         /// <summary>Special one-cell piece: when it lands, the whole column it lands in disappears.</summary>
-        ColumnBlast = 12
+        ColumnBlast = 12,
+        /// <summary>Big 3x3 square block (arcade surprise).</summary>
+        Big = 13
     }
 
     public enum GameMode

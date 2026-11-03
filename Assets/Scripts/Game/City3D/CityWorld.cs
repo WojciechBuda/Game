@@ -700,7 +700,8 @@ namespace JellyDrop.City3D
             switch (type)
             {
                 case JellyDrop.Core.City.CityMissionType.Chicken: SpawnRunner(ChickenMesh(), 3.0f, 0.25f); break;
-                case JellyDrop.Core.City.CityMissionType.Thief: SpawnRunner(ThiefMesh(), 2.6f, 0.12f); break;
+                // Only 5 seconds to catch him, so he starts right where the camera is looking and runs a bit slower.
+                case JellyDrop.Core.City.CityMissionType.Thief: SpawnRunner(ThiefMesh(), 2.1f, 0.12f, NearestNode(_target)); break;
                 case JellyDrop.Core.City.CityMissionType.Cat: SpawnCat(); break;
                 default: break; // balloons spawn over time
             }
@@ -816,12 +817,24 @@ namespace JellyDrop.City3D
             if (_missionHits >= _missionNeeded) EndMission(true);
         }
 
-        private void SpawnRunner(Mesh mesh, float speed, float hop)
+        private int NearestNode(Vector3 local)
+        {
+            int best = 0;
+            float bestD = float.MaxValue;
+            for (int i = 0; i < _nodes.Count; i++)
+            {
+                float dx = _nodes[i].x - local.x, dz = _nodes[i].z - local.z, d = dx * dx + dz * dz;
+                if (d < bestD) { bestD = d; best = i; }
+            }
+            return best;
+        }
+
+        private void SpawnRunner(Mesh mesh, float speed, float hop, int startNode = -1)
         {
             var go = MeshObject("Runner", mesh);
             go.transform.localScale = Vector3.one * 1.4f;
             var v = go.AddComponent<Villager>();
-            v.Setup(this, _rng.Next(_nodes.Count), speed, _rng.Next());
+            v.Setup(this, startNode >= 0 ? startNode : _rng.Next(_nodes.Count), speed, _rng.Next());
             v.NoWaits = true;
             v.Hop = hop;
             _targets.Add(go.transform);

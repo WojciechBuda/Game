@@ -61,10 +61,11 @@ namespace JellyDrop.Core
 
         private PieceType? RollSurprise()
         {
-            double total = _lucky.SmallPieceChance + _lucky.BombPieceChance + 2 * _lucky.LineBlastChance;
+            double total = _lucky.SmallPieceChance + _lucky.BigPieceChance + _lucky.BombPieceChance + 2 * _lucky.LineBlastChance;
             if (total <= 0) return null;
             double r = _rng.NextDouble();
             if ((r -= _lucky.SmallPieceChance) < 0) return _rng.NextDouble() < 0.5 ? PieceType.Mono : PieceType.Domino;
+            if ((r -= _lucky.BigPieceChance) < 0) return PieceType.Big;
             if ((r -= _lucky.BombPieceChance) < 0) return PieceType.Bomb;
             if ((r -= _lucky.LineBlastChance) < 0) return PieceType.RowBlast;
             if ((r -= _lucky.LineBlastChance) < 0) return PieceType.ColumnBlast;

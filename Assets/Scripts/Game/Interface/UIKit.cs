@@ -381,6 +381,30 @@ namespace JellyDrop.Interface
             }
             _color = color;
             ApplyColors();
+            Relayout();
+        }
+
+        /// <summary>
+        /// With an icon and a label, centres the pair (icon + gap + text) on the button, so short words like
+        /// "Play" or "City" sit in the middle instead of hugging the icon on the left.
+        /// </summary>
+        private void Relayout()
+        {
+            if (Icon == null || Label == null) return;
+            var rt = (RectTransform)transform;
+            float w = rt.sizeDelta.x, h = rt.sizeDelta.y - Depth;
+            float iconW = h * 0.62f, gap = Mathf.Max(14f, h * 0.1f), pad = 22f;
+            float maxText = Mathf.Max(40f, w - iconW - gap - pad * 2f);
+            float textW = string.IsNullOrEmpty(Label.text) ? maxText : Mathf.Min(maxText, Label.preferredWidth + 8f);
+            float group = iconW + gap + textW;
+            float left = Mathf.Max(pad, (w - group) * 0.5f);
+            Icon.rectTransform.At(new Vector2(0f, 0.5f), new Vector2(left + iconW * 0.5f, 0), new Vector2(iconW, iconW));
+            var lr = Label.rectTransform;
+            lr.anchorMin = new Vector2(0f, 0f);
+            lr.anchorMax = new Vector2(0f, 1f);
+            lr.pivot = new Vector2(0f, 0.5f);
+            lr.anchoredPosition = new Vector2(left + iconW + gap, 2f);
+            lr.sizeDelta = new Vector2(textW, -4f);
         }
 
         private void ApplyColors()
@@ -422,6 +446,7 @@ namespace JellyDrop.Interface
         public void SetLabel(string text)
         {
             if (Label != null) Label.text = text;
+            Relayout();
         }
 
         /// <summary>Red counter bubble in the corner (e.g. unclaimed missions). 0 hides it.</summary>
