@@ -1,6 +1,7 @@
 #if ADMOB
 using System;
 using GoogleMobileAds.Api;
+using GoogleMobileAds.Common;
 using GoogleMobileAds.Ump.Api;
 using UnityEngine;
 
@@ -22,9 +23,14 @@ namespace JellyDrop.Monetization
         public bool PrivacyOptionsRequired =>
             ConsentInformation.PrivacyOptionsRequirementStatus == PrivacyOptionsRequirementStatus.Required;
 
+        /// <summary>
+        /// Ad SDK callbacks can arrive on a background thread; game code must run on Unity's main thread.
+        /// (Replaces the obsolete MobileAds.RaiseAdEventsOnUnityMainThread.)
+        /// </summary>
+        private static void Main(Action action) => MobileAdsEventExecutor.ExecuteInUpdate(action);
+
         public void Initialize(Action onReady)
         {
-            MobileAds.RaiseAdEventsOnUnityMainThread = true;
             // Many players are teenagers: never show ads rated above Teen.
             MobileAds.SetRequestConfiguration(new RequestConfiguration { MaxAdContentRating = MaxAdContentRating.T });
 
@@ -49,19 +55,19 @@ namespace JellyDrop.Monetization
         {
             if (_initialized) return;
             _initialized = true;
-            MobileAds.Initialize(status =>
+            MobileAds.Initialize(status => Main(() =>
             {
                 LoadRewarded();
                 LoadInterstitial();
                 onReady?.Invoke();
-            });
+            }));
         }
 
         private void LoadRewarded()
         {
             _rewarded?.Destroy();
             _rewarded = null;
-            RewardedAd.Load(MonetizationIds.RewardedAdUnit, new AdRequest(), (ad, error) =>
+            RewardedAd.Load(MonetizationIds.RewardedAdUnit, new AdRequest(), (ad, error) => Main(() =>
             {
                 if (error != null || ad == null)
                 {
@@ -69,14 +75,14 @@ namespace JellyDrop.Monetization
                     return;
                 }
                 _rewarded = ad;
-            });
+            }));
         }
 
         private void LoadInterstitial()
         {
             _interstitial?.Destroy();
             _interstitial = null;
-            InterstitialAd.Load(MonetizationIds.InterstitialAdUnit, new AdRequest(), (ad, error) =>
+            InterstitialAd.Load(MonetizationIds.InterstitialAdUnit, new AdRequest(), (ad, error) => Main(() =>
             {
                 if (error != null || ad == null)
                 {
@@ -84,7 +90,7 @@ namespace JellyDrop.Monetization
                     return;
                 }
                 _interstitial = ad;
-            });
+            }));
         }
 
         public void ShowRewarded(Action<bool> onFinished)
@@ -98,17 +104,17 @@ namespace JellyDrop.Monetization
 
             bool earned = false;
             var ad = _rewarded;
-            ad.OnAdFullScreenContentClosed += () =>
+            ad.OnAdFullScreenContentClosed += () => Main(() =>
             {
                 onFinished?.Invoke(earned);
                 LoadRewarded();
-            };
-            ad.OnAdFullScreenContentFailed += err =>
+            });
+            ad.OnAdFullScreenContentFailed += err => Main(() =>
             {
                 onFinished?.Invoke(false);
                 LoadRewarded();
-            };
-            ad.Show(reward => earned = true);
+            });
+            ad.Show(reward => Main(() => earned = true));
         }
 
         public void ShowInterstitial(Action onClosed)
@@ -120,16 +126,16 @@ namespace JellyDrop.Monetization
                 return;
             }
             var ad = _interstitial;
-            ad.OnAdFullScreenContentClosed += () =>
+            ad.OnAdFullScreenContentClosed += () => Main(() =>
             {
                 onClosed?.Invoke();
                 LoadInterstitial();
-            };
-            ad.OnAdFullScreenContentFailed += err =>
+            });
+            ad.OnAdFullScreenContentFailed += err => Main(() =>
             {
                 onClosed?.Invoke();
                 LoadInterstitial();
-            };
+            });
             ad.Show();
         }
 
