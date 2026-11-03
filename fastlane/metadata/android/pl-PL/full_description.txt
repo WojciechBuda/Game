@@ -7,7 +7,7 @@ Przesuwaj, obracaj i upuszczaj spadające klocki. Czyść linie, łap combo i zd
 Przechodź kolejne poziomy na mapie, zdobywaj gwiazdki i odblokowuj nowe wyzwania. Albo graj bez końca w trybie Arcade i bij własne rekordy.
 
 🏙️ TWOJE MIASTO 3D
-Za zdobyte surowce stawiaj domy, sklepy, parki i wieże. Rozbudowane budynki zmieniają kształt na coraz bardziej eleganckie i okazałe. Mieszkańcy dają losowe zadania z nagrodami.
+Za zdobyte surowce stawiaj domy, sklepy, parki i wieże. Rozbudowane budynki zmieniają kształt na coraz bardziej eleganckie i okazałe. Brakuje miejsca? Dokup nowe wyspy połączone mostami, ozdób je fontannami, pomnikami i altanami albo wyburz i zbuduj od nowa. Mieszkańcy dają losowe zadania z nagrodami.
 
 🌲 WYSPA LAS I 🌻 WYSPA OGRÓD
 Zbieraj grzyby w każdym trybie gry, rozwijaj leśną wyspę, sadź rośliny w ogrodzie i przygotowuj z plonów smakołyki.
@@ -16,7 +16,7 @@ Zbieraj grzyby w każdym trybie gry, rozwijaj leśną wyspę, sadź rośliny w o
 Biegnij przez kolorowe tory, zmieniaj pasy, skacz i zbieraj monety. Masz 3 życia – jak daleko dobiegniesz?
 
 🧗 WSPINACZKA PO WIEŻY
-Skacz coraz wyżej po półkach – stuknij, żeby skoczyć, przesuń palec, żeby kierować. Dżungla, wodospady, kosmos i inne krajobrazy.
+Skacz coraz wyżej po półkach – stuknij, żeby skoczyć, stuknij dwa razy, żeby zrobić podwójny skok, przesuń palec, żeby kierować. Dżungla, wodospady, kosmos i inne krajobrazy.
 
 🐾 TWÓJ PUPIL
 Karm go, myj, baw się z nim i kładź spać. Szczęśliwy pupil to więcej nagród.
@@ -30,7 +30,7 @@ Codzienny darmowy obrót, boostery, sezonowe nagrody oraz dziesiątki skórek, m
 • 6 języków: polski, angielski, niemiecki, hiszpański, francuski, portugalski
 • Regulowana głośność muzyki i efektów, wibracje i wiele więcej
 
-Gra jest darmowa i zawiera reklamy oraz opcjonalne zakupy w aplikacji (np. Premium bez reklam). Wszystko w grze możesz też zdobyć, po prostu grając.
+Gra jest darmowa i zawiera reklamy oraz opcjonalne zakupy w aplikacji (np. Premium bez reklam). Większość rzeczy w grze możesz też zdobyć, po prostu grając.
 
 Polityka prywatności: https://stackville.netlify.app/privacy-policy.html
 Kontakt: stackville.info@gmail.com
