@@ -83,6 +83,7 @@ namespace JellyDrop
         public CityScreen CityView { get; private set; }
         public BuildMenu BuildMenu { get; private set; }
         public MarketPopup Market { get; private set; }
+        public CityExtrasPopup CityExtras { get; private set; }
         public SeasonScreen Season { get; private set; }
         public WardrobeScreen WardrobeView { get; private set; }
         public RunnerScreen Runner { get; private set; }
@@ -283,6 +284,7 @@ namespace JellyDrop
             LevelIntro = AddScreen<LevelIntro>("LevelIntro");
             BuildMenu = AddScreen<BuildMenu>("BuildMenu");
             Market = AddScreen<MarketPopup>("Market");
+            CityExtras = AddScreen<CityExtrasPopup>("CityExtras");
             Popup = AddScreen<Popup>("Popup");
             PrivacyView = AddScreen<PrivacyScreen>("Privacy");
             WheelView = AddScreen<WheelScreen>("Wheel");

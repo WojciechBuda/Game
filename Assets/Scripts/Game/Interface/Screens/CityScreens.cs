@@ -144,6 +144,10 @@ namespace JellyDrop.Interface
             market.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(255, 105), new Vector2(470, 150));
             IslandNav.Add(Root, App, IslandNav.Island.City, 250f);
 
+            // Decorations and extra islands (right side, under the header)
+            SideButton(IslandSprites.Decor("fountain"), Loc.T("city.decor"), ColorUtil.Pink, () => App.CityExtras.OpenDecor(), -470);
+            SideButton(IslandSprites.IslandIcon(), Loc.T("city.island"), ColorUtil.Blue, () => App.CityExtras.OpenIslands(), -660);
+
             // Village mission: a chip pops up above the buttons when something happens in town.
             _missionChip = UIKit.Button(Root, "", ColorUtil.Pink, OfferMission, new Vector2(700, 120), 42, SpriteFactory.Star());
             _missionChip.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 410), new Vector2(700, 120));
@@ -157,6 +161,18 @@ namespace JellyDrop.Interface
             _missionTime = UIKit.Text(_missionBanner, "", 36, ColorUtil.Gold).Fit(20);
             _missionTime.rectTransform.At(UIKit.Bottom, new Vector2(0, 38), new Vector2(760, 54));
             _missionBanner.gameObject.SetActive(false);
+        }
+
+        /// <summary>The screen's UI root (for floating texts over the 3D town).</summary>
+        public RectTransform Overlay => Root;
+
+        private void SideButton(Sprite icon, string caption, Color color, System.Action onClick, float y)
+        {
+            var b = UIKit.IconButton(Root, icon, color, onClick, 130);
+            b.GetComponent<RectTransform>().At(UIKit.TopRight, new Vector2(-84, y), new Vector2(130, 130));
+            var t = UIKit.Text(Root, caption, 26, ColorUtil.Ink).Fit(14);
+            t.rectTransform.At(UIKit.TopRight, new Vector2(-84, y - 88), new Vector2(170, 40));
+            t.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.5f);
         }
 
         protected override void OnShow()
@@ -475,6 +491,8 @@ namespace JellyDrop.Interface
             var def = city.BuildingAt(_plot);
             var p = city.Plot(_plot);
             Begin(Loc.BuildingName(def.Id));
+            var demolish = UIKit.Button(_content, Loc.T("city.demolish"), ColorUtil.Red, ConfirmDemolish, new Vector2(240, 84), 30);
+            demolish.GetComponent<RectTransform>().At(UIKit.TopLeft, new Vector2(150, -52), new Vector2(240, 84));
 
             var img = UIKit.Image(_content, CitySprites.Building(def.Id), Color.white, false, "Building");
             img.rectTransform.At(UIKit.Top, new Vector2(0, -330), new Vector2(380, 380));
@@ -541,6 +559,24 @@ namespace JellyDrop.Interface
             b.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 110), new Vector2(620, 160));
             b.Interactable = App.Economy.Coins >= cost;
             b.ClickWhenDisabled = true;
+        }
+
+        private void ConfirmDemolish()
+        {
+            var def = App.City.BuildingAt(_plot);
+            if (def == null) return;
+            int plot = _plot;
+            App.Popup.ShowConfirm(Loc.T("city.demolish"), Loc.T("city.demolish_q", Loc.BuildingName(def.Id), App.City.DemolishRefund(plot)),
+                Loc.T("city.demolish"), () =>
+                {
+                    int refund = App.City.Demolish(plot);
+                    if (refund < 0) return;
+                    App.Audio.Play(Sfx.Pop);
+                    Haptics.Medium();
+                    App.Screens.PopModal(this);
+                    App.CityWorld.Sync();
+                    FloatText.Show(App.CityView.Overlay, App.CityWorld.PlotScreenPosition(plot), "+" + Loc.Number(refund), SpriteFactory.Coin(), App.CityView);
+                });
         }
 
         private void DoSpeedUp()
@@ -710,6 +746,207 @@ namespace JellyDrop.Interface
             App.Audio.Play(Sfx.Purchase);
             UIKit.Punch(_owned[(int)s].transform);
             Refresh();
+        }
+
+        public override bool OnBack()
+        {
+            App.Screens.PopModal(this);
+            return true;
+        }
+    }
+
+    /// <summary>Modal for the town's extras: decorations (buy / remove) or buying the next extra island.</summary>
+    public sealed class CityExtrasPopup : UIScreen
+    {
+        private RectTransform _content;
+        private bool _decorMode;
+
+        protected override void Build()
+        {
+            var card = BuildModalCard(new Vector2(960, 1560), ColorUtil.Panel, ColorUtil.Pink);
+            _content = UIKit.Node("Content", card).Fill(30, 30, 30, 30);
+        }
+
+        public void OpenDecor() { _decorMode = true; Open(); }
+        public void OpenIslands() { _decorMode = false; Open(); }
+
+        private void Open()
+        {
+            Rebuild();
+            if (App.Screens.TopModal != this) App.Screens.PushModal(this);
+        }
+
+        public override void Refresh()
+        {
+            if (IsVisible) Rebuild();
+        }
+
+        private void Rebuild()
+        {
+            UIKit.ClearChildren(_content);
+            var close = UIKit.IconButton(_content, SpriteFactory.CloseIcon(), ColorUtil.Purple, () => App.Screens.PopModal(this), 90);
+            close.GetComponent<RectTransform>().At(UIKit.TopRight, new Vector2(-30, -30), new Vector2(90, 90));
+            var title = UIKit.Text(_content, Loc.T(_decorMode ? "city.decor" : "city.island"), 64, _decorMode ? ColorUtil.Pink : ColorUtil.Blue).Fit(30);
+            title.rectTransform.At(UIKit.Top, new Vector2(-30, -60), new Vector2(720, 90));
+            var coins = UIKit.CurrencyPill(_content, SpriteFactory.Coin(), ColorUtil.Ink, out var pill, 300);
+            pill.At(UIKit.Top, new Vector2(0, -160), pill.sizeDelta);
+            coins.text = Loc.Number(App.Economy.Coins);
+            if (_decorMode) BuildDecor(); else BuildIslands();
+        }
+
+        // ------------------------------------------------------------------ decorations
+
+        private void BuildDecor()
+        {
+            var city = App.City;
+            var info = UIKit.Text(_content, Loc.T("city.decor_info"), 32, ColorUtil.InkDim, TextAnchor.MiddleCenter, false).Fit(18);
+            info.rectTransform.At(UIKit.Top, new Vector2(0, -245), new Vector2(860, 80));
+            int free = city.DecorSpots - city.DecorPlaced;
+            var spots = UIKit.Text(_content, Loc.T("city.decor_spots", free, city.DecorSpots), 36, free > 0 ? ColorUtil.Mint : ColorUtil.Red).Fit(20);
+            spots.rectTransform.At(UIKit.Top, new Vector2(0, -310), new Vector2(800, 56));
+
+            var viewport = UIKit.Panel(_content, ColorUtil.PanelLight, 0.8f, true, "Viewport");
+            viewport.rectTransform.Fill(0, 0, 0, 360);
+            viewport.gameObject.AddComponent<RectMask2D>();
+            var list = UIKit.Node("List", viewport.transform);
+            list.anchorMin = new Vector2(0, 1);
+            list.anchorMax = new Vector2(1, 1);
+            list.pivot = new Vector2(0.5f, 1f);
+            list.offsetMin = list.offsetMax = Vector2.zero;
+            var scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            scroll.viewport = viewport.rectTransform;
+            scroll.content = list;
+            scroll.horizontal = false;
+
+            const float rowH = 200f;
+            float y = -12f;
+            foreach (var d in CityCatalog.Decorations)
+            {
+                DecorRow(list, d, y, rowH, free > 0);
+                y -= rowH + 12f;
+            }
+            list.sizeDelta = new Vector2(0, -y + 10);
+        }
+
+        private void DecorRow(RectTransform list, DecorDef d, float y, float h, bool hasSpace)
+        {
+            var city = App.City;
+            var row = UIKit.NeonCard(list, ColorUtil.Pink, ColorUtil.Panel, 1.2f, false, "Row", 0.2f);
+            row.rectTransform.anchorMin = new Vector2(0, 1);
+            row.rectTransform.anchorMax = new Vector2(1, 1);
+            row.rectTransform.pivot = new Vector2(0.5f, 1f);
+            row.rectTransform.offsetMin = new Vector2(14, y - h);
+            row.rectTransform.offsetMax = new Vector2(-14, y);
+
+            var icon = UIKit.Image(row.transform, IslandSprites.Decor(d.Id), Color.white, false, "Icon");
+            icon.rectTransform.At(new Vector2(0f, 0.5f), new Vector2(90, 0), new Vector2(140, 140));
+            var name = UIKit.Text(row.transform, Loc.T("city.decor." + d.Id), 40, ColorUtil.Ink, TextAnchor.MiddleLeft, false).Fit(22);
+            name.rectTransform.At(new Vector2(0f, 1f), new Vector2(340, -40), new Vector2(330, 56));
+            int owned = city.DecorCount(d.Id);
+            var sub = UIKit.Text(row.transform, Loc.T("city.bonus_each", d.BonusPercent) + (owned > 0 ? "  ·  " + Loc.T("city.owned_count", owned) : ""),
+                28, ColorUtil.Orange, TextAnchor.MiddleLeft, false).Fit(16);
+            sub.rectTransform.At(new Vector2(0f, 1f), new Vector2(340, -90), new Vector2(330, 40));
+            var cost = CityUi.CostRow(row.transform, d.Cost, city, App.Economy.Coins, 40);
+            cost.anchorMin = cost.anchorMax = new Vector2(0f, 0f);
+            cost.pivot = new Vector2(0f, 0.5f);
+            cost.anchoredPosition = new Vector2(176, 42);
+
+            var buy = UIKit.Button(row.transform, Loc.T("city.buy"), ColorUtil.Mint, () => BuyDecor(d.Id), new Vector2(190, 90), 32);
+            buy.GetComponent<RectTransform>().At(new Vector2(1f, 0.5f), new Vector2(-110, owned > 0 ? 42 : 0), new Vector2(190, 90));
+            buy.Interactable = hasSpace && city.CanAfford(d.Cost);
+            buy.ClickWhenDisabled = true;
+            if (owned > 0)
+            {
+                var remove = UIKit.Button(row.transform, Loc.T("city.remove"), ColorUtil.Red, () => RemoveDecor(d.Id), new Vector2(190, 70), 26);
+                remove.GetComponent<RectTransform>().At(new Vector2(1f, 0.5f), new Vector2(-110, -50), new Vector2(190, 70));
+            }
+        }
+
+        private void BuyDecor(string id)
+        {
+            var city = App.City;
+            var r = city.CanBuyDecor(id);
+            if (r != BuildResult.Success)
+            {
+                App.Audio.Play(Sfx.Error);
+                if (r == BuildResult.NoSpace)
+                    App.Popup.ShowConfirm(Loc.T("city.decor"), Loc.T("city.decor_full"), Loc.T("city.island"), OpenIslands);
+                else
+                    App.Popup.ShowConfirm(Loc.T("city.market"), CityUi.ResultMessage(r), Loc.T("city.market"), () => App.Market.Open());
+                return;
+            }
+            city.BuyDecor(id);
+            App.Audio.Play(Sfx.Purchase);
+            Haptics.Medium();
+            App.CityWorld.Sync();
+            Rebuild();
+        }
+
+        private void RemoveDecor(string id)
+        {
+            if (!App.City.RemoveDecor(id)) return;
+            App.Audio.Play(Sfx.Pop);
+            App.CityWorld.Sync();
+            Rebuild();
+        }
+
+        // ------------------------------------------------------------------ islands
+
+        private void BuildIslands()
+        {
+            var city = App.City;
+            var img = UIKit.Image(_content, IslandSprites.IslandIcon(), Color.white, false, "Island");
+            img.rectTransform.At(UIKit.Top, new Vector2(0, -470), new Vector2(360, 360));
+            img.gameObject.AddComponent<Bobber>().Amplitude = 8f;
+            var owned = UIKit.Text(_content, Loc.T("city.island_owned", city.Expansions, CityCatalog.MaxExpansions), 40, ColorUtil.Gold).Fit(22);
+            owned.rectTransform.At(UIKit.Top, new Vector2(0, -690), new Vector2(800, 60));
+
+            var cost = city.NextExpansionCost;
+            if (cost == null)
+            {
+                var all = UIKit.Text(_content, Loc.T("city.island_all"), 54, ColorUtil.Mint).Fit(26);
+                all.rectTransform.At(UIKit.Top, new Vector2(0, -820), new Vector2(800, 90));
+                return;
+            }
+            var info = UIKit.Text(_content, Loc.T("city.island_info", CityCatalog.ExpansionPlots, CityCatalog.DecorSpotsPerExpansion), 36, ColorUtil.Ink, TextAnchor.MiddleCenter, false).Fit(20);
+            info.rectTransform.At(UIKit.Top, new Vector2(0, -800), new Vector2(840, 120));
+
+            int need = CityCatalog.ExpansionLevel(city.Expansions);
+            bool levelOk = city.CityLevel >= need;
+            var lvl = UIKit.Text(_content, Loc.T("city.island_level", need), 34, levelOk ? ColorUtil.InkDim : ColorUtil.Red).Fit(18);
+            lvl.rectTransform.At(UIKit.Top, new Vector2(0, -900), new Vector2(800, 54));
+
+            var costRow = CityUi.CostRow(_content, cost, city, App.Economy.Coins, 60);
+            costRow.anchorMin = costRow.anchorMax = UIKit.Bottom;
+            costRow.pivot = new Vector2(0.5f, 0.5f);
+            costRow.anchoredPosition = new Vector2(0, 300);
+
+            var buy = UIKit.Button(_content, Loc.T("city.buy"), ColorUtil.Blue, BuyIsland, new Vector2(560, 160), 60, IslandSprites.IslandIcon());
+            buy.GetComponent<RectTransform>().At(UIKit.Bottom, new Vector2(0, 120), new Vector2(560, 160));
+            buy.Interactable = city.CanBuyExpansion() == BuildResult.Success;
+            buy.ClickWhenDisabled = true;
+        }
+
+        private void BuyIsland()
+        {
+            var city = App.City;
+            var r = city.CanBuyExpansion();
+            if (r != BuildResult.Success)
+            {
+                App.Audio.Play(Sfx.Error);
+                if (r == BuildResult.CityLevelTooLow)
+                    App.Popup.ShowMessage(Loc.T("city.island"), Loc.T("city.island_level", CityCatalog.ExpansionLevel(city.Expansions)), SpriteFactory.LockIcon());
+                else
+                    App.Popup.ShowConfirm(Loc.T("city.market"), CityUi.ResultMessage(r), Loc.T("city.market"), () => App.Market.Open());
+                return;
+            }
+            city.BuyExpansion();
+            App.Audio.Play(Sfx.LevelUp);
+            Haptics.Medium();
+            App.Screens.PopModal(this);
+            App.CityWorld.Sync();
+            App.CityWorld.FocusExpansion(city.Expansions - 1);
+            App.Popup.ShowMessage(Loc.T("city.island"), Loc.T("city.island_bought"), IslandSprites.IslandIcon());
         }
 
         public override bool OnBack()

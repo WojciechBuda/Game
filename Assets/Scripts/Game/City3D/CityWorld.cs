@@ -18,7 +18,9 @@ namespace JellyDrop.City3D
     {
         public const int Cols = 3;
         /// <summary>Rows of plots the island can grow to.</summary>
-        public static int MaxRows => (CityCatalog.MaxPlots + Cols - 1) / Cols;
+        public static int MaxRows => (CityCatalog.MainPlots + Cols - 1) / Cols;
+        /// <summary>Distance (x) from the town's centre to the extra islands.</summary>
+        public const float ExpansionX = 21f;
         public const float PlotSize = 3f, Gap = 1.2f, Step = PlotSize + Gap;
         private static readonly Vector3 Origin = new Vector3(0f, 0f, 2000f);
 
@@ -34,6 +36,9 @@ namespace JellyDrop.City3D
         private readonly PlotView[] _plots = new PlotView[CityCatalog.MaxPlots];
         /// <summary>Rows currently on the island (unlocked rows plus one locked row to look forward to).</summary>
         private int _rows;
+        private int _expansions = -1;
+        private readonly GameObject[] _decor = new GameObject[CityCatalog.MaxDecorSpots];
+        private readonly string[] _decorShown = new string[CityCatalog.MaxDecorSpots];
         private GameObject _terrain;
         private readonly List<Villager> _villagers = new List<Villager>();
         private readonly List<Vector3> _nodes = new List<Vector3>();
@@ -127,8 +132,31 @@ namespace JellyDrop.City3D
         /// <summary>Row 0 is nearest the camera; the island grows away from it.</summary>
         public static Vector3 PlotCenter(int index)
         {
+            if (index >= CityCatalog.MainPlots)
+            {
+                int k = (index - CityCatalog.MainPlots) / CityCatalog.ExpansionPlots;
+                int j = (index - CityCatalog.MainPlots) % CityCatalog.ExpansionPlots;
+                return ExpansionCenter(k) + new Vector3((j % Cols - (Cols - 1) / 2f) * Step, 0f, (j / Cols - 0.5f) * Step);
+            }
             int c = index % Cols, r = index / Cols;
             return new Vector3((c - (Cols - 1) / 2f) * Step, 0f, (r - 1.5f) * Step);
+        }
+
+        /// <summary>Extra islands sit left and right of the town, in pairs, each lined up with a row of paths.</summary>
+        public static Vector3 ExpansionCenter(int k) =>
+            new Vector3((k % 2 == 0 ? -1f : 1f) * ExpansionX, 0f, -1f * Step + (k / 2) * 4f * Step);
+
+        /// <summary>Where decoration spot <paramref name="i"/> is (see CityService.IsDecorSpotOpen).</summary>
+        public static Vector3 DecorSpot(int i)
+        {
+            if (i < CityCatalog.MainDecorSpots)
+            {
+                float side = i % 2 == 0 ? -1f : 1f;
+                return new Vector3(side * 7.65f, 0f, -2f * Step + (0.5f + i / 2) * Step);
+            }
+            int k = (i - CityCatalog.MainDecorSpots) / CityCatalog.DecorSpotsPerExpansion;
+            int j = (i - CityCatalog.MainDecorSpots) % CityCatalog.DecorSpotsPerExpansion;
+            return ExpansionCenter(k) + new Vector3((j % 2 == 0 ? -1f : 1f) * 7.55f, 0f, (j / 2 == 0 ? -0.5f : 0.5f) * Step);
         }
 
         private int WantedRows()
@@ -184,6 +212,105 @@ namespace JellyDrop.City3D
             _terrain.transform.SetParent(_root, false);
             BuildIsland(rows);
             BuildPaths(rows);
+            for (int k = 0; k < _expansions; k++) BuildExpansion(k, rows);
+            // The decorations were children of the old terrain.
+            for (int i = 0; i < _decorShown.Length; i++) { _decorShown[i] = null; _decor[i] = null; }
+        }
+
+        /// <summary>An extra island: a round islet with a 3 x 2 grid of plots, paths, a few trees and a bridge to town.</summary>
+        private void BuildExpansion(int k, int rows)
+        {
+            var c = ExpansionCenter(k);
+            float r = 8.6f;
+            var mb = new MeshBuilder();
+            mb.Cylinder(c + new Vector3(0, -0.6f, 0), r + 1.3f, 0.45f, ColorUtil.Hex("#F2D59B"), 28);
+            mb.Cylinder(c + new Vector3(0, -0.6f, 0), r, 0.6f, ColorUtil.Hex("#6CC56F"), 28);
+            var stone = ColorUtil.Hex("#E6D7B5");
+            for (int x = 0; x <= Cols; x++)
+                mb.Box(c + new Vector3((x - Cols / 2f) * Step, -0.02f, 0), new Vector3(1.0f, 0.05f, 2f * Step + 1f), stone);
+            for (int z = 0; z <= 2; z++)
+                mb.Box(c + new Vector3(0, -0.02f, (z - 1f) * Step), new Vector3(Cols * Step + 1f, 0.05f, 1.0f), stone);
+            // Trees on the rim
+            for (int i = 0; i < 10; i++)
+            {
+                float a = i / 10f * Mathf.PI * 2f + 0.3f;
+                var p = c + new Vector3(Mathf.Cos(a) * (r - 0.8f), 0f, Mathf.Sin(a) * (r - 0.8f));
+                if (Mathf.Abs(p.x - c.x) < 7.2f && Mathf.Abs(p.z - c.z) < Step + 0.8f) continue;
+                if (i % 2 == 0) BuildingModels.Tree(mb, p, 0.9f); else BuildingModels.RoundTree(mb, p, 0.85f);
+            }
+            mb.ToObject("Island" + k, _terrain.transform, castShadows: false);
+
+            // Path nodes (4 x 3) and their links
+            int first = _nodes.Count;
+            for (int z = 0; z <= 2; z++)
+                for (int x = 0; x <= Cols; x++)
+                {
+                    _nodes.Add(c + new Vector3((x - Cols / 2f) * Step, 0f, (z - 1f) * Step));
+                    _links.Add(new List<int>());
+                }
+            int W = Cols + 1;
+            for (int z = 0; z <= 2; z++)
+                for (int x = 0; x <= Cols; x++)
+                {
+                    int i = first + z * W + x;
+                    if (x < Cols) { _links[i].Add(i + 1); _links[i + 1].Add(i); }
+                    if (z < 2) { _links[i].Add(i + W); _links[i + W].Add(i); }
+                }
+
+            // Bridge from the island's inner edge (middle row) to the nearest crossing on the main island.
+            bool left = c.x < 0f;
+            int inner = first + 1 * W + (left ? Cols : 0);
+            int mainRow = Mathf.Clamp(Mathf.RoundToInt((c.z - GridFront) / Step), 0, rows);
+            int mainNode = mainRow * W + (left ? 0 : Cols);
+            _links[inner].Add(mainNode);
+            _links[mainNode].Add(inner);
+            Bridge(_nodes[mainNode], _nodes[inner]);
+        }
+
+        private void Bridge(Vector3 a, Vector3 b)
+        {
+            var mb = new MeshBuilder();
+            var d = b - a;
+            float len = Mathf.Sqrt(d.x * d.x + d.z * d.z);
+            var mid = (a + b) * 0.5f;
+            mb.Transform = Matrix4x4.TRS(mid, Quaternion.LookRotation(new Vector3(d.x, 0f, d.z), Vector3.up), Vector3.one);
+            var wood = ColorUtil.Hex("#A86F43");
+            var dark = ColorUtil.Hex("#7A4E2E");
+            mb.Box(new Vector3(0, -0.12f, 0), new Vector3(1.3f, 0.12f, len), wood);
+            for (float z = -len / 2f + 0.3f; z < len / 2f; z += 0.6f) mb.Box(new Vector3(0, 0f, z), new Vector3(1.34f, 0.03f, 0.08f), dark);
+            foreach (var x in new[] { -0.62f, 0.62f })
+            {
+                mb.Box(new Vector3(x, 0.32f, 0), new Vector3(0.07f, 0.07f, len), dark);
+                for (float z = -len / 2f + 0.5f; z < len / 2f; z += 1.6f) mb.Box(new Vector3(x, -0.6f, z), new Vector3(0.1f, 1.0f, 0.1f), dark);
+            }
+            mb.ToObject("Bridge", _terrain.transform);
+        }
+
+        /// <summary>Places / replaces the decoration models on their spots.</summary>
+        private void SyncDecor()
+        {
+            for (int i = 0; i < CityCatalog.MaxDecorSpots; i++)
+            {
+                bool open = _city.IsDecorSpotOpen(i) && (i >= CityCatalog.MainDecorSpots || i / 2 < _rows);
+                string id = open ? _city.DecorAt(i) : "";
+                if (_decorShown[i] == id) continue;
+                bool isNew = _synced && !string.IsNullOrEmpty(id) && _decorShown[i] != null;
+                _decorShown[i] = id;
+                if (_decor[i] != null) Destroy(_decor[i]);
+                _decor[i] = null;
+                if (string.IsNullOrEmpty(id) || _terrain == null) continue;
+                var mb = new MeshBuilder();
+                DecorModels.Build(mb, id);
+                var go = mb.ToObject("Decor_" + id, _terrain.transform);
+                go.transform.localPosition = DecorSpot(i);
+                go.transform.localRotation = Quaternion.Euler(0f, i % 2 == 0 ? 90f : -90f, 0f);
+                _decor[i] = go;
+                if (isNew)
+                {
+                    go.AddComponent<Squash>();
+                    Puffs(Origin + DecorSpot(i));
+                }
+            }
         }
 
         private float GridFront => -2f * Step;
@@ -211,6 +338,7 @@ namespace JellyDrop.City3D
                 float dz = p.z < zc - len / 2f ? p.z - (zc - len / 2f) : p.z > zc + len / 2f ? p.z - (zc + len / 2f) : 0f;
                 if (p.x * p.x + dz * dz > (halfW - 0.6f) * (halfW - 0.6f)) continue;
                 if (Mathf.Abs(p.x) < 7.0f && p.z > GridFront - 0.6f && p.z < GridBack(rows) + 0.6f) continue;
+                if (NearDecorOrBridge(p)) continue;
                 float s = 0.8f + (float)_rng.NextDouble() * 0.6f;
                 if (_rng.NextDouble() < 0.55) BuildingModels.Tree(deco, p, s);
                 else if (_rng.NextDouble() < 0.7) BuildingModels.RoundTree(deco, p, s);
@@ -225,6 +353,22 @@ namespace JellyDrop.City3D
                 deco.Triangle(p + new Vector3(0.05f, 1.5f, 0), p + new Vector3(0.05f, 0.45f, 0), p + new Vector3(0.75f, 0.45f, 0), Color.white);
             }
             deco.ToObject("Scenery", _terrain.transform);
+        }
+
+        /// <summary>Keeps scenery trees off the decoration spots and the bridges.</summary>
+        private bool NearDecorOrBridge(Vector3 p)
+        {
+            for (int i = 0; i < CityCatalog.MainDecorSpots; i++)
+            {
+                var d = DecorSpot(i);
+                if ((p.x - d.x) * (p.x - d.x) + (p.z - d.z) * (p.z - d.z) < 1.4f * 1.4f) return true;
+            }
+            for (int k = 0; k < Mathf.Max(0, _expansions); k++)
+            {
+                var c = ExpansionCenter(k);
+                if (Mathf.Sign(p.x) == Mathf.Sign(c.x) && Mathf.Abs(p.z - c.z) < 1.6f) return true;
+            }
+            return false;
         }
 
         /// <summary>Flat-topped stadium (rectangle with round ends along z).</summary>
@@ -280,9 +424,10 @@ namespace JellyDrop.City3D
             if (_city == null) return;
             _city.CheckConstruction();
             int rows = WantedRows();
-            if (rows != _rows)
+            if (rows != _rows || _city.Expansions != _expansions)
             {
                 _rows = rows;
+                _expansions = _city.Expansions;
                 BuildTerrain(rows);
                 // The path network changed: send everyone out again.
                 foreach (var v in _villagers) if (v != null) Destroy(v.gameObject);
@@ -291,7 +436,7 @@ namespace JellyDrop.City3D
             for (int i = 0; i < _plots.Length; i++)
             {
                 var view = _plots[i];
-                bool visible = i / Cols < _rows;
+                bool visible = i < CityCatalog.MainPlots ? i / Cols < _rows : _city.IsPlotUnlocked(i);
                 view.Anchor.gameObject.SetActive(visible);
                 if (!visible) continue;
                 bool locked = !_city.IsPlotUnlocked(i);
@@ -309,6 +454,7 @@ namespace JellyDrop.City3D
                 BuildPlot(i, view, locked, def, level, grew, target);
             }
             _synced = true;
+            SyncDecor();
             UpdateVillagerCount();
             UpdateIcons();
         }
@@ -666,8 +812,7 @@ namespace JellyDrop.City3D
                     var delta = pos - _lastPos;
                     float unitsPerPixel = 2f * Vector3.Distance(_cam.transform.position, Origin + _target) * Mathf.Tan(Fov * 0.5f * Mathf.Deg2Rad) / Mathf.Max(1, Screen.height);
                     _target -= new Vector3(delta.x, 0f, delta.y * 1.3f) * unitsPerPixel;
-                    _target.x = Mathf.Clamp(_target.x, -5f, 5f);
-                    _target.z = Mathf.Clamp(_target.z, GridFront - 1f, GridBack(_rows) - 2f);
+                    ClampTarget();
                 }
                 _lastPos = pos;
                 return;
@@ -927,6 +1072,23 @@ namespace JellyDrop.City3D
         }
 
         /// <summary>Which plot is under a screen position (-1 for none).</summary>
+        private void ClampTarget()
+        {
+            float maxX = 5f, maxZ = GridBack(_rows) - 2f;
+            if (_expansions > 0) maxX = ExpansionX;
+            for (int k = 0; k < _expansions; k++) maxZ = Mathf.Max(maxZ, ExpansionCenter(k).z);
+            _target.x = Mathf.Clamp(_target.x, -maxX, maxX);
+            _target.z = Mathf.Clamp(_target.z, GridFront - 1f, maxZ);
+        }
+
+        /// <summary>Moves the camera to look at an extra island (after buying it).</summary>
+        public void FocusExpansion(int k)
+        {
+            if (k < 0) return;
+            _target = ExpansionCenter(k);
+            _zoom = Mathf.Max(_zoom, 1f);
+        }
+
         public int PlotAt(Vector2 screen)
         {
             var ray = _cam.ScreenPointToRay(new Vector3(screen.x, screen.y, 0f));
@@ -934,6 +1096,13 @@ namespace JellyDrop.City3D
             float t = (Origin.y - ray.origin.y) / ray.direction.y;
             if (t < 0f) return -1;
             var p = ray.origin + ray.direction * t - Origin;
+            // Extra islands first
+            for (int i = CityCatalog.MainPlots; i < CityCatalog.MaxPlots; i++)
+            {
+                if (!_city.IsPlotUnlocked(i)) continue;
+                var pc = PlotCenter(i);
+                if (Mathf.Abs(p.x - pc.x) <= PlotSize * 0.5f + 0.3f && Mathf.Abs(p.z - pc.z) <= PlotSize * 0.5f + 0.3f) return i;
+            }
             int c = Mathf.RoundToInt(p.x / Step + (Cols - 1) / 2f);
             int r = Mathf.RoundToInt(p.z / Step + 1.5f);
             if (c < 0 || c >= Cols || r < 0 || r >= _rows) return -1;

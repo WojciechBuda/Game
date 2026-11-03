@@ -293,7 +293,8 @@ namespace JellyDrop.Tests
             Assert.IsFalse(c.IsPlotUnlocked(first + CityCatalog.ExpansionPlots));
             Assert.AreEqual(BuildResult.Success, Build(c, first, "house"));
             Assert.Greater(CityCatalog.ExpansionCost(1).Coins, CityCatalog.ExpansionCost(0).Coins);
-            Assert.AreEqual(CityCatalog.DecorSpotsPerExpansion + CityCatalog.MainDecorSpots, c.DecorSpots);
+            int mainSpots = System.Math.Min(CityCatalog.MainDecorSpots, 2 * ((c.UnlockedPlots + 2) / 3));
+            Assert.AreEqual(mainSpots + CityCatalog.DecorSpotsPerExpansion, c.DecorSpots);
         }
 
         [Test]

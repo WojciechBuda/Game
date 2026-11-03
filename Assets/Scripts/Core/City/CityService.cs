@@ -208,8 +208,27 @@ namespace JellyDrop.Core.City
 
         // ------------------------------------------------------------ decorations
 
-        /// <summary>Decoration spots open now (more with every extra island).</summary>
-        public int DecorSpots => CityCatalog.MainDecorSpots + CityCatalog.DecorSpotsPerExpansion * Expansions;
+        /// <summary>
+        /// Spots 0..7 are on the main island (two per row of plots, so they open as the island grows);
+        /// then four per extra island.
+        /// </summary>
+        public bool IsDecorSpotOpen(int spot)
+        {
+            if (spot < 0 || spot >= CityCatalog.MaxDecorSpots) return false;
+            if (spot < CityCatalog.MainDecorSpots) return spot < 2 * ((UnlockedPlots + 2) / 3);
+            return (spot - CityCatalog.MainDecorSpots) / CityCatalog.DecorSpotsPerExpansion < Expansions;
+        }
+
+        /// <summary>Decoration spots open now.</summary>
+        public int DecorSpots
+        {
+            get
+            {
+                int n = 0;
+                for (int i = 0; i < CityCatalog.MaxDecorSpots; i++) if (IsDecorSpotOpen(i)) n++;
+                return n;
+            }
+        }
 
         public string DecorAt(int spot) => spot >= 0 && spot < Data.cityDecor.Count ? Data.cityDecor[spot] : "";
 
@@ -218,7 +237,7 @@ namespace JellyDrop.Core.City
             get
             {
                 int n = 0;
-                for (int i = 0; i < DecorSpots; i++) if (!string.IsNullOrEmpty(Data.cityDecor[i])) n++;
+                for (int i = 0; i < CityCatalog.MaxDecorSpots; i++) if (IsDecorSpotOpen(i) && !string.IsNullOrEmpty(Data.cityDecor[i])) n++;
                 return n;
             }
         }
@@ -243,9 +262,9 @@ namespace JellyDrop.Core.City
         {
             if (CanBuyDecor(id) != BuildResult.Success) return -1;
             var def = CityCatalog.Decor(id);
-            for (int i = 0; i < DecorSpots; i++)
+            for (int i = 0; i < CityCatalog.MaxDecorSpots; i++)
             {
-                if (!string.IsNullOrEmpty(Data.cityDecor[i])) continue;
+                if (!IsDecorSpotOpen(i) || !string.IsNullOrEmpty(Data.cityDecor[i])) continue;
                 Pay(def.Cost);
                 Data.cityDecor[i] = id;
                 _economy.NotifyChanged();
@@ -281,8 +300,9 @@ namespace JellyDrop.Core.City
                     var def = CityCatalog.Get(p.building);
                     if (def != null && p.level > 0) sum += def.CoinBonusAt(p.level);
                 }
-                for (int i = 0; i < DecorSpots && i < Data.cityDecor.Count; i++)
+                for (int i = 0; i < CityCatalog.MaxDecorSpots && i < Data.cityDecor.Count; i++)
                 {
+                    if (!IsDecorSpotOpen(i)) continue;
                     var d = CityCatalog.Decor(Data.cityDecor[i]);
                     if (d != null) sum += d.BonusPercent;
                 }
