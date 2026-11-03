@@ -12,21 +12,22 @@ W tym folderze jest wszystko, czego potrzebujesz do Play Console. Teksty możesz
 | Krótki opis | `.../short_description.txt` | do 80 znaków |
 | Pełny opis | `.../full_description.txt` | do 4000 znaków |
 | Informacje o wersji | `.../changelogs/1.txt` | do 500 znaków |
-| Polityka prywatności | `privacy-policy.html`, online: https://wojciechbuda.github.io/Game/privacy-policy.html | publiczny URL |
-| Regulamin (opcjonalny) | `terms.html`, online: https://wojciechbuda.github.io/Game/terms.html | — |
-| app-ads.txt | `Store/app-ads.txt` | hostowany w głównym katalogu Twojej strony |
+| Polityka prywatności | `Site/privacy-policy.html`, online: https://stackville.github.io/privacy-policy.html | publiczny URL |
+| Regulamin (opcjonalny) | `Site/terms.html`, online: https://stackville.github.io/terms.html | — |
+| app-ads.txt | `Site/app-ads.txt` | hostowany w głównym katalogu strony (krok 9) |
 
 Dane aplikacji:
 
-- **Nazwa pakietu:** `com.wojciechbuda.stackville`. Po pierwszym wgraniu nie da się jej już zmienić.
+- **Nazwa pakietu:** `com.stackville.game`. Po pierwszym wgraniu nie da się jej już zmienić.
 - **Wersja:** 1.0.0, kod wersji 1 (przy każdym kolejnym wgraniu musi być wyższy).
-- **Kontakt:** wojciech.buda6@gmail.com. Ten adres jest publiczny w sklepie; jeśli wolisz inny, zmień go też w `Tools/PrivacyPolicy/policy.py`.
+- **Kontakt:** stackville.info@gmail.com. Ten adres jest publiczny w sklepie; jeśli wolisz inny, zmień go też w `Tools/PrivacyPolicy/policy.py`.
 
 ---
 
 ## 1. Konto dewelopera (jednorazowo)
 
 1. Wejdź na https://play.google.com/console i załóż konto **Osobiste**. Opłata wynosi jednorazowo 25 USD.
+   - Jako **nazwę dewelopera** (widoczną w sklepie) wpisz „Stackville”, a jako publiczny e-mail: stackville.info@gmail.com. Zobacz też uwagę o statusie sprzedawcy w kroku 9.
 2. Przejdź weryfikację tożsamości (dowód osobisty) i potwierdź numer telefonu. Trwa to od kilku dni do ok. 2 tygodni.
 3. **Ważne dla nowych kont osobistych:** zanim opublikujesz grę dla wszystkich, musisz przeprowadzić **test zamknięty z co najmniej 12 testerami przez 14 dni bez przerwy**. Dopiero potem pojawi się przycisk „Złóż wniosek o dostęp do wersji produkcyjnej”. Zacznij zbierać testerów (rodzina, znajomi, grupy testerów) już teraz.
 
@@ -68,9 +69,9 @@ Kliknij Utwórz aplikację i podaj:
 ## 4. „Treść aplikacji” (App content): gotowe odpowiedzi
 
 ### Polityka prywatności
-`https://wojciechbuda.github.io/Game/privacy-policy.html`
+`https://stackville.github.io/privacy-policy.html`
 
-Najpierw włącz GitHub Pages (krok 9) i sprawdź, czy strona się otwiera.
+Najpierw postaw stronę (krok 9) i sprawdź, czy strona się otwiera.
 
 ### Dostęp do aplikacji
 **Wszystkie funkcje są dostępne bez specjalnego dostępu.** Gra nie wymaga logowania.
@@ -84,7 +85,7 @@ Najpierw włącz GitHub Pages (krok 9) i sprawdź, czy strona się otwiera.
 - SDK AdMob samo dodaje uprawnienie `AD_ID`.
 
 ### Ocena treści (kwestionariusz IARC)
-- E-mail: wojciech.buda6@gmail.com
+- E-mail: stackville.info@gmail.com
 - Kategoria: **Gra**.
 - Odpowiedzi:
   - Przemoc / krew / strach / seks / wulgaryzmy / narkotyki / alkohol: **Nie**.
@@ -113,8 +114,8 @@ Najpierw włącz GitHub Pages (krok 9) i sprawdź, czy strona się otwiera.
 - Czy wszystkie dane są szyfrowane podczas przesyłania? **Tak**
 - Czy użytkownik może poprosić o usunięcie danych? **Tak**
   - W grze: Ustawienia → „Usuń moje dane” (usuwa cały zapis z telefonu).
-  - Alternatywnie e-mail: wojciech.buda6@gmail.com.
-  - Jeśli formularz poprosi o URL usuwania danych: `https://wojciechbuda.github.io/Game/privacy-policy.html#pl`. Polityka ma sekcję „Twoje prawa” z instrukcją.
+  - Alternatywnie e-mail: stackville.info@gmail.com.
+  - Jeśli formularz poprosi o URL usuwania danych: `https://stackville.github.io/privacy-policy.html#pl`. Polityka ma sekcję „Twoje prawa” z instrukcją.
 
 **Typy danych do zaznaczenia:**
 
@@ -192,8 +193,8 @@ Ustaw status **Aktywny**.
 2. **Ustawienia sklepu:**
    - Kategoria: **Gry → Logiczne** (Puzzle).
    - Tagi: Klocki, Budowanie miast, Casual.
-   - E-mail: wojciech.buda6@gmail.com.
-   - Strona: `https://wojciechbuda.github.io/Game/` albo strona z kroku 9.
+   - E-mail: stackville.info@gmail.com.
+   - Strona: `https://stackville.github.io` (krok 9).
 3. **Kraje:** wszystkie albo wybrane.
 4. **Testowanie → Test zamknięty → Utwórz ścieżkę:**
    - Dodaj listę testerów (adresy Gmail, min. 12 osób).
@@ -212,20 +213,38 @@ Przy pierwszym wgraniu Play Console zaproponuje **Podpisywanie aplikacji przez G
 - Google trzyma klucz aplikacji, a Ty podpisujesz tylko kluczem przesyłania (Twój keystore).
 - SHA-1 do Gier Play i AdMob bierz z Integralność aplikacji → Podpisywanie aplikacji, sekcja „Certyfikat klucza podpisywania aplikacji”.
 
-## 9. Strony internetowe (GitHub Pages)
+## 9. Strona internetowa bez Twojego imienia i nazwiska
 
-1. **Polityka i regulamin:** repo `WojciechBuda/Game` → Settings → Pages → Source: *Deploy from a branch* → `main` / `(root)` → Save.
+Adres `wojciechbuda.github.io` zawiera Twoje imię i nazwisko, więc gra korzysta z neutralnej strony **https://stackville.github.io**. Przygotuj ją raz:
+
+1. Na GitHubie kliknij **+ → New organization** → plan **Free**.
+   - Nazwa organizacji: `stackville`.
+   - E-mail kontaktowy: stackville.info@gmail.com.
+2. W organizacji utwórz **publiczne** repo o nazwie dokładnie `stackville.github.io`.
+3. Wgraj do niego (Add file → Upload files) wszystkie pliki z folderu `Site/`:
+   - `index.html`
+   - `privacy-policy.html`
+   - `terms.html`
+   - `app-ads.txt`: najpierw wpisz w nim swoje ID wydawcy AdMob zamiast `pub-0000000000000000`.
+4. Repo → Settings → Pages → *Deploy from a branch* → `main` / `(root)`.
    - Po ok. minucie zadziałają:
-     - https://wojciechbuda.github.io/Game/privacy-policy.html
-     - https://wojciechbuda.github.io/Game/terms.html
-   - Repo musi pozostać **publiczne**. Gdy zechcesz je ukryć, przenieś te 2 pliki HTML do osobnego publicznego repo.
-2. **app-ads.txt** (zalecany przez AdMob; bez niego część reklam może nie być wyświetlana):
-   1. Utwórz nowe publiczne repo o nazwie dokładnie `wojciechbuda.github.io`.
-   2. Wrzuć do niego `Store/app-ads.txt`, z ID wydawcy AdMob zamiast `pub-0000000000000000`, oraz prosty `index.html`.
-   3. Plik będzie pod https://wojciechbuda.github.io/app-ads.txt.
-   4. W Play Console jako **Witryna** podaj `https://wojciechbuda.github.io`.
-   5. AdMob sprawdzi plik w ciągu doby.
-3. Przy zmianie polityki edytuj `Tools/PrivacyPolicy/policy.py` (zmień `DATE` i `VERSION`) i uruchom go. Zaktualizuje i stronę, i tekst w grze.
+     - https://stackville.github.io/privacy-policy.html
+     - https://stackville.github.io/terms.html
+     - https://stackville.github.io/app-ads.txt
+5. W Play Console jako **Witryna** podaj `https://stackville.github.io`. AdMob sprawdzi `app-ads.txt` w ciągu doby.
+6. Jeśli nazwa `stackville` jest zajęta, wybierz inną (np. `stackville-game`) i podmień adres w dwóch miejscach:
+   - `SITE` w `Tools/PrivacyPolicy/policy.py`,
+   - `PrivacyPolicyUrl` w `Assets/Scripts/Game/Monetization/MonetizationIds.cs`.
+7. Przy zmianie polityki edytuj `Tools/PrivacyPolicy/policy.py` (zmień `DATE` i `VERSION`) i uruchom go. Zaktualizuje tekst w grze i folder `Site/`; potem wgraj nowe pliki do repo strony.
+
+Inne miejsca, gdzie może pojawić się Twoje nazwisko:
+
+- **Nazwa dewelopera w Google Play:** przy zakładaniu konta wpisz „Stackville” jako *nazwę dewelopera* (to nie musi być imię i nazwisko).
+- **Status sprzedawcy (trader) w UE:** jeśli gra zarabia (reklamy, zakupy), Google zapyta, czy jesteś „sprzedawcą” w rozumieniu przepisów UE (DSA).
+  - Sprzedawcom Google pokazuje w sklepie (w krajach EOG) dane kontaktowe z weryfikacji, czyli zwykle imię i nazwisko, adres i telefon.
+  - Jeśli chcesz tego uniknąć, rozważ np. działalność z adresem firmowym.
+  - Odpowiedz zgodnie z prawdą; to nie jest porada prawna.
+- **Publiczne repo `WojciechBuda/Game`:** nazwa konta i autor commitów są widoczne. Możesz ustawić repo jako prywatne; strona działa z osobnego repo organizacji.
 
 ## 10. Lista kontrolna przed wysłaniem
 

@@ -19,7 +19,9 @@ namespace JellyDrop.Core.City
         /// <summary>All builders are busy; wait for one to finish or speed it up.</summary>
         NoFreeBuilder,
         NotEnoughCoins,
-        NotEnoughSupplies
+        NotEnoughSupplies,
+        /// <summary>Every extra island (or decoration spot) is already taken.</summary>
+        NoSpace
     }
 
     /// <summary>What a collection paid out.</summary>
@@ -61,6 +63,8 @@ namespace JellyDrop.Core.City
         private void EnsurePlots()
         {
             while (Data.plots.Count < CityCatalog.MaxPlots) Data.plots.Add(new PlotData());
+            if (Data.cityDecor == null) Data.cityDecor = new List<string>();
+            while (Data.cityDecor.Count < CityCatalog.MaxDecorSpots) Data.cityDecor.Add("");
         }
 
         // ------------------------------------------------------------ supplies
@@ -133,11 +137,137 @@ namespace JellyDrop.Core.City
             }
         }
 
-        public int UnlockedPlots => Math.Min(CityCatalog.MaxPlots, CityCatalog.StartingPlots + 2 * (CityLevel - 1));
+        /// <summary>Open plots on the main island (grows with the city level).</summary>
+        public int UnlockedPlots => Math.Min(CityCatalog.MainPlots, CityCatalog.StartingPlots + 2 * (CityLevel - 1));
 
-        public bool IsPlotUnlocked(int plot) => plot >= 0 && plot < UnlockedPlots;
+        public bool IsPlotUnlocked(int plot)
+        {
+            if (plot < 0 || plot >= CityCatalog.MaxPlots) return false;
+            if (plot < CityCatalog.MainPlots) return plot < UnlockedPlots;
+            return ExpansionOf(plot) < Expansions;
+        }
 
-        /// <summary>City level needed to open this plot.</summary>
+        /// <summary>-1 for the main island, otherwise the index of the extra island the plot is on.</summary>
+        public static int ExpansionOf(int plot) =>
+            plot < CityCatalog.MainPlots ? -1 : (plot - CityCatalog.MainPlots) / CityCatalog.ExpansionPlots;
+
+        // ------------------------------------------------------------ extra islands
+
+        public int Expansions => Math.Min(CityCatalog.MaxExpansions, Data.cityExpansions);
+
+        /// <summary>Cost of the next extra island, or null when all are bought.</summary>
+        public BuildingCost NextExpansionCost => Expansions >= CityCatalog.MaxExpansions ? null : CityCatalog.ExpansionCost(Expansions);
+
+        public BuildResult CanBuyExpansion()
+        {
+            if (Expansions >= CityCatalog.MaxExpansions) return BuildResult.NoSpace;
+            if (CityLevel < CityCatalog.ExpansionLevel(Expansions)) return BuildResult.CityLevelTooLow;
+            return CheckCost(CityCatalog.ExpansionCost(Expansions));
+        }
+
+        public BuildResult BuyExpansion()
+        {
+            var check = CanBuyExpansion();
+            if (check != BuildResult.Success) return check;
+            Pay(CityCatalog.ExpansionCost(Expansions));
+            Data.cityExpansions++;
+            _economy.NotifyChanged();
+            return BuildResult.Success;
+        }
+
+        // ------------------------------------------------------------ demolishing
+
+        /// <summary>Coins paid back for demolishing the building on this plot (0 if empty).</summary>
+        public int DemolishRefund(int plot)
+        {
+            var def = CityCatalog.Get(Data.plots[plot].building);
+            return def == null ? 0 : (int)Math.Round(def.CostFor(1).Coins * CityCatalog.DemolishRefund);
+        }
+
+        /// <summary>
+        /// Knocks the building down and frees the plot. Whatever it had produced is collected first; a
+        /// construction in progress is cancelled. Pays back part of the build cost. Returns the coins refunded,
+        /// or -1 if there was nothing to demolish.
+        /// </summary>
+        public int Demolish(int plot)
+        {
+            if (plot < 0 || plot >= Data.plots.Count) return -1;
+            var p = Data.plots[plot];
+            if (CityCatalog.Get(p.building) == null) return -1;
+            if (!IsUnderConstruction(plot)) CollectPlot(plot, notify: false);
+            int refund = DemolishRefund(plot);
+            p.building = "";
+            p.level = 0;
+            p.targetLevel = 0;
+            p.buildEnds = 0;
+            p.lastCollect = 0;
+            Data.coins += refund;
+            _economy.NotifyChanged();
+            return refund;
+        }
+
+        // ------------------------------------------------------------ decorations
+
+        /// <summary>Decoration spots open now (more with every extra island).</summary>
+        public int DecorSpots => CityCatalog.MainDecorSpots + CityCatalog.DecorSpotsPerExpansion * Expansions;
+
+        public string DecorAt(int spot) => spot >= 0 && spot < Data.cityDecor.Count ? Data.cityDecor[spot] : "";
+
+        public int DecorPlaced
+        {
+            get
+            {
+                int n = 0;
+                for (int i = 0; i < DecorSpots; i++) if (!string.IsNullOrEmpty(Data.cityDecor[i])) n++;
+                return n;
+            }
+        }
+
+        public int DecorCount(string id)
+        {
+            int n = 0;
+            foreach (var d in Data.cityDecor) if (d == id) n++;
+            return n;
+        }
+
+        public BuildResult CanBuyDecor(string id)
+        {
+            var def = CityCatalog.Decor(id);
+            if (def == null) return BuildResult.UnknownBuilding;
+            if (DecorPlaced >= DecorSpots) return BuildResult.NoSpace;
+            return CheckCost(def.Cost);
+        }
+
+        /// <summary>Buys a decoration and puts it on the first free spot. Returns the spot, or -1.</summary>
+        public int BuyDecor(string id)
+        {
+            if (CanBuyDecor(id) != BuildResult.Success) return -1;
+            var def = CityCatalog.Decor(id);
+            for (int i = 0; i < DecorSpots; i++)
+            {
+                if (!string.IsNullOrEmpty(Data.cityDecor[i])) continue;
+                Pay(def.Cost);
+                Data.cityDecor[i] = id;
+                _economy.NotifyChanged();
+                return i;
+            }
+            return -1;
+        }
+
+        /// <summary>Removes one decoration of this kind (the last placed). No refund. True if one was removed.</summary>
+        public bool RemoveDecor(string id)
+        {
+            for (int i = Data.cityDecor.Count - 1; i >= 0; i--)
+            {
+                if (Data.cityDecor[i] != id) continue;
+                Data.cityDecor[i] = "";
+                _economy.NotifyChanged();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>City level needed to open this plot (main island).</summary>
         public int PlotUnlockLevel(int plot) => Math.Max(1, (plot - CityCatalog.StartingPlots) / 2 + 2);
 
         /// <summary>Extra % coins after every game, from parks, the tower and the castle.</summary>
@@ -150,6 +280,11 @@ namespace JellyDrop.Core.City
                 {
                     var def = CityCatalog.Get(p.building);
                     if (def != null && p.level > 0) sum += def.CoinBonusAt(p.level);
+                }
+                for (int i = 0; i < DecorSpots && i < Data.cityDecor.Count; i++)
+                {
+                    var d = CityCatalog.Decor(Data.cityDecor[i]);
+                    if (d != null) sum += d.BonusPercent;
                 }
                 return sum;
             }

@@ -1,17 +1,19 @@
 # Source of the Stackville privacy policy. Run `python3 policy.py` to regenerate:
 #   - privacy-policy.html (repo root, for GitHub Pages / the store listing)
 #   - Assets/Scripts/Game/Interface/PrivacyPolicyText.cs (shown inside the game)
-# Edit CONTACT and DEVELOPER below before publishing.
+# Edit CONTACT and DEVELOPER below before publishing. No personal names: the game is published as "Stackville".
 import html, os
 
-DEVELOPER = "Wojciech Buda"
-CONTACT = "wojciech.buda6@gmail.com"
+DEVELOPER = {"en": "the Stackville team", "pl": "zespół Stackville"}
+CONTACT = "stackville.info@gmail.com"
 DATE = {"en": "3 November 2026", "pl": "3 listopada 2026"}
 VERSION = 1
+# Neutral web address (GitHub organisation "stackville", repo "stackville.github.io"); see Store/README.md step 9.
+SITE = "https://stackville.github.io"
 
 EN = [
 ("Who we are", [
- f"Stackville is a game made by {DEVELOPER} (\"we\", \"us\"). This policy explains what data the game uses, why, and the choices you have. Questions: {CONTACT}."]),
+ f"Stackville is a game made by {DEVELOPER['en']} (\"we\", \"us\"). This policy explains what data the game uses, why, and the choices you have. Questions: {CONTACT}."]),
 ("In short", [
  "You can play without an account. Your progress is saved on your phone, not on our servers - we don't run any servers.",
  "The free version shows ads from Google AdMob. Google may use your advertising ID to show and measure ads. Where the law requires it, you are asked for consent first and can change your choice in Settings at any time.",
@@ -44,12 +46,12 @@ EN = [
 ("Changes", [
  "If this policy changes, we will update the date below and show the new version in the game."]),
 ("Contact", [
- f"{DEVELOPER} - {CONTACT}"]),
+ f"Stackville - {CONTACT}"]),
 ]
 
 PL = [
 ("Kim jesteśmy", [
- f"Stackville to gra stworzona przez {DEVELOPER} (\"my\"). Ta polityka wyjaśnia, jakich danych używa gra, po co i jakie masz wybory. Pytania: {CONTACT}."]),
+ f"Stackville to gra stworzona przez {DEVELOPER['pl']} (\"my\"). Ta polityka wyjaśnia, jakich danych używa gra, po co i jakie masz wybory. Pytania: {CONTACT}."]),
 ("W skrócie", [
  "Możesz grać bez zakładania konta. Postęp zapisuje się na Twoim telefonie, a nie na naszych serwerach - nie prowadzimy żadnych serwerów.",
  "Darmowa wersja wyświetla reklamy Google AdMob. Google może używać Twojego identyfikatora reklamowego do wyświetlania i mierzenia reklam. Tam, gdzie wymaga tego prawo, najpierw prosimy o zgodę, którą możesz zmienić w Ustawieniach w dowolnej chwili.",
@@ -82,7 +84,7 @@ PL = [
 ("Zmiany", [
  "Jeśli polityka się zmieni, zaktualizujemy datę poniżej i pokażemy nową wersję w grze."]),
 ("Kontakt", [
- f"{DEVELOPER} - {CONTACT}"]),
+ f"Stackville - {CONTACT}"]),
 ]
 
 root = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
@@ -163,4 +165,27 @@ section {{ background:var(--card); border-radius:16px; padding:8px 20px 16px; ma
 </html>
 '''
 open(os.path.join(root, "privacy-policy.html"), "w", encoding="utf-8").write(page)
+
+# Site/ is everything for the neutral website (upload the folder's files to the stackville.github.io repo).
+site = os.path.join(root, "Site")
+os.makedirs(site, exist_ok=True)
+open(os.path.join(site, "privacy-policy.html"), "w", encoding="utf-8").write(page)
+import shutil
+shutil.copyfile(os.path.join(root, "terms.html"), os.path.join(site, "terms.html"))
+index = f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stackville</title>
+<style>body{{margin:0;background:#14152e;color:#eceaf8;font:17px/1.6 system-ui,sans-serif}}main{{max-width:640px;margin:0 auto;padding:48px 16px}}
+h1{{font-size:2.4rem;margin:0;color:#ff8a2a}}a{{color:#ffc93c}}</style></head>
+<body><main><h1>Stackville</h1>
+<p>Stack blocks, build a town, pick mushrooms in the forest and raise a pet. A free game for Android.</p>
+<p>Układaj klocki, buduj miasto, zbieraj grzyby w lesie i dbaj o pupila. Darmowa gra na Androida.</p>
+<p><a href="privacy-policy.html">Privacy Policy / Polityka prywatności</a><br><a href="terms.html">Terms of Use / Regulamin</a></p>
+<p>Contact / Kontakt: <a href="mailto:{CONTACT}">{CONTACT}</a></p>
+</main></body></html>
+"""
+open(os.path.join(site, "index.html"), "w", encoding="utf-8").write(index)
+ads = os.path.join(site, "app-ads.txt")
+if not os.path.exists(ads):
+    shutil.copyfile(os.path.join(root, "Store", "app-ads.txt"), ads)
 print("written")

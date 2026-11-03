@@ -68,14 +68,14 @@ The APK is signed with Unity's debug key: fine for testing, not for the Play Sto
    - **iOS Build Support**. iOS builds need a Mac with Xcode.
 2. Clone this repo. In Unity Hub choose **Add → Add project from disk** and select the repo folder. The first import takes a few minutes.
 3. Run the menu **Stackville → Setup Project**. It does the following:
-   - Sets the app name, bundle id (`com.wojciechbuda.stackville`) and portrait orientation.
+   - Sets the app name, bundle id (`com.stackville.game`) and portrait orientation.
    - Configures Android for IL2CPP + ARM64 and App Bundle (.aab) output, which Google Play requires.
    - Creates `Assets/Scenes/Main.unity` and adds it to the build.
    - Generates the app icon at `Assets/Art/AppIcon.png`.
 4. Open `Assets/Scenes/Main.unity` and press **Play**. The game builds itself from code; the scene itself contains nothing.
 5. To build an APK locally instead of in GitHub: **File → Build Profiles → Android → Switch Platform**, untick "Build App Bundle", then **Build**, or run the menu-free command `Unity -batchmode -quit -projectPath . -executeMethod JellyDrop.EditorTools.CiBuild.BuildAndroid`.
 
-> The bundle id `com.wojciechbuda.stackville` is set in `Assets/Scripts/Editor/JellyDropSetup.cs`. Change it before your first store upload if you want a different one: it can't change after you publish.
+> The bundle id `com.stackville.game` is set in `Assets/Scripts/Editor/JellyDropSetup.cs`. Change it before your first store upload if you want a different one: it can't change after you publish.
 
 ### Difficulty levels
 
@@ -199,7 +199,7 @@ Restore Purchases is in **Settings** and on the **Premium** shop tab. Apple requ
 The game signs players in with their Google account through Google Play Games Services (Android). Until it is set up, the game runs offline and the Settings button explains that sign-in is not available yet.
 
 1. In **Play Console**: your app > **Grow > Play Games Services > Setup and management > Configuration**. Create a Play Games Services project.
-2. Add an **Android credential**: package `com.wojciechbuda.stackville` and the SHA-1 of your signing keys (Play Console > Setup > App signing shows both the upload key and the app signing key; add both).
+2. Add an **Android credential**: package `com.stackville.game` and the SHA-1 of your signing keys (Play Console > Setup > App signing shows both the upload key and the app signing key; add both).
 3. Under **Leaderboards**, create "Highest level" (integer, larger is better) and put its ID in `Game/Online/OnlineIds.cs`.
 4. Add your Google account under **Testers** while the game is unpublished.
 5. Download the **Play Games plugin for Unity** (`GooglePlayGamesPlugin-x.y.z.unitypackage`) from github.com/playgameservices/play-games-plugin-for-unity and import it.
@@ -214,7 +214,7 @@ Both stores require a public privacy policy. It lives in `Tools/PrivacyPolicy/po
 - `privacy-policy.html` in the repo root (the public page for the store listing),
 - `Assets/Scripts/Game/Interface/PrivacyPolicyText.cs` (shown in the game: on first launch and in Settings > Privacy policy).
 
-To change the contact e-mail or the text, edit `policy.py` and run `python3 Tools/PrivacyPolicy/policy.py`. Then publish the page with GitHub Pages (repo Settings > Pages > Deploy from a branch > `main` / root). The address, `https://wojciechbuda.github.io/Game/privacy-policy.html`, is already set in `MonetizationIds.PrivacyPolicyUrl`; paste it into the Play Console (App content > Privacy policy) too. If you change what the game collects, update the policy and raise `VERSION` so players see it again.
+To change the contact e-mail or the text, edit `policy.py` and run `python3 Tools/PrivacyPolicy/policy.py`. It also refreshes `Site/` (privacy policy, terms, app-ads.txt and a small home page); upload those files to the `stackville.github.io` repo of a GitHub organisation called `stackville` (see Store/README.md, step 9), so the public pages carry no personal name. The address, `https://stackville.github.io/privacy-policy.html`, is already set in `MonetizationIds.PrivacyPolicyUrl`; paste it into the Play Console (App content > Privacy policy) too. If you change what the game collects, update the policy and raise `VERSION` so players see it again.
 
 ## 6. Publishing checklist
 

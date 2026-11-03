@@ -26,9 +26,10 @@ namespace JellyDrop.Monetization
 #endif
 
         /// <summary>
-        /// The hosted privacy policy (required by both stores): privacy-policy.html in the repo root, published with
-        /// GitHub Pages (Settings > Pages > Deploy from branch: main, / (root)). Change it if you host it elsewhere.
+        /// The hosted privacy policy (required by both stores), on the neutral Stackville website: the files in Site/
+        /// uploaded to the repo "stackville.github.io" of the GitHub organisation "stackville" (see Store/README.md, step 9).
+        /// Change it (and SITE in Tools/PrivacyPolicy/policy.py) if you host it elsewhere.
         /// </summary>
-        public const string PrivacyPolicyUrl = "https://wojciechbuda.github.io/Game/privacy-policy.html";
+        public const string PrivacyPolicyUrl = "https://stackville.github.io/privacy-policy.html";
     }
 }

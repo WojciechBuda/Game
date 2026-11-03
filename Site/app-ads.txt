@@ -1,0 +1,6 @@
+# app-ads.txt for Stackville
+# 1. Replace pub-0000000000000000 with your AdMob publisher ID (AdMob > Settings > Account information).
+# 2. Host this file at the ROOT of the developer website you enter in Play Console, e.g.
+#    https://stackville.github.io/app-ads.txt  (organisation "stackville", repo "stackville.github.io" - see Store/README.md, step 9).
+# 3. Delete these comment lines if you like (they are allowed, but not needed).
+google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0

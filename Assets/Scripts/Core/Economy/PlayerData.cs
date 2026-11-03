@@ -92,6 +92,10 @@ namespace JellyDrop.Core.Economy
         public int brick;
         public int glass;
         public List<PlotData> plots = new List<PlotData>();
+        /// <summary>Extra islands bought next to the town (each adds CityCatalog.ExpansionPlots plots).</summary>
+        public int cityExpansions;
+        /// <summary>Decoration id per decoration spot ("" = free spot). See CityCatalog.Decorations.</summary>
+        public List<string> cityDecor = new List<string>();
 
         // Player level and season pass
         public int xp;

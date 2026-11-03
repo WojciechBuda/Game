@@ -176,7 +176,7 @@ namespace JellyDrop.Tests
                 Assert.Greater(CityCatalog.PopulationForLevel(l), CityCatalog.PopulationForLevel(l - 1));
             var c = NewCity();
             Assert.AreEqual(CityCatalog.MaxPlots, _economy.Data.plots.Count);
-            Assert.LessOrEqual(c.PlotUnlockLevel(CityCatalog.MaxPlots - 1), CityCatalog.MaxCityLevel, "every plot can be opened");
+            Assert.LessOrEqual(c.PlotUnlockLevel(CityCatalog.MainPlots - 1), CityCatalog.MaxCityLevel, "every main plot can be opened");
         }
 
         [Test]
@@ -265,6 +265,74 @@ namespace JellyDrop.Tests
                 Assert.AreEqual(3, b.CoinBonusPercent.Length, b.Id);
                 Assert.IsTrue(Loc.Has("building." + b.Id), b.Id);
             }
+        }
+
+        private static void GrowTo(CityService c, int level)
+        {
+            // Houses everywhere until the city reaches the level (plenty of coins in NewCity).
+            for (int plot = 0; c.CityLevel < level && plot < CityCatalog.MainPlots; plot++)
+            {
+                if (!c.IsPlotUnlocked(plot)) break;
+                Build(c, plot, "house");
+                for (int k = 0; k < 6 && c.CityLevel < level; k++) Upgrade(c, plot);
+            }
+        }
+
+        [Test]
+        public void ExtraIslandsAddPlotsAndCostMore()
+        {
+            var c = NewCity(coins: 1000000, wood: 5000, brick: 5000, glass: 5000);
+            int first = CityCatalog.MainPlots;
+            Assert.IsFalse(c.IsPlotUnlocked(first));
+            Assert.AreEqual(BuildResult.CityLevelTooLow, c.CanBuyExpansion());
+            GrowTo(c, CityCatalog.ExpansionLevel(0));
+            int coins = _economy.Coins;
+            Assert.AreEqual(BuildResult.Success, c.BuyExpansion());
+            Assert.AreEqual(coins - CityCatalog.ExpansionCost(0).Coins, _economy.Coins);
+            for (int i = 0; i < CityCatalog.ExpansionPlots; i++) Assert.IsTrue(c.IsPlotUnlocked(first + i));
+            Assert.IsFalse(c.IsPlotUnlocked(first + CityCatalog.ExpansionPlots));
+            Assert.AreEqual(BuildResult.Success, Build(c, first, "house"));
+            Assert.Greater(CityCatalog.ExpansionCost(1).Coins, CityCatalog.ExpansionCost(0).Coins);
+            Assert.AreEqual(CityCatalog.DecorSpotsPerExpansion + CityCatalog.MainDecorSpots, c.DecorSpots);
+        }
+
+        [Test]
+        public void DemolishFreesThePlotAndRefundsPart()
+        {
+            var c = NewCity();
+            Build(c, 0, "house");
+            int coins = _economy.Coins;
+            int refund = c.Demolish(0);
+            Assert.Greater(refund, 0);
+            Assert.AreEqual(coins + refund, _economy.Coins);
+            Assert.IsNull(c.BuildingAt(0));
+            Assert.AreEqual(0, c.Population);
+            Assert.AreEqual(-1, c.Demolish(0), "nothing left to demolish");
+            Assert.AreEqual(BuildResult.Success, Build(c, 0, "house"));
+        }
+
+        [Test]
+        public void DemolishCancelsAConstruction()
+        {
+            var c = NewCity();
+            Assert.AreEqual(BuildResult.Success, c.Build(0, "house"));
+            Assert.AreEqual(1, c.BusyBuilders);
+            c.Demolish(0);
+            Assert.AreEqual(0, c.BusyBuilders);
+        }
+
+        [Test]
+        public void DecorationsFillSpotsAndAddBonus()
+        {
+            var c = NewCity(coins: 1000000);
+            int before = c.CoinBonusPercent;
+            Assert.AreEqual(0, c.BuyDecor("fountain"));
+            Assert.AreEqual(1, c.DecorCount("fountain"));
+            Assert.AreEqual(before + CityCatalog.Decor("fountain").BonusPercent, c.CoinBonusPercent);
+            for (int i = 1; i < c.DecorSpots; i++) Assert.GreaterOrEqual(c.BuyDecor("flowers"), 0);
+            Assert.AreEqual(BuildResult.NoSpace, c.CanBuyDecor("lamp"));
+            Assert.IsTrue(c.RemoveDecor("fountain"));
+            Assert.AreEqual(BuildResult.Success, c.CanBuyDecor("lamp"));
         }
     }
 }

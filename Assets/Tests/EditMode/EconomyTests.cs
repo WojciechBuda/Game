@@ -39,9 +39,11 @@ namespace JellyDrop.Tests
         public void BuyingDeductsCoinsAndCanEquip()
         {
             var e = NewEconomy();
-            e.AddCoins(500);
+            int price = e.Catalog.Get("skin_gummy").CoinPrice;
+            e.AddCoins(price + 200);
+            int before = e.Coins;
             Assert.AreEqual(PurchaseResult.Success, e.Buy("skin_gummy"));
-            Assert.AreEqual(300, e.Coins);
+            Assert.AreEqual(before - price, e.Coins);
             Assert.AreEqual(PurchaseResult.AlreadyOwned, e.Buy("skin_gummy"));
             Assert.IsTrue(e.Equip("skin_gummy"));
             Assert.AreEqual("skin_gummy", e.EquippedSkin.Id);

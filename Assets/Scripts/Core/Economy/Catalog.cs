@@ -170,7 +170,24 @@ namespace JellyDrop.Core.Economy
             c.PowerUpOffers.Add(new PowerUpOffer { Id = "pu_slow3", Type = PowerUpType.SlowMo, Name = "Slow-Mo", Description = "Pieces fall slower for 15 seconds", Quantity = 3, CoinPrice = 100 });
             c.PowerUpOffers.Add(new PowerUpOffer { Id = "pu_swap3", Type = PowerUpType.Swap, Name = "Stick Swap", Description = "Turns the current piece into a long stick", Quantity = 3, CoinPrice = 80 });
 
+            // Shop prices were too low for how many coins the modes now give: scale everything up.
+            foreach (var item in c.Items) item.CoinPrice = Scale(item.CoinPrice, ItemPriceMultiplier);
+            foreach (var offer in c.PowerUpOffers) offer.CoinPrice = Scale(offer.CoinPrice, PowerUpPriceMultiplier);
             return c;
+        }
+
+        /// <summary>Multiplier on the base coin prices above (skins, themes, buddies).</summary>
+        public const double ItemPriceMultiplier = 2.5;
+        /// <summary>Multiplier on power-up pack prices.</summary>
+        public const double PowerUpPriceMultiplier = 2.0;
+
+        /// <summary>Scales a price and rounds it to a tidy number (multiples of 50, or 10 below 200).</summary>
+        public static int Scale(int price, double k)
+        {
+            if (price <= 0) return price;
+            double v = price * k;
+            int step = v < 200 ? 10 : 50;
+            return (int)(System.Math.Round(v / step) * step);
         }
 
         private static ShopItem Skin(string id, string name, Rarity rarity, int coins, int shards, BlockStyle style, params string[] palette) =>

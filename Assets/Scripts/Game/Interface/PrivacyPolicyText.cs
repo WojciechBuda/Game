@@ -5,14 +5,14 @@ namespace JellyDrop.Interface
     public static class PrivacyPolicyText
     {
         public const int Version = 1;
-        public const string Contact = "wojciech.buda6@gmail.com";
+        public const string Contact = "stackville.info@gmail.com";
         public const string DateEn = "3 November 2026";
         public const string DatePl = "3 listopada 2026";
 
         /// <summary>Each entry: title, then paragraphs.</summary>
         public static readonly string[][] English =
         {
-            new[] { "Who we are", "Stackville is a game made by Wojciech Buda (\"we\", \"us\"). This policy explains what data the game uses, why, and the choices you have. Questions: wojciech.buda6@gmail.com." },
+            new[] { "Who we are", "Stackville is a game made by the Stackville team (\"we\", \"us\"). This policy explains what data the game uses, why, and the choices you have. Questions: stackville.info@gmail.com." },
             new[] { "In short", "You can play without an account. Your progress is saved on your phone, not on our servers - we don't run any servers.", "The free version shows ads from Google AdMob. Google may use your advertising ID to show and measure ads. Where the law requires it, you are asked for consent first and can change your choice in Settings at any time.", "Signing in with Google is optional. We never sell your data." },
             new[] { "Data saved on your device", "Your progress (levels, scores, coins, shards, supplies, city, forest and garden islands, mushrooms, pet, wardrobe, towers, lucky wheel, season pass) and your settings (volume, vibration, language) are stored only on your device.", "This data is not sent to us. It is removed when you uninstall the game or tap Settings > Delete my data." },
             new[] { "Google sign-in (optional)", "If you choose to sign in with Google Play Games, Google shares your Play Games player ID, display name and profile picture with the game. We use them only to sign you in and, in future versions, for leaderboards and challenges with friends.", "You can sign out or disconnect the game at any time in the Google Play Games app. Google's privacy policy applies: https://policies.google.com/privacy" },
@@ -25,12 +25,12 @@ namespace JellyDrop.Interface
             new[] { "Your rights", "Depending on where you live (for example under the GDPR), you may have the right to access, correct or delete your data and to object to its use. Most data never leaves your device, so you can delete it yourself with Settings > Delete my data. For data held by Google, use Google's tools (https://myaccount.google.com) or contact us and we will help." },
             new[] { "How long data is kept", "Data on your device is kept until you delete it or uninstall the game. Google and Unity keep data according to their own policies." },
             new[] { "Changes", "If this policy changes, we will update the date below and show the new version in the game." },
-            new[] { "Contact", "Wojciech Buda - wojciech.buda6@gmail.com" },
+            new[] { "Contact", "Stackville - stackville.info@gmail.com" },
         };
 
         public static readonly string[][] Polish =
         {
-            new[] { "Kim jesteśmy", "Stackville to gra stworzona przez Wojciech Buda (\"my\"). Ta polityka wyjaśnia, jakich danych używa gra, po co i jakie masz wybory. Pytania: wojciech.buda6@gmail.com." },
+            new[] { "Kim jesteśmy", "Stackville to gra stworzona przez zespół Stackville (\"my\"). Ta polityka wyjaśnia, jakich danych używa gra, po co i jakie masz wybory. Pytania: stackville.info@gmail.com." },
             new[] { "W skrócie", "Możesz grać bez zakładania konta. Postęp zapisuje się na Twoim telefonie, a nie na naszych serwerach - nie prowadzimy żadnych serwerów.", "Darmowa wersja wyświetla reklamy Google AdMob. Google może używać Twojego identyfikatora reklamowego do wyświetlania i mierzenia reklam. Tam, gdzie wymaga tego prawo, najpierw prosimy o zgodę, którą możesz zmienić w Ustawieniach w dowolnej chwili.", "Logowanie kontem Google jest dobrowolne. Nigdy nie sprzedajemy Twoich danych." },
             new[] { "Dane zapisane na urządzeniu", "Twój postęp (poziomy, wyniki, monety, odłamki, surowce, miasto, wyspy las i ogród, grzyby, pupil, garderoba, wieże, koło fortuny, przepustka sezonowa) i ustawienia (głośność, wibracje, język) są przechowywane wyłącznie na Twoim urządzeniu.", "Te dane nie są do nas wysyłane. Usuwasz je, odinstalowując grę lub wybierając Ustawienia > Usuń moje dane." },
             new[] { "Logowanie Google (dobrowolne)", "Jeśli zalogujesz się przez Google Play Games, Google przekaże grze Twój identyfikator gracza, nazwę i zdjęcie profilowe. Używamy ich tylko do logowania, a w przyszłych wersjach do rankingów i wyzwań ze znajomymi.", "W każdej chwili możesz się wylogować lub odłączyć grę w aplikacji Google Play Games. Obowiązuje polityka prywatności Google: https://policies.google.com/privacy" },
@@ -43,7 +43,7 @@ namespace JellyDrop.Interface
             new[] { "Twoje prawa", "W zależności od miejsca zamieszkania (np. na podstawie RODO) możesz mieć prawo dostępu do danych, ich poprawienia lub usunięcia oraz sprzeciwu wobec ich wykorzystania. Większość danych nigdy nie opuszcza Twojego urządzenia, więc możesz je usunąć sam: Ustawienia > Usuń moje dane. W sprawie danych przechowywanych przez Google skorzystaj z narzędzi Google (https://myaccount.google.com) albo napisz do nas - pomożemy." },
             new[] { "Jak długo przechowujemy dane", "Dane na urządzeniu są przechowywane, dopóki ich nie usuniesz lub nie odinstalujesz gry. Google i Unity przechowują dane zgodnie z własnymi zasadami." },
             new[] { "Zmiany", "Jeśli polityka się zmieni, zaktualizujemy datę poniżej i pokażemy nową wersję w grze." },
-            new[] { "Kontakt", "Wojciech Buda - wojciech.buda6@gmail.com" },
+            new[] { "Kontakt", "Stackville - stackville.info@gmail.com" },
         };
     }
 }

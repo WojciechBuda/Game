@@ -21,6 +21,16 @@ namespace JellyDrop.Core.City
         public int Get(Supply s) => s == Supply.Wood ? Wood : s == Supply.Brick ? Brick : Glass;
     }
 
+    /// <summary>A decoration for the islands: costs coins (and a few supplies), adds a little coin bonus.</summary>
+    public sealed class DecorDef
+    {
+        public string Id;
+        public int Coins, Wood, Brick, Glass;
+        /// <summary>Extra % coins after every game while it stands.</summary>
+        public int BonusPercent;
+        public BuildingCost Cost => new BuildingCost(Coins, Wood, Brick, Glass);
+    }
+
     /// <summary>A building type. Each has 3 levels: built at level 1, then upgraded twice.</summary>
     public sealed class BuildingDef
     {
@@ -87,8 +97,46 @@ namespace JellyDrop.Core.City
     {
         /// <summary>Hours of production a building stores before it stops (come back and collect!).</summary>
         public const float StorageHours = 8f;
-        /// <summary>The island grows a row of three plots at a time, up to this many.</summary>
-        public const int MaxPlots = 30;
+        /// <summary>The main island grows a row of three plots at a time (with the city level), up to this many.</summary>
+        public const int MainPlots = 30;
+        /// <summary>Plots on each extra island the player can buy.</summary>
+        public const int ExpansionPlots = 6;
+        public const int MaxExpansions = 4;
+        /// <summary>All plots: the main island plus every extra island.</summary>
+        public const int MaxPlots = MainPlots + ExpansionPlots * MaxExpansions;
+
+        /// <summary>Price of extra island number <paramref name="index"/> (0 = the first one).</summary>
+        public static BuildingCost ExpansionCost(int index) =>
+            new BuildingCost(3000 * (1 << index), 15 + 10 * index, 15 + 10 * index, 5 * index);
+
+        /// <summary>City level needed before extra island <paramref name="index"/> can be bought.</summary>
+        public static int ExpansionLevel(int index) => 3 + 2 * index;
+
+        /// <summary>Spots for decorations: along the main island's edges, plus four on every extra island.</summary>
+        public const int MainDecorSpots = 8;
+        public const int DecorSpotsPerExpansion = 4;
+        public const int MaxDecorSpots = MainDecorSpots + DecorSpotsPerExpansion * MaxExpansions;
+
+        /// <summary>Share of the build cost (coins) paid back when a building is demolished.</summary>
+        public const float DemolishRefund = 0.25f;
+
+        public static readonly DecorDef[] Decorations =
+        {
+            new DecorDef { Id = "flowers", Coins = 400, BonusPercent = 1 },
+            new DecorDef { Id = "lamp", Coins = 500, BonusPercent = 1 },
+            new DecorDef { Id = "bench", Coins = 600, BonusPercent = 1 },
+            new DecorDef { Id = "topiary", Coins = 900, BonusPercent = 1 },
+            new DecorDef { Id = "pond", Coins = 1500, BonusPercent = 2 },
+            new DecorDef { Id = "fountain", Coins = 2500, Brick = 4, BonusPercent = 2 },
+            new DecorDef { Id = "statue", Coins = 4000, Brick = 6, Glass = 2, BonusPercent = 3 },
+            new DecorDef { Id = "gazebo", Coins = 6000, Wood = 10, Glass = 3, BonusPercent = 3 },
+        };
+
+        public static DecorDef Decor(string id)
+        {
+            foreach (var d in Decorations) if (d.Id == id) return d;
+            return null;
+        }
         public const int StartingPlots = 4;
         public const int MaxBuildingLevel = 10;
         public const long MaxBuildSeconds = 12 * 3600;

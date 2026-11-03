@@ -32,5 +32,5 @@ Codzienny darmowy obrót, boostery, sezonowe nagrody oraz dziesiątki skórek, m
 
 Gra jest darmowa i zawiera reklamy oraz opcjonalne zakupy w aplikacji (np. Premium bez reklam). Wszystko w grze możesz też zdobyć, po prostu grając.
 
-Polityka prywatności: https://wojciechbuda.github.io/Game/privacy-policy.html
-Kontakt: wojciech.buda6@gmail.com
+Polityka prywatności: https://stackville.github.io/privacy-policy.html
+Kontakt: stackville.info@gmail.com
