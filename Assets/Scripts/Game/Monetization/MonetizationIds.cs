@@ -1,9 +1,8 @@
 namespace JellyDrop.Monetization
 {
     /// <summary>
-    /// Store and ad identifiers. The ad unit IDs below are Google's public TEST units:
-    /// they always serve test ads. Replace them with your own AdMob IDs before release,
-    /// and never click your own live ads while testing.
+    /// Store and ad identifiers. Android uses Stackville's real AdMob units; iOS still has Google's public test
+    /// units. Never click your own live ads: add your phone as a test device in AdMob (Settings > Test devices).
     /// </summary>
     public static class MonetizationIds
     {
@@ -21,9 +20,13 @@ namespace JellyDrop.Monetization
         public const string RewardedAdUnit = "ca-app-pub-3940256099942544/1712485313";
         public const string InterstitialAdUnit = "ca-app-pub-3940256099942544/4411468910";
 #else
-        public const string RewardedAdUnit = "ca-app-pub-3940256099942544/5224354917";
-        public const string InterstitialAdUnit = "ca-app-pub-3940256099942544/1033173712";
+        // Stackville's own AdMob units (Android).
+        public const string RewardedAdUnit = "ca-app-pub-1930401474155411/4264423801";
+        public const string InterstitialAdUnit = "ca-app-pub-1930401474155411/1515183565";
 #endif
+
+        /// <summary>AdMob app id (Android). Goes into Assets > Google Mobile Ads > Settings (Stackville > Release does it for you).</summary>
+        public const string AndroidAdMobAppId = "ca-app-pub-1930401474155411~6208060865";
 
         /// <summary>
         /// The hosted privacy policy (required by both stores), on the neutral Stackville website: the files in Site/

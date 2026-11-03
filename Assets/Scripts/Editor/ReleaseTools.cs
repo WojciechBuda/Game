@@ -39,11 +39,53 @@ namespace JellyDrop.EditorTools
             if (!defines.Contains("UNITY_PURCHASING")) problems.Add("UNITY_PURCHASING is off: purchases would use the fake store.");
             if (JellyDrop.Monetization.MonetizationIds.RewardedAdUnit.Contains("3940256099942544"))
                 problems.Add("Ad unit IDs are Google's TEST IDs: put your own in MonetizationIds.cs.");
+            if (defines.Contains("ADMOB") && !ApplyAdMobAppId())
+                problems.Add("AdMob App ID not set: Assets > Google Mobile Ads > Settings > Android App ID = " + JellyDrop.Monetization.MonetizationIds.AndroidAdMobAppId);
             if (EditorUserBuildSettings.development) problems.Add("Development Build is ticked.");
 
             string msg = string.Join("\n", ok) + "\n\n" + (problems.Count == 0 ? "All good - ready to build!" : "To fix:\n- " + string.Join("\n- ", problems));
             Debug.Log("[Stackville] Release check:\n" + msg);
             if (!Application.isBatchMode) EditorUtility.DisplayDialog("Stackville release check", msg, "OK");
+        }
+
+        private const string AdMobSettingsPath = "Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset";
+
+        /// <summary>
+        /// Writes Stackville's AdMob app id into the Google Mobile Ads settings asset (created by the plugin:
+        /// open Assets > Google Mobile Ads > Settings once). Returns false if the asset isn't there yet.
+        /// </summary>
+        [MenuItem("Stackville/Release/Apply AdMob App ID", priority = 105)]
+        public static bool ApplyAdMobAppId()
+        {
+            string id = JellyDrop.Monetization.MonetizationIds.AndroidAdMobAppId;
+            if (!File.Exists(AdMobSettingsPath))
+            {
+                Debug.LogWarning("[Stackville] Google Mobile Ads settings not found. Import the plugin, open Assets > Google Mobile Ads > Settings once, then run this again (or paste " + id + " into 'Android App ID').");
+                return false;
+            }
+            var lines = File.ReadAllLines(AdMobSettingsPath);
+            bool changed = false, found = false;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var t = lines[i].TrimStart();
+                if (!t.StartsWith("adMobAndroidAppId:")) continue;
+                found = true;
+                string indent = lines[i].Substring(0, lines[i].Length - t.Length);
+                string wanted = indent + "adMobAndroidAppId: " + id;
+                if (lines[i] != wanted) { lines[i] = wanted; changed = true; }
+            }
+            if (!found)
+            {
+                Debug.LogWarning("[Stackville] Couldn't find the Android App ID field in " + AdMobSettingsPath + ". Paste " + id + " into Assets > Google Mobile Ads > Settings > Android App ID.");
+                return false;
+            }
+            if (changed)
+            {
+                File.WriteAllLines(AdMobSettingsPath, lines);
+                AssetDatabase.ImportAsset(AdMobSettingsPath);
+                Debug.Log("[Stackville] AdMob Android App ID set to " + id);
+            }
+            return true;
         }
 
         [MenuItem("Stackville/Release/2. Bump version code (+1)", priority = 101)]
@@ -59,6 +101,7 @@ namespace JellyDrop.EditorTools
         public static void BuildAab()
         {
             JellyDropSetup.ApplySettings();
+            ApplyAdMobAppId();
             EditorUserBuildSettings.buildAppBundle = true;
             EditorUserBuildSettings.development = false;
             Directory.CreateDirectory(BuildDir);
